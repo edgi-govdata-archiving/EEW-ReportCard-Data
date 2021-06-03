@@ -15,7 +15,7 @@ region_type char(20),
 state char(10),
 region char(20),
 unique(region_type,state,region));
-CREATE TABLE per_1000 (
+CREATE TABLE per_fac (
 region_id tinyint,
 program char(20),
 type char(20),

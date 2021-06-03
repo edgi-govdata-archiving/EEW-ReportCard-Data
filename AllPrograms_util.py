@@ -14,18 +14,16 @@ def program_count( echo_data, program, flag, state, cd ):
         str( count ), state, cd, program))
     return count
 
-
+'''
+Return the count of violations and number of facilities in the dataframe provided.
+'''
 def get_rowdata( df, field, flag ):
     num_fac = df.loc[df[flag]=='Y'].shape[0]
     if ( num_fac == 0 ):
         return (0,0)
     count_viol = df.loc[((df[field].str.count("S") + 
                 df[field].str.count("V")) >= 3)].shape[0]
-    fraction_viol = count_viol/num_fac
-    print( "    {} facilities with at least 3 quarters in non-compliance over the past 3 years".format( count_viol ))
-    print( "    {:.2%} of active facilities with at least 3 quarters in non-compliance over the past 3 years".format( 
-           fraction_viol ))
-    return (count_viol, fraction_viol * 100.)
+    return (count_viol, num_fac)
 
 
 def get_cwa_df( df ):
@@ -180,3 +178,49 @@ def get_violations_by_facilities( df, action_field, flag, noncomp_field ):
     df = df.fillna(0)
     df = df.groupby(['noncomp_qtrs']).count()
     return df
+
+def get_top_violators( df_active, flag, noncomp_field, action_field, num_fac=10 ):
+    '''
+    Sort the dataframe and return the rows that have the most number of
+    non-compliant quarters.
+
+    Parameters
+    ----------
+    df_active : Dataframe
+        Must have ECHO_EXPORTER fields
+    flag : str
+        Identifies the EPA programs of the facility (AIR_FLAG, NPDES_FLAG, etc.)
+    state : str
+        The state
+    cd : str
+        The congressional district    
+    noncomp_field : str
+        The field with the non-compliance values, 'S' or 'V'.
+    action_field
+        The field with the count of quarters with formal actions
+    num_fac
+        The number of facilities to include in the returned Dataframe
+
+    Returns
+    -------
+    Dataframe
+        The top num_fac violators for the EPA program in the region
+
+    Examples
+    --------
+    >>> df_violators = get_top_violators( df_active, 'AIR_FLAG', state, region_selected, 
+        'CAA_3YR_COMPL_QTRS_HISTORY', 'CAA_FORMAL_ACTION_COUNT', 20 )
+    '''
+    df = df_active.loc[ df_active[flag] == 'Y' ]
+    if ( len( df ) == 0 ):
+        return None
+    df_active = df.copy()
+    noncomp = df_active[ noncomp_field ]
+    noncomp_count = noncomp.str.count('S') + noncomp.str.count('V')
+    df_active['noncomp_count'] = noncomp_count
+    df_active = df_active[['FAC_NAME', 'noncomp_count', action_field,
+            'DFR_URL', 'FAC_LAT', 'FAC_LONG']]
+    df_active = df_active.sort_values( by=['noncomp_count', action_field], 
+            ascending=False )
+    df_active = df_active.head( num_fac )
+    return df_active   

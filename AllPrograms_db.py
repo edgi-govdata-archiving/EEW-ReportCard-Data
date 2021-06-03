@@ -39,8 +39,8 @@ def write_active_facs( active_facs, state, cd=None ):
     conn.commit()
 
 def write_recurring_violations( state, cd, viol_list ):
-    ins_sql = 'insert into recurring_violations (region_id,program,facilities,percent) values ({},\'{}\',{},{})'
-    ins_sql += ' on conflict(region_id,program) do update set facilities = {}, percent = {}'
+    ins_sql = 'insert into recurring_violations (region_id,program,facilities,violations) values ({},\'{}\',{},{})'
+    ins_sql += ' on conflict(region_id,program) do update set facilities = {}, violations = {}'
 
     conn = sqlite3.connect( 'region.db' )
     cursor = conn.cursor()
@@ -169,8 +169,8 @@ def write_total_enforcements( program, df_pgm, ds_type ):
             cursor.execute( sql )
     conn.commit()
 
-def write_per_1000( program, ds_type, event, year, count ):
-    ins_sql = 'insert into per_1000 (region_id,program,type,year,count) '
+def write_per_fac( program, ds_type, event, year, count ):
+    ins_sql = 'insert into per_fac (region_id,program,type,year,count) '
     ins_sql += 'values ({},\'{}\',\'{}\',{},{})'
     ins_sql += ' on conflict(region_id,program,type,year) do update set count={}'
 
