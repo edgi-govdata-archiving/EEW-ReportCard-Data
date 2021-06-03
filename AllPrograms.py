@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+import pdb
 import pandas as pd
 import numpy as np
 import shutil
@@ -104,8 +105,7 @@ def main( argv ):
             this_echo_data = state_echo_data[state].loc[state_echo_data[state]['FAC_DERIVED_CD113'] == cd]
             cd_echo_data[(state,cd)] = this_echo_data
         this_echo_active = this_echo_data.loc[this_echo_data['FAC_ACTIVE_FLAG']=='Y']
-        if ( cd is not None ):
-            cd_echo_active[(state,cd)] = this_echo_active
+        cd_echo_active[(state,cd)] = this_echo_active
         active_facs = {}
         active_facs['CAA'] = AllPrograms_util.program_count( this_echo_active, 
                         'CAA', 'AIR_FLAG', state, cd) 
@@ -131,7 +131,7 @@ def main( argv ):
         print( "  CAA")
         rowdata_state[state] = []
         rd = AllPrograms_util.get_rowdata( state_echo_active[state], 'CAA_3YR_COMPL_QTRS_HISTORY', 'AIR_FLAG')
-        rowdata_state[state].append([ 'CAA', rd[1]])
+        rowdata_state[state].append([ 'CAA', rd[0], rd[1]])
         print( "  CWA")
         rd = AllPrograms_util.get_rowdata( state_echo_active[state], 'CWA_13QTRS_COMPL_HISTORY', 'NPDES_FLAG')
         rowdata_state[state].append([ 'CWA', rd[0], rd[1]])
@@ -151,6 +151,7 @@ def main( argv ):
         rowdata_cd.append([ 'RCRA', rd[0], rd[1]])
         AllPrograms_db.write_recurring_violations( state, cd, rowdata_cd )
     for state in states:
+        # pdb.set_trace()
         AllPrograms_db.write_recurring_violations( state, None, rowdata_state[state] )
     
     # ### 10. Percent change in violations (CWA)
@@ -305,7 +306,7 @@ def main( argv ):
                         cd_echo_active[(state,cd)], 'CWA', 'NPDES_FLAG', 
                         state, cd)
             print("CWA inspections per 1000 regulated facilities: ", num)
-            AllPrograms_db.write_inspections_per_1000('CWA', ds_type, 0, num )
+            AllPrograms_db.write_per_1000('CWA', ds_type, 'inspections', 0, num )
         except pd.errors.OutOfBoundsDatetime:
             print( "Bad date in cd CWA data")
         try:
@@ -314,7 +315,7 @@ def main( argv ):
             num = 1000. * num / AllPrograms_util.program_count( 
                 cd_echo_active[(state,cd)], 'CWA', 'NPDES_FLAG', state, cd)
             print("CWA violations per 1000 regulated facilities: ", num)
-            AllPrograms_db.write_violations_per_1000('CWA', ds_type, 0, num )
+            AllPrograms_db.write_per_1000('CWA', ds_type, 'violations', 0, num )
         except pd.errors.OutOfBoundsDatetime:
             print( "Bad date in state CWA data")
         try:
@@ -323,7 +324,7 @@ def main( argv ):
                         cd_echo_active[(state,cd)], 'RCRA', 'RCRA_FLAG', 
                         state, cd)
             print("RCRA inspections per 1000 regulated facilities: ", num)
-            AllPrograms_db.write_inspections_per_1000('RCRA', ds_type, 0, num )
+            AllPrograms_db.write_per_1000('RCRA', ds_type, 'inspections', 0, num )
         except pd.errors.OutOfBoundsDatetime:
             print( "Bad date in cd CWA data")
         try:
@@ -332,7 +333,7 @@ def main( argv ):
                         cd_echo_active[(state,cd)], 'RCRA', 'RCRA_FLAG', 
                         state, cd)
             print("RCRA violations per 1000 regulated facilities: ", num)
-            AllPrograms_db.write_violations_per_1000('RCRA', ds_type, 0, num )
+            AllPrograms_db.write_per_1000('RCRA', 'ds_type', 'violations',0, num )
         except pd.errors.OutOfBoundsDatetime:
             print( "Bad date in cd CWA data")
     
@@ -345,7 +346,7 @@ def main( argv ):
                         state_echo_active[state], 'CAA', 'AIR_FLAG', 
                         state, None)
             print("CAA inspections per 1000 regulated facilities: ", num)
-            AllPrograms_db.write_inspections_per_1000('CAA', ds_type, 0, num )
+            AllPrograms_db.write_per_1000('CAA', ds_type, 'inspections', 0, num )
         except pd.errors.OutOfBoundsDatetime:
             print( "Bad date in cd CWA data")
         try:
@@ -354,7 +355,7 @@ def main( argv ):
                         state_echo_active[state], 'CAA', 'AIR_FLAG', 
                         state, None)
             print("CAA violations per 1000 regulated facilities: ", num)
-            AllPrograms_db.write_violations_per_1000('CAA', ds_type, 0, num )
+            AllPrograms_db.write_per_1000('CAA', ds_type, 'violations', 0, num )
         except pd.errors.OutOfBoundsDatetime:
             print( "Bad date in cd CAA data")
         try:
@@ -363,7 +364,7 @@ def main( argv ):
                         state_echo_active[state], 'CWA', 'NPDES_FLAG', 
                         state, None)
             print("CWA inspections per 1000 regulated facilities: ", num)
-            AllPrograms_db.write_inspections_per_1000('CWA', ds_type, 0, num )
+            AllPrograms_db.write_per_1000('CWA', ds_type, 'inspections', 0, num )
         except pd.errors.OutOfBoundsDatetime:
             print( "Bad date in cd CWA data")
         try:
@@ -372,7 +373,7 @@ def main( argv ):
             num = 1000. * num / AllPrograms_util.program_count( 
                     state_echo_active[state], 'CWA', 'NPDES_FLAG', state, None)
             print("CWA violations per 1000 regulated facilities: ", num)
-            AllPrograms_db.write_violations_per_1000('CWA', ds_type, 0, num )
+            AllPrograms_db.write_per_1000('CWA', ds_type, 'violations', 0, num )
         except pd.errors.OutOfBoundsDatetime:
             print( "Bad date in state CWA data")
         try:
@@ -381,7 +382,7 @@ def main( argv ):
                         state_echo_active[state], 'RCRA', 'RCRA_FLAG', 
                         state, None)
             print("RCRA inspections per 1000 regulated facilities: ", num)
-            AllPrograms_db.write_inspections_per_1000('RCRA', ds_type, 0, num )
+            AllPrograms_db.write_per_1000('RCRA', ds_type, 'inspections', 0, num )
         except pd.errors.OutOfBoundsDatetime:
             print( "Bad date in cd CWA data")
         try:
@@ -390,7 +391,7 @@ def main( argv ):
                         state_echo_active[state], 'RCRA', 'RCRA_FLAG', 
                         state, None)
             print("RCRA violations per 1000 regulated facilities: ", num)
-            AllPrograms_db.write_violations_per_1000('RCRA', ds_type, 0, num )
+            AllPrograms_db.write_per_1000('RCRA', ds_type, 'violations', 0, num )
         except pd.errors.OutOfBoundsDatetime:
             print( "Bad date in cd CWA data")
 
@@ -540,5 +541,12 @@ def main( argv ):
                                                      'RCRA_FORMAL_ACTION_COUNT', 
                                                      'RCRA_FLAG', 'RCRA_3YR_COMPL_QTRS_HISTORY')
 
+def usage():
+    print ( 'Usage:  AllPrograms.py -c cds_todo.csv -f <focus_year>')
+    exit
+
 if __name__ == "__main__":
-    main( sys.argv[1] )
+    if ( len( sys.argv ) < 2 ):
+        usage()
+    else:
+        main( sys.argv[1] )
