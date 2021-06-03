@@ -1,0 +1,75 @@
+CREATE TABLE echo_state_modified (
+state char(10),
+last_modified date );
+CREATE TABLE active_facilities ( region_id tinyint, program char(20), count int,
+unique( region_id, program ));
+CREATE TABLE IF NOT EXISTS "datafiles" (
+ds_name char(30),
+region_type char(30),
+state char(2),
+region_values char(80),
+last_modified datetime,
+unique(ds_name,region_type,state,region_values));
+CREATE TABLE regions (
+region_type char(20),
+state char(10),
+region char(20),
+unique(region_type,state,region));
+CREATE TABLE per_1000 (
+region_id tinyint,
+program char(20),
+type char(20),
+year tinyint,
+count real,
+unique(region_id,program,type,year));
+CREATE TABLE violations (
+region_id tinyint,
+program char(20),
+year tinyint,
+count int,
+unique(region_id,program,year));
+CREATE TABLE inspections (
+region_id tinyint,
+program char(20),
+year tinyint,
+count int,
+unique(region_id,program,year));
+CREATE TABLE IF NOT EXISTS "enf_per_fac" (
+region_id tinyint,
+program char(20),
+year tinyint,
+amount real, count tinyint,
+unique(region_id,program,year));
+CREATE TABLE recurring_violations (
+region_id tinyint,
+program char(20),
+facilities int,
+percent real, violations tinyint,
+unique( region_id, program ));
+CREATE TABLE enforcements (
+region_id tinyint,
+program char(20),
+year tinyint,
+amount double,
+count int,
+unique( region_id,program,year));
+CREATE TABLE ghg_emissions (
+region_id tinyint,
+year tinyint,
+amount real,
+unique( region_id, year ));
+CREATE TABLE non_compliants(
+region_id tinyint,
+program char(20),
+fac_name char(256),
+noncomp_count tinyint,
+formal_action_count tinyint,
+dfr_url char(256),
+fac_lat real,
+fac_long real);
+CREATE TABLE violations_by_facilities (
+region_id tinyint,
+program char(20),
+noncomp_qtrs tinyint,
+num_facilities tinyint,
+unique( region_id, program, noncomp_qtrs ));
