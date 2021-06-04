@@ -67,11 +67,12 @@ def main( argv ):
     cd_echo_data = {}
     cd_echo_active = {}
     for state, cd in state_cds:
-        if ( cd is None ):
-            continue
         sql = 'select * from "ECHO_EXPORTER" where "FAC_STATE" = \'{}\''
-        sql += ' and "FAC_DERIVED_CD113" = {}'
-        sql = sql.format( state, str(cd) )
+        if ( cd == 0 ):
+            sql = sql.format( state )
+        else:
+            sql += ' and "FAC_DERIVED_CD113" = {}'
+            sql = sql.format( state, str(cd) )
         cd_echo_data[(state,cd)] = get_echo_data( sql, 'REGISTRY_ID' )
         cd_echo_active[(state,cd)] = cd_echo_data[(state,cd)].loc[cd_echo_data[(state,cd)]['FAC_ACTIVE_FLAG']=='Y']
 
