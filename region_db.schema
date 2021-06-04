@@ -73,3 +73,6 @@ program char(20),
 noncomp_qtrs tinyint,
 num_facilities tinyint,
 unique( region_id, program, noncomp_qtrs ));
+CREATE TABLE single_cd_states (
+state char(5),
+cd tinyint );

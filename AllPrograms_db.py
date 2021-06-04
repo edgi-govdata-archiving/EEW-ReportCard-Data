@@ -290,7 +290,7 @@ def write_violations_by_facilities( df, ds_type, program, action_field, flag,
     conn.commit()
 
 def write_single_cd_states():
-    ins_sql = 'insert into single_cd_state (state,cd) values (\'{}\', {})'
+    ins_sql = 'insert into single_cd_states (state,cd) values (\'{}\', {})'
     conn = sqlite3.connect( 'region.db' )
     cursor = conn.cursor()
     single_cd_states = ['DE','VT','MT','AK', 'WY', 'ND', 'SD', 'VI', 'PR', 'MP', 'GU', 'AS', 'DC']
@@ -298,7 +298,6 @@ def write_single_cd_states():
         sql = 'select distinct("FAC_DERIVED_CD113") from "ECHO_EXPORTER" where "FAC_STATE" = \'{}\''
         sql = sql.format(state)
         df = get_echo_data( sql )
-        pdb.set_trace()
         for idx, row in df.iterrows():
             sql = ins_sql.format( state, row['FAC_DERIVED_CD113'] )
             cursor.execute( sql )
