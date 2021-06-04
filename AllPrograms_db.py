@@ -34,7 +34,6 @@ def write_active_facs( active_facs, state, cd=None ):
     rowid = get_region_rowid( cursor, state, cd ) 
     for program, value in active_facs.items():
         sql = ins_sql.format( rowid, program, value, value )
-        # pdb.set_trace()
         cursor.execute( sql )
     conn.commit()
 

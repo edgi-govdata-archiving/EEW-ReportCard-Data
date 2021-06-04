@@ -1,3 +1,4 @@
+import pdb
 import pandas as pd
 
 
@@ -110,20 +111,20 @@ def get_num_facilities( data_sets, program, ds_type, year ):
         return num_fac
 
 def get_enf_per_fac( ds_enf, ds_type, num_fac, year ):
+    pdb.set_trace()
     df_pgm = get_enforcements( ds_enf, ds_type )
     if ( df_pgm is None or df_pgm.empty ):
-        df_pgm = pd.DataFrame( [[None,None]], columns=['Num_enf_per_fac','Amt_enf_per_fac'])
         print("There were no enforcement actions taken in the focus year")
     else:
         df_pgm = df_pgm[ df_pgm.index == year ]
         if ( df_pgm.empty ):
-            df_pgm['Num_enf_per_fac'] = None
-            df_pgm['Amt_enf_per_fac'] = None
+            df_pgm['Count'] = 0
+            df_pgm['Amount'] = 0
         else:
-            df_pgm['Num_enf_per_fac'] = df_pgm.apply( 
-              lambda row: None if ( num_fac == 0 ) else row.Count / num_fac, axis=1 )
-            df_pgm['Amt_enf_per_fac'] = df_pgm.apply( 
-              lambda row: None if ( num_fac == 0 ) else row.Amount / num_fac, axis=1 )
+            df_pgm['Count'] = df_pgm.apply( 
+              lambda row: 0 if ( num_fac == 0 ) else row.Count / num_fac, axis=1 )
+            df_pgm['Amount'] = df_pgm.apply( 
+              lambda row: 0 if ( num_fac == 0 ) else row.Amount / num_fac, axis=1 )
     return df_pgm
     
 def get_enforcements( ds, ds_type ):
