@@ -2,6 +2,7 @@ import pdb
 
 import sqlite3
 import AllPrograms_util
+from ECHO_modules.get_data import get_echo_data
 
 def get_region_rowid( cursor, state, cd ):
     sel_sql = 'select rowid from regions where region_type=\'{}\' and state=\'{}\''
@@ -287,6 +288,22 @@ def write_violations_by_facilities( df, ds_type, program, action_field, flag,
                 row['num_facilities'], idx, row['num_facilities'] )
             cursor.execute( sql )
     conn.commit()
+
+def write_single_cd_states():
+    ins_sql = 'insert into single_cd_state (state,cd) values (\'{}\', {})'
+    conn = sqlite3.connect( 'region.db' )
+    cursor = conn.cursor()
+    single_cd_states = ['DE','VT','MT','AK', 'WY', 'ND', 'SD', 'VI', 'PR', 'MP', 'GU', 'AS', 'DC']
+    for state in single_cd_states:
+        sql = 'select distinct("FAC_DERIVED_CD113") from "ECHO_EXPORTER" where "FAC_STATE" = \'{}\''
+        sql = sql.format(state)
+        df = get_echo_data( sql )
+        pdb.set_trace()
+        for idx, row in df.iterrows():
+            sql = ins_sql.format( state, row['FAC_DERIVED_CD113'] )
+            cursor.execute( sql )
+    conn.commit()
+
 
 test_facs = { 'XXX': 14, 'YYY': 20, 'ZZZ': 30 }
 write_active_facs( test_facs, 'MX', 4 )
