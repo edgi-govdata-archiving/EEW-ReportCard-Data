@@ -111,7 +111,6 @@ def get_num_facilities( data_sets, program, ds_type, year ):
         return num_fac
 
 def get_enf_per_fac( ds_enf, ds_type, num_fac, year ):
-    pdb.set_trace()
     df_pgm = get_enforcements( ds_enf, ds_type )
     if ( df_pgm is None or df_pgm.empty ):
         print("There were no enforcement actions taken in the focus year")
