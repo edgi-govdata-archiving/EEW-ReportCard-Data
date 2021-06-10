@@ -34,12 +34,6 @@ program char(20),
 year tinyint,
 count int,
 unique(region_id,program,year));
-CREATE TABLE IF NOT EXISTS "enf_per_fac" (
-region_id tinyint,
-program char(20),
-year tinyint,
-amount real, count tinyint,
-unique(region_id,program,year));
 CREATE TABLE recurring_violations (
 region_id tinyint,
 program char(20),
@@ -76,3 +70,11 @@ unique( region_id, program, noncomp_qtrs ));
 CREATE TABLE single_cd_states (
 state char(5),
 cd tinyint );
+CREATE TABLE enf_per_fac (
+region_id tinyint,
+program char(20),
+year tinyint,
+amount real,
+count tinyint,
+num_fac tinyint,
+unique( region_id, program, year ));

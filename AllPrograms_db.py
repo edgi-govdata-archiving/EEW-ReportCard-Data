@@ -186,9 +186,9 @@ def write_per_fac( program, ds_type, event, year, count ):
     conn.commit()
 
 def write_enf_per_fac( program, ds, ds_type, num_fac, year ):
-    ins_sql = 'insert into enf_per_fac (region_id,program,year,count,amount)'
-    ins_sql += ' values ({},\'{}\',{},{},{}) on conflict(region_id,program,year)'
-    ins_sql += ' do update set count={}, amount={}'
+    ins_sql = 'insert into enf_per_fac (region_id,program,year,count,amount,num_fac)'
+    ins_sql += ' values ({},\'{}\',{},{},{},{}) on conflict(region_id,program,year)'
+    ins_sql += ' do update set count={}, amount={}, num_fac={}'
 
     conn = sqlite3.connect( 'region.db' )
     cursor = conn.cursor()
@@ -197,34 +197,15 @@ def write_enf_per_fac( program, ds, ds_type, num_fac, year ):
     cd = ds_type[1]
     rowid = get_region_rowid( cursor, state, cd ) 
     df_pgm = AllPrograms_util.get_enf_per_fac( ds, ds_type, num_fac, year )
-    if ( df_pgm is not None ):
-        # idx will be the year
-        for idx, row in df_pgm.iterrows():
-            sql = ins_sql.format( rowid, program, idx, row['Count'], 
-                    row['Amount'], row['Count'], row['Amount'] )
-            cursor.execute( sql )
+    if ( df_pgm is not None and not df_pgm.empty ):
+        sql = ins_sql.format( rowid, program, year, df_pgm.Count, 
+                    df_pgm.Amount, num_fac, df_pgm.Count, df_pgm.Amount, num_fac )
+        cursor.execute( sql )
     conn.commit()
     return df_pgm
 
-def write_total_enf_per_fac( df, ds_type ):
-    ins_sql = 'insert into enf_per_fac (region_id,program,year,count,amount) '
-    ins_sql += 'values ({},\'All\',{},{},{}) on conflict(region_id,program,year)'
-    ins_sql += ' do update set count={}, amount={}'
-
-    conn = sqlite3.connect( 'region.db' )
-    cursor = conn.cursor()
-
-    state = ds_type[2]
-    cd = ds_type[1]
-    rowid = get_region_rowid( cursor, state, cd ) 
-    # pdb.set_trace()
-    if ( df is not None ):
-        # idx will be the year
-        for idx, row in df.iterrows():
-            sql = ins_sql.format( rowid, idx, row['Count'], row['Amount'], 
-                   row['Count'], row['Amount'])
-            cursor.execute( sql )
-    conn.commit()
+        # Removed total_enf_per_fac.  It can be calculated from the individual
+        # program records
 
 def write_ghg_emissions( df, ds_type ):
     ins_sql = 'insert into ghg_emissions (region_id,year,amount) '

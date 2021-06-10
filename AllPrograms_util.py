@@ -115,15 +115,17 @@ def get_enf_per_fac( ds_enf, ds_type, num_fac, year ):
     if ( df_pgm is None or df_pgm.empty ):
         print("There were no enforcement actions taken in the focus year")
     else:
-        df_pgm = df_pgm[ df_pgm.index == year ]
+        iyear = int(year)
+        year_3 = str( iyear - 3 )
+        df_pgm = df_pgm[ df_pgm.index > year_3 ]
+        df_pgm = df_pgm[ df_pgm.index <= year ]
         if ( df_pgm.empty ):
             df_pgm['Count'] = 0
             df_pgm['Amount'] = 0
         else:
-            df_pgm['Count'] = df_pgm.apply( 
-              lambda row: 0 if ( num_fac == 0 ) else row.Count / num_fac, axis=1 )
-            df_pgm['Amount'] = df_pgm.apply( 
-              lambda row: 0 if ( num_fac == 0 ) else row.Amount / num_fac, axis=1 )
+            df_pgm = df_pgm.agg({'Amount':'sum','Count':'sum'})
+            df_pgm.Count = 0 if ( num_fac == 0 ) else df_pgm.Count/num_fac
+            df_pgm.Amount = 0 if ( num_fac == 0 ) else df_pgm.Amount/num_fac
     return df_pgm
     
 def get_enforcements( ds, ds_type ):
@@ -136,7 +138,8 @@ def get_enforcements( ds, ds_type ):
         df_pgm.rename( columns={ ds.date_field: 'Date',
                             ds.agg_col: 'Amount'}, inplace=True )
         if ds.name == "CWA Penalties":
-            df_pgm['Amount'] = df_pgm['Amount'].fillna(0) +                     df_pgm['STATE_LOCAL_PENALTY_AMT'].fillna(0)                            
+            df_pgm['Amount'] = df_pgm['Amount'].fillna(0)
+            df_pgm['Amount'] += df_pgm['STATE_LOCAL_PENALTY_AMT'].fillna(0)                            
         df_pgm["Count"] = 1
         df_pgm = df_pgm.groupby(pd.to_datetime(df_pgm['Date'], 
                 format="%m/%d/%Y", errors='coerce')).agg({'Amount':'sum','Count':'count'})
@@ -169,6 +172,8 @@ def get_ghg_emissions( ds, ds_type ):
 
 def get_violations_by_facilities( df, action_field, flag, noncomp_field ):
     df = df.loc[ df[flag] == 'Y' ]
+    if ( df.empty ):
+        return None
     df = df.copy()
     noncomp = df[ noncomp_field ]
     noncomp_count = noncomp.str.count('S') + noncomp.str.count('V')
