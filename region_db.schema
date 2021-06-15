@@ -1,15 +1,5 @@
-CREATE TABLE echo_state_modified (
-state char(10),
-last_modified date );
 CREATE TABLE active_facilities ( region_id tinyint, program char(20), count int,
 unique( region_id, program ));
-CREATE TABLE IF NOT EXISTS "datafiles" (
-ds_name char(30),
-region_type char(30),
-state char(2),
-region_values char(80),
-last_modified datetime,
-unique(ds_name,region_type,state,region_values));
 CREATE TABLE regions (
 region_type char(20),
 state char(10),
@@ -67,9 +57,6 @@ program char(20),
 noncomp_qtrs tinyint,
 num_facilities tinyint,
 unique( region_id, program, noncomp_qtrs ));
-CREATE TABLE single_cd_states (
-state char(5),
-cd tinyint );
 CREATE TABLE enf_per_fac (
 region_id tinyint,
 program char(20),
@@ -78,3 +65,6 @@ amount real,
 count tinyint,
 num_fac tinyint,
 unique( region_id, program, year ));
+CREATE TABLE inflation (
+year tinyint,
+rate real );
