@@ -1,0 +1,1217 @@
+---
+title: "Environmental Enforcement Watch"
+output: 
+  html_paged:
+    number_sections: false
+    css: ["custom_current.css"]
+---
+
+```{r setup, include=FALSE}
+library(reticulate)
+library(RSQLite)
+library(rlist)
+library(tidyverse)
+library(palmerpenguins)
+library(patchwork)
+library(here)
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+library(shiny)
+library(extrafont)
+library(viridis)
+library(grid)
+library(gridExtra)
+library(fishualize)
+library(kableExtra)
+library(ggrepel)
+library(stringr)
+loadfonts()
+
+cd_state = 'TX34'
+conn <- dbConnect( RSQLite::SQLite(), "leg_info.db")
+legislator = dbGetQuery( conn, "select * from legislators where cd_state=?",
+                         params=c( cd_state ))
+leg_info <- list( name=legislator$name, party=legislator$party,
+                  sen_class=legislator$sen_class,
+                  since_date=legislator$since_date, since_year=legislator$since_year,
+                  official_url=legislator$official_url,
+                  govtrack_url=legislator$govtrack_url,
+                  wikipedia_url=legislator$wikipedia_url, 
+                  twitter=legislator$twitter,
+                  facebook=legislator$facebook )
+committee_membership = dbGetQuery( conn,
+                        "select * from committee_members where bioguide_id = ?",
+                        params=c(legislator$bioguide_id))
+committees <- list()
+for ( row in 1:nrow( committee_membership )) {
+  committee_id <- committee_membership[ row, "committee_id" ]
+  subcommittee_id <- committee_membership[ row, "subcommittee_id" ]
+  if ( nchar( subcommittee_id ) == 0 ) {
+    committee <- dbGetQuery( conn,
+                        "select * from committees where committee_id = ?",
+                        params=c(committee_id))
+    committees[[committee_id]] <- list( committee=committee )
+  } else {
+    subcommittee <- dbGetQuery( conn,
+    "select *,? as rank from sub_committees where committee_id=? and subcommittee_id=?",
+            params=c(committee_membership[row,"rank"],committee_id,subcommittee_id))
+    committees[[committee_id]] <- list.append( committees[[committee_id]], 
+                                               subcommittee )
+  }
+}
+dbDisconnect( conn )
+
+# system2('git', args='clone https://github.com/edgi-govdata-archiving/ECHO_modules.git -b watershed-geo')
+
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+```{r echo=FALSE}
+virtualenv_python('edgienv')
+u <- import( 'Region' )
+region <- u$Region(type='Congressional District', value='34', state='TX')
+USAinspectionsper1000_All <- region$get_usa_per_1000( 'inspections', 2020 )
+USAviolationsper1000_All <- region$get_usa_per_1000( 'violations', 2020 )
+inflation <- region$get_inflation( 2020 )
+CWAper1000 <- region$get_cwa_per_1000( 2020 )
+active_facilities <- region$get_active_facilities()
+CWAviolations <- region$get_cwa_violations( 2020 )
+enforcement <- region$get_enforcements( 2020 )
+```
+
+
+```{r readData, echo=FALSE}
+names(USAinspectionsper1000_All)[1] <- "Program"
+names(USAviolationsper1000_All)[1] <- "Program"
+# inflation <- inflation.csv
+names(inflation)[2] <- "base"
+# CWAper1000 <- violationsper1000_CWA
+
+#each time this section is run, change "here" to specify the subfolder for the district or state 
+#Also, the way it is set up, you're going to need to cntrl f to change the district and date for the files
+# filenames = list.files(here("CD_Dirs/TX34"), pattern = ".csv")
+# file_count = length(filenames)
+# for (i in filenames){  
+#   name <- gsub("^([^_]*_[^_]*_[^_]*_[^-]*-[^-]*)-.*$","\\1", i)
+#   assign(name, read.csv(here("CD_Dirs/TX34", i)))
+# }
+
+# activefacilities <- `active-facilities_All_pg3_TX-34`
+
+#set up a theme default to reduce code block later 
+theme_meg <- function () { 
+  theme_bw(base_family="Georgia") %+replace% 
+    theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.border = element_blank(),
+          axis.line = element_line(colour = "black"), axis.title.x=element_text(face = "bold", size = 12), 
+          axis.title.y=element_text(face = "bold", size = 10, angle=90), plot.title=element_text(face = "bold", size = 14, hjust =.5), 
+          axis.text.x=element_text(face = "bold", size = 14), axis.text.y=element_text(face = "bold", size = 8))
+}
+
+```
+
+  <div class="title"><span style="padding-left: 150px">
+ Congressional Report Card
+ </span></div>
+ <hr style="height:3px;border-width:0; margin-left:15px; margin-right:15px;color: #b9b9b9;background-color: #b9b9b9; margin-top: 0em; margin-bottom: 0em">
+##### Texas' 34th District; seat held by `r leg_info$name` since `r leg_info$since_year` 
+ <div class="container">
+  <img src="../CD_maps/TX34_map.png" alt="Snow" style="width:100%;">
+   <div class="bottom-left">Map shows congressional district or state with clusters of regulated facilities</div>
+  </div>
+<a href="https://www.environmentalenforcementwatch.org/"><img src="../logosandimages/eew_logo.png" style="float: left; width: 9%; margin-left: 30%"></a>
+<a href="https://envirodatagov.org/"><img src="../logosandimages/edgi_logo.png" style="float: right; width: 15%; margin-right: 30%" ></a>
+
+\pagebreak
+
+
+<h4>Report Generated on 11.21.2020<span style="padding-left:400px">Page 1</span></h4>
+
+# Introduction 
+
+## Why Report Cards on compliance with and enforcement of Environmental Laws?
+
+The Environmental Protection Agency (EPA) is charged by Congress to enforce laws that protect people from air pollution, water pollution and hazardous waste. **Without effective enforcement, these laws are meaningless**. Based on data from EPA’s Enforcement and Compliance History Online (ECHO) database this report card reviews violations, inspections and enforcement actions under three laws: Clean Air Act (CAA), Clean Water Act (CWA) and Resource Conservation and Recovery Act (RCRA) for this Congressional District or State since 2001. Report cards like this one are becoming available on the [EEW website](https://www.environmentalenforcementwatch.org) for all House Representatives and Senators. The [EEW website](https://www.environmentalenforcementwatch.org) also has a summary analysis of enforcement trends and data issues for all geographies covered by the House Energy and Commerce and Senate Environment and Public Works Committees. The report cards contain data from *both* state environmental agencies and EPA. Provided  states are enforcing the above laws, it is because EPA has delegated that authority to them. EPA must ensure that states are doing their job. Congress must ensure that EPA is doing its job. And the public must have accurate data from states and EPA in order to understand if national environmental laws are being properly enforced. For the first time, EEW Congressional Report Cards give members of Congress and their constituents the chance to evaluate whether EPA is fulfilling its mandate in their district. Congress can strengthen EPA enforcement by increasing its budget, passing more effective laws, requiring better data collection, and holding EPA accountable when it fails to protect people.
+
+
+
+## What is a "regulated facility"?
+
+<a ><img src="../logosandimages/facilities2.png" style="float: center; width: 70%; margin-left: 15%" ></a>
+
+<br />
+
+A regulated facility in this report is a facility that reports air or water emissions under the Clean Air Act or Clean Water Act, or a facility that generates, transports, or disposes of hazardous waste under the Resource Conservation and Recovery Act.  Regulated facilities can be large-scale e.g. oil refineries, or small-scale e.g. dry cleaners.
+
+\pagebreak
+
+<hr style="height:3px;border-width:0;color: #C1E0D7;background-color: #C1E0D7; margin-top: 2em">
+<h4>Report Generated on 11.21.2020<span style="padding-left:400px">Page 2</span></h4>
+
+# Key Changes in this District under the Trump Administration
+
+```{r echo=FALSE}
+
+##getting %difference CWA violations
+# CWAviolations <- `violations_CWA_pg6_TX-34`
+names(CWAviolations)[2] <- "Count"
+names(CWAviolations)[1] <- "YEAR"
+CWAviolations <- CWAviolations[-c(20),]
+CWAviolations$President <- as.character("Bush")
+CWAviolations[9:16,3] <- as.character("Obama")
+CWAviolations[17:19,3] <- as.character("Trump")
+
+vCWAchange <- data.frame("BushObamaAverage" =mean(CWAviolations[1:16,2]),
+                             "Trump Average" =mean(CWAviolations[17:19,2]))
+
+vCWAchange$PercentDifference <- as.numeric(100*(vCWAchange[1,2]-vCWAchange[1,1])/
+                                                 vCWAchange[1,1])
+vCWAchange$PercentDifference <-round(vCWAchange$PercentDifference,0)
+
+vCWAchange$Extra <- ifelse((vCWAchange$PercentDifference>=100)|(vCWAchange$PercentDifference<=-100), "much", "")
+vCWAchange$Change <- ifelse(vCWAchange$PercentDifference<0, "better", "worse")
+
+vCWAchange$Positive <- abs(vCWAchange$PercentDifference)
+vCWAchange$Value <- ifelse(vCWAchange$PercentDifference>=0, "increase", "decrease")
+
+#enforcement % difference
+# enforcement <- `enforcements_All_pg3_TX-34`
+names(enforcement)[1] <- "Date"
+enforcement <- enforcement[-c(20),]
+enforcement$Amount <- round(enforcement$Amount,2)
+#add presidental years
+enforcement$President <- as.character("Bush")
+enforcement[9:16,4] <- as.character("Obama")
+enforcement[17:19,4] <- as.character("Trump")
+
+actionchange <- data.frame("BushObamaAverage" =mean(enforcement[1:16,3]),
+                             "Trump Average" =mean(enforcement[17:19,3]))
+
+actionchange$PercentDifference <- as.numeric(100*(actionchange[1,2]-actionchange[1,1])/
+                                                 actionchange[1,1])
+
+actionchange$PercentDifference <-round(actionchange$PercentDifference,0)
+
+actionchange$Extra <- ifelse((actionchange$PercentDifference>=100)|(actionchange$PercentDifference<=-100), "much", "")
+actionchange$Change <- ifelse(actionchange$PercentDifference<0, "worse", "better")
+
+actionchange$Positive <- abs(actionchange$PercentDifference)
+actionchange$Value <- ifelse(actionchange$PercentDifference>=0, "increase", "decrease")
+
+```
+
+<h3>Clean Water Act Violations*: <span style="color:#569b5e">`r vCWAchange[1,4]` `r vCWAchange[1,5]`</span> than the average over the previous 16 years, representing a <span style="color:#569b5e">`r vCWAchange[1,6]`% `r vCWAchange[1,7]`</span> in violations</h3>
+
+<br />
+
+<h3>Enforcement Actions under Clean Air Act, Clean Water Act, and the Resource Conservation and Recovery Act*: <span style="color:#569b5e">`r actionchange[1,4]` `r actionchange[1,5]`</span> than the average over the previous 16 years, representing a <span style="color:#569b5e">`r actionchange[1,6]`% `r actionchange[1,7]`</span> in enforcement actions</h3>
+
+*see data limitations page for metric calculations
+
+<br />
+
+```{r, fig.height = 7, fig.width = 5, fig.align = "left"}
+
+CWAper1000$Num.per.1000 <- as.numeric(round(CWAper1000$Num.per.1000,0))
+CWAper10002 <- CWAper1000
+CWAper10002$Test <- as.numeric(0)
+CWAper10002$Highlight <- ifelse(CWAper10002$CD.State=="TX34", "TX34", "Other")
+CWAper1000$Highlight <- ifelse(CWAper1000$CD.State=="TX34", "TX34", "Other")
+CWAper1000$Per100 <- as.numeric(CWAper1000$Num.per.1000/10)
+
+
+#make a dataframe that is per 100
+
+CWAper100 <- CWAper1000[CWAper1000$Num.per.1000 < 12000.,]
+#removing NY9 and WA5 and MI7, AK, and IA2 and extra CA9
+# CWAper100 <- CWAper100[-c(38,52,29,15,54,8),]
+# CWAper100 <- CWAper100[CWAper100$Num.per.100 < 1200.,]
+
+TX34_dot <- CWAper1000[which(CWAper1000$CD.State=="TX34"), ]
+
+##THIS CODE WILL NOT WORK FOR NY9 and WA5 and MI7, AK, and IA2. Omit this chunk of code for those districts (here to the end of this r chunk)
+
+dotplot <-ggplot(CWAper100, aes(x=Region, y=Per100, fill=Highlight))+
+  geom_dotplot(binaxis='y', stackdir='center', stackratio=1.5, binwidth=15,
+               dotsize=1.5, position=position_dodge(.3))+
+  geom_hline(yintercept=100, linetype="dashed", color="#e56d13")+
+  geom_hline(yintercept=0, linetype="dashed", color="#569b5e")+
+  scale_fill_manual(values=c("#ffffff","#e56d13"))+
+  labs(title="CWA Violations per 100 Facilities in 2019", x="CD/State", y="")+
+  geom_text(aes(label="100 violations per\n100 facilities*", family="Georgia"),
+            x=2.35, y=180, color="#e56d13", size=3)+
+  geom_text(aes(label="0 violations", family="Georgia"),
+            x=2.4, y=15, color="#569b5e", size=3)+
+  theme_meg()+
+  theme(axis.line.x=element_blank(), axis.title.x=element_blank(),
+        legend.title = element_blank(), axis.text.x=element_text(size=10, hjust=.6), legend.position = c(0.1,.8), axis.ticks.x=element_blank())+scale_x_discrete(labels=c("Congressional Districts","States"))
+
+ggsave("dotplot_TX34.png", dotplot, path=here("CD_Dirs/TX34"), scale = 2, width=8, height=5, units=c("cm"))
+
+```
+ 
+<a ><img src="../CD_Dirs/TX34/dotplot_TX34.png" style="float: left; width: 100%; height: 60%; margin-right: 5%" ></a>
+
+*This is an average, it does not mean that every facility has a violation. Some facilities may have many more than 1 or zero.
+<br />
+<br />
+
+<h3>In TX34, there were <span style="color:#569b5e">`r TX34_dot[1,5]`</span> Clean Water Act violations per 100 regulated facilities in 2019.</h3>
+
+\pagebreak
+
+<hr style="height:3px;border-width:0;color: #C1E0D7;background-color: #C1E0D7; margin-top: 2em">
+<h4>Report Generated on 11.21.2020<span style="padding-left:400px">Page 3</span></h4>
+```{r echo=FALSE}
+#CAA
+
+##first let's fix up the data
+#ok so We'll put the % in the title for the state, and try to figure out the same for TX 34
+CAArecurring <- `recurring-violations_All_pg3_TX-34`[-c(2,3,5,6),]
+CAArecurring <- CAArecurring %>%
+  select(CD,Facilities, Percent)
+names(CAArecurring)[1] <- "Region"
+CAArecurring[1,1] <- as.character("Rest of State")
+CAArecurring[2,1] <- as.character("TX 34")
+CAArecurring$Region2 <- as.character("All of OR")
+CAArecurring[2,4] <- as.character("TX 34")
+CAArecurring$RecurringViolators <- (as.numeric(CAArecurring[1,2]-CAArecurring[2,2]))
+CAArecurring[2,5] <- as.numeric(CAArecurring[2,2])
+CAArecurring$Proportional <- (as.numeric((100/(CAArecurring[1,2]))*CAArecurring[1,5]))
+CAArecurring[2,6] <- as.numeric(100-CAArecurring[1,6])
+CAArecurring[3] <-round(CAArecurring[3],2)
+
+#CWA
+
+##first let's fix up the data
+#ok so We'll put the % in the title for the state, and try to figure out the same for TX 34
+CWArecurring <- `recurring-violations_All_pg3_TX-34`[-c(1,3,4,6),]
+CWArecurring <- CWArecurring %>%
+  select(CD,Facilities, Percent)
+names(CWArecurring)[1] <- "Region"
+CWArecurring[1,1] <- as.character("Rest of State")
+CWArecurring[2,1] <- as.character("TX 34")
+CWArecurring$Region2 <- as.character("All of OR")
+CWArecurring[2,4] <- as.character("TX 34")
+CWArecurring$RecurringViolators <- (as.numeric(CWArecurring[1,2]-CWArecurring[2,2]))
+CWArecurring[2,5] <- as.numeric(CWArecurring[2,2])
+CWArecurring$Proportional <- (as.numeric((100/(CWArecurring[1,2]))*CWArecurring[1,5]))
+CWArecurring[2,6] <- as.numeric(100-CWArecurring[1,6])
+CWArecurring[3] <-round(CWArecurring[3],0)
+
+#RCRA
+
+##first let's fix up the data
+#ok so We'll put the % in the title for the state, and try to figure out the same for TX 34
+RCRArecurring <- `recurring-violations_All_pg3_TX-34`[-c(1,2,4,5),]
+RCRArecurring <- RCRArecurring %>%
+  select(CD,Facilities, Percent)
+names(RCRArecurring)[1] <- "Region"
+RCRArecurring[1,1] <- as.character("Rest of State")
+RCRArecurring[2,1] <- as.character("TX 34")
+RCRArecurring$Region2 <- as.character("All of OR")
+RCRArecurring[2,4] <- as.character("TX 34")
+RCRArecurring$RecurringViolators <- (as.numeric(RCRArecurring[1,2]-RCRArecurring[2,2]))
+RCRArecurring[2,5] <- as.numeric(RCRArecurring[2,2])
+RCRArecurring$Proportional <- (as.numeric((100/(RCRArecurring[1,2]))*RCRArecurring[1,5]))
+RCRArecurring[2,6] <- as.numeric(100-RCRArecurring[1,6])
+RCRArecurring[3] <-round(RCRArecurring[3],2)
+```
+
+```{r echo=FALSE}
+##getting %difference effluent violations
+
+##So, we're going to do the first 3 years of Obama and Trump so average
+#[9:11,2] Obama
+# [17:19,2] Trump
+effluentviolations <- `violations_CWA_pg3_TX-34`
+effluentviolations <- effluentviolations[-c(20),]
+effluentchange <- data.frame("Obama Average" =mean(effluentviolations[9:11,2]),
+                             "Trump Average" =mean(effluentviolations[17:19,2]))
+effluentchange$PercentDifference <- as.numeric(100*(effluentchange[1,2]-effluentchange[1,1])/
+                                                 effluentchange[1,1])
+effluentchange[,1:3] <-round(effluentchange[,1:3],2)
+
+#then simple plot
+#first add in the Presidential Years
+effluentviolations$President <- as.character("Bush")
+effluentviolations[9:16,3] <- as.character("Obama")
+effluentviolations[17:19,3] <- as.character("Trump")
+
+effluentgraph <- ggplot(effluentviolations, mapping=aes(x=factor(Year),
+  y=Violations, fill=President, group=1))+
+  geom_bar(stat="identity")+
+  scale_fill_manual(values=c("#450d54", "#22908d", "#e56d13"))+
+  labs(y=" # Violations", x="Year", title="Clean Water Act Violations\n", subtitle ="Mostly complete data")+
+  scale_y_continuous(expand=c(0,0), limits=c(0,max(effluentviolations$Violations+(.2*max(effluentviolations$Violations)))))+
+  scale_x_discrete(breaks=c(2004,2008,2012,2016,2019))+
+  theme_meg()+
+  theme(axis.text.x=element_text(size=9),
+        axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5, size=9), plot.title = 
+          element_text(lineheight = .1, size=10))
+
+##Inspections % change and graph
+
+##So, we're going to do the first 3 years of Obama and Trump so average
+#[9:11,2] Obama
+# [17:19,2] Trump
+inspections <- `inspections_All_pg3_TX-34`
+names(inspections)[1] <- "Date"
+inspections <- inspections[-c(20),]
+inspectionchange <- data.frame("Obama Average" =mean(inspections[9:11,2]),
+                             "Trump Average" =mean(inspections[17:19,2]))
+inspectionchange$PercentDifference <- as.numeric(100*(inspectionchange[1,2]-inspectionchange[1,1])/
+                                                 inspectionchange[1,1])
+inspectionchange[,1:3] <-round(inspectionchange[,1:3],0)
+
+#syntax for bullet points
+inspectionchange$Change <- ifelse(inspectionchange$PercentDifference>=0, "increase", "decrease")
+inspectionchange$Positive <- abs(inspectionchange$PercentDifference)
+
+#then simple plot
+#first add in the Presidential Years
+inspections$President <- as.character("Bush")
+inspections[9:16,3] <- as.character("Obama")
+inspections[17:19,3] <- as.character("Trump")
+
+inspectiongraph <- ggplot(inspections, mapping=aes(x=factor(Date),
+                                                        y=Count, fill=President, group=1))+
+  geom_bar(stat="identity", show.legend = FALSE, alpha=.6)+
+  scale_fill_manual(values=c("#450d54", "#22908d", "#e56d13"))+
+  labs(y="Inspections", x="Year", title="Facility Inspections-CAA,CWA,RCRA\n", subtitle = "Potentially incomplete data")+
+  scale_y_continuous(expand=c(0,0), limits=c(0,max(inspections$Count+(.2*max(inspections$Count)))))+
+  scale_x_discrete(breaks=c(2004,2008,2012,2016,2019))+
+  theme_meg()+
+  theme(axis.text.x=element_text(size=9),
+        axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5, size=9), plot.title = 
+          element_text(lineheight = .1, size=10))
+
+#enforcement
+##So, we're going to do the first 3 years of Obama and Trump so average
+#[9:11,2] Obama
+# [17:19,2] Trump
+enforcement <- `enforcements_All_pg3_TX-34`
+names(enforcement)[1] <- "Date"
+enforcement <- enforcement[-c(20),]
+enforcement$Amount <- round(enforcement$Amount,0)
+enforcementchange <- data.frame("Obama Average Count" =mean(enforcement[9:11,3]),
+                               "Trump Average Count" =mean(enforcement[17:19,3]),
+                               "Obama Average Fine" =mean(enforcement[9:11,2]),
+                               "Trump Average Fine" =mean(enforcement[17:19,2]))
+enforcementchange$PercentDifferenceCount <- as.numeric(100*(enforcementchange[1,2]-enforcementchange[1,1])/
+                                                   enforcementchange[1,1])
+enforcementchange$PercentDifferenceFine <- as.numeric(100*(enforcementchange[1,4]-enforcementchange[1,3])/
+                                                         enforcementchange[1,3])
+enforcementchange[,1:6] <-round(enforcementchange[,1:6],0)
+
+#syntax for bullet points
+enforcementchange$CountChange <- ifelse(enforcementchange$PercentDifferenceCount>=0, "increase", "decrease")
+enforcementchange$PositiveCount <- abs(enforcementchange$PercentDifferenceCount)
+enforcementchange$FineChange <- ifelse(enforcementchange$PercentDifferenceFine>=0, "increase", "decrease")
+enforcementchange$PositiveFine <- abs(enforcementchange$PercentDifferenceFine)
+
+#adjust for inflation
+inflation <- inflation[-c(20:107),]
+enforcement <- cbind(enforcement, inflation)
+enforcement$inflationadjust <- as.numeric(enforcement$Amount*enforcement$base)
+
+##make a new amount column /1000
+enforcement$Amountinthousands <- ((enforcement$inflationadjust)/1000)
+enforcement$Amountinthousands <-round(enforcement$Amountinthousands,2)
+
+#add presidental years
+enforcement$President <- as.character("Bush")
+enforcement[9:16,8] <- as.character("Obama")
+enforcement[17:19,8] <- as.character("Trump")
+
+#plot change in enforcement
+enforcementactiongraph <- ggplot(enforcement, mapping=aes(x=factor(Date),y=Count, fill=President, group=1))+
+  geom_bar(stat="identity", show.legend = FALSE, alpha=.6)+
+  scale_fill_manual(values=c("#450d54", "#22908d", "#e56d13"))+
+  labs(y="# Actions", x="Year", title="Enforcement Actions-CAA,CWA,RCRA\n", subtitle = "Potentially incomplete data")+
+  scale_y_continuous(expand=c(0,0), limits=c(0,max(effluentviolations$Violations+(.2*max(effluentviolations$Violations)))))+
+  scale_x_discrete(breaks=c(2004,2008,2012,2016,2019))+
+  geom_text(aes(label=Count, family="Georgia", fontface="bold"), position = position_dodge(0.9), vjust = -0.1, size=3)+
+  theme_meg()+
+  theme(axis.text.x=element_text(size=9),
+        axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5, size=9), plot.title = 
+          element_text(lineheight = .1, size=10))
+
+enforcementfinegraph <- enforcement %>% ggplot()+
+  geom_bar(aes(x=factor(Date),y=Amountinthousands , fill=President, group=1),stat="identity", show.legend=FALSE, alpha=.6)+
+  scale_fill_manual(values=c("#450d54", "#22908d", "#e56d13"))+
+  labs(y="Fines ($1000s)", x="Year", caption="Values adjusted for inflation. Note, the y-axis reports values in 1000's. A value of $2000\nrepresents $2,000,000 (2 million dollars).", title="Enforcement Fines-CAA,CWA,RCRA\n", subtitle="Potentially incomplete data")+
+  scale_y_continuous(expand=c(0,0), limits=c(0,max(enforcement$Amountinthousands+(.2*max(enforcement$Amountinthousands)))))+
+  scale_x_discrete(breaks=c(2004,2008,2012,2016,2019))+
+  theme_meg()+
+  theme(axis.text.x=element_text(size=9),
+        axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5, size=9), plot.caption = element_text(size=10), plot.title = 
+          element_text(lineheight = .1, size=10))
+
+```
+# Highlights for Texas' 34th District
+
+* <h3>Comparing the first 3 years of the Obama administration to the first 3 years of the Trump administration, there has been a <span style="color:#569b5e">`r inspectionchange[1,5]`% `r inspectionchange[1,4]` in inspections,  `r enforcementchange[1,10]`%  `r enforcementchange[1,9]` in fines</span>, and a <span style="color:#569b5e">`r enforcementchange[1,8]`% `r enforcementchange[1,7]` in enforcement actions.</span></h3>
+
+<br />
+
+* <h3>Under the Clean Water Act, the law whose regulation is best documented by available EPA data, <span style="color:#569b5e">`r CWArecurring[2,2]` facilities, representing `r CWArecurring[2,3]`% of all regulated facilities in TX34,</span> were in violation for <span style="color:#569b5e">at least 9 months of the last 3 years.</span></h3>
+```{r echo=FALSE, out.width= "95%", out.extra='style="float:center; padding:0px"'}
+
+effluentgraph/inspectiongraph/enforcementactiongraph/enforcementfinegraph
+
+```
+
+The reliability of data in figures throughout this report is indicated by the figure subtitle and degree of transparency. See the data limitations page (Page 10) to view the transparency-coding table and access state and congressional district data [here](https://colab.research.google.com/github/edgi-govdata-archiving/ECHO-Cross-Program/blob/master/AllPrograms.ipynb).
+
+\pagebreak
+
+<hr style="height:3px;border-width:0;color: #C1E0D7;background-color: #C1E0D7; margin-top: 2em">
+<h4>Report Generated on 11.21.2020<span style="padding-left:400px">Page 4</span></h4>
+
+# This District in Comparison
+```{r, fig.height = 6, fig.width = 8, fig.align = "left"}
+
+#comparing inspections
+
+#let's combine the inspections data at national, state, CD level 
+names(USAinspectionsper1000_All)[2] <- "Inspectionsper1000"
+USAinspectionsper1000_All$Region <- as.factor("National")
+names(`inspectionsper1000_All_pg4_TX-112920.csv`)[2] <- "Inspectionsper1000"
+`inspectionsper1000_All_pg4_TX-112920.csv`$Region <- as.factor("State")
+names(`inspectionsper1000_All_pg4_TX-34`)[2] <- "Inspectionsper1000"
+`inspectionsper1000_All_pg4_TX-34`$Region <- as.factor("Congressional District")
+inspectionsper1000 <- rbind(USAinspectionsper1000_All, `inspectionsper1000_All_pg4_TX-112920.csv`, `inspectionsper1000_All_pg4_TX-34`)
+inspectionsper1000$Inspectionsper1000 <- as.numeric(inspectionsper1000$Inspectionsper1000)
+inspectionsper1000[2] <-round(inspectionsper1000[2],0) 
+
+#Now let's visualize this 
+inspect1000bar <- ggplot(inspectionsper1000, aes(fill=Region, y=Inspectionsper1000, x=Program, alpha=Program))+
+  geom_bar(position="dodge", stat="identity")+
+  scale_fill_manual(values=c("#999999" , "#333333", "#d43a69"))+
+  labs(y="Inspections per 1000 Facilities\n", x="")+
+  scale_alpha_manual(values=c(.6,1,.6), guide='none')+
+  geom_text(aes(label=Inspectionsper1000, family="Georgia"), position = position_dodge(0.9), vjust = -0.1, size=4)+
+  ggtitle("Inspections per 1000 Facilities in 2019")+
+  scale_y_continuous(expand=c(0,0),limits=c(0,1200))+geom_hline(yintercept=1000, linetype="dashed", color="black")+geom_text(aes(label="Average of 1 inspection per facility",family="Georgia"),x=2,y=1050,color="black",size=4)+
+  theme_meg()
+  
+
+#comparing violations
+#let's combine the violations data at national, state, CD level 
+names(USAviolationsper1000_All)[2] <- "violationsper1000"
+USAviolationsper1000_All$Region <- as.factor("National")
+names(`violationsper1000_All_pg4_TX-112920.csv`)[2] <- "violationsper1000"
+`violationsper1000_All_pg4_TX-112920.csv`$Region <- as.factor("State")
+names(`violationsper1000_All_pg4_TX-34`)[2] <- "violationsper1000"
+`violationsper1000_All_pg4_TX-34`$Region <- as.factor("Congressional District")
+violationsper1000 <- rbind(USAviolationsper1000_All, `violationsper1000_All_pg4_TX-112920.csv`, `violationsper1000_All_pg4_TX-34`)
+violationsper1000$violationsper1000 <- as.numeric(violationsper1000$violationsper1000)
+violationsper1000[2] <-round(violationsper1000[2],0)
+
+#Now let's visualize this 
+violations1000bar <- ggplot(violationsper1000, aes(fill=Region, y=violationsper1000, x=Program, alpha=Program))+
+  geom_bar(position="dodge", stat="identity", show.legend=FALSE)+
+  scale_fill_manual(values=c("#999999" , "#333333", "#d43a69"))+
+  scale_alpha_manual(values=c(.3,1,.3), guide='none')+
+  labs(y="Violations per 1000 Facilities", x="")+
+  geom_text(aes(label=violationsper1000, family="Georgia"), position = position_dodge(0.9), vjust = -0.1, size=4)+
+  ggtitle("Violations per 1000 Facilities in 2019")+
+  scale_y_continuous(expand=c(0,0),limits=c(0,max(violationsper1000$violationsper1000+(.2*max(violationsper1000$violationsper1000)))))+
+  theme_meg()+
+  theme(legend.position = c(0.8, 0.5))
+
+inspect1000bar / violations1000bar
+  
+```
+<br />
+
+These two charts show how inspections and violations in this district compare to the national and state averages per 1000 facilities in 2019. We use data from 2019 as it was the most recent full year and the ECHO database only reports *currently* active facilities. To enable comparison across locations with a differing number of active facilities, we standardize the comparison to a value per 1000 facilities, proportionally adjusting the data if there are more or less than 1000 facilities in a district or state. 
+
+For access to the Jupyter Notebooks which pull data from ECHO at the state and congressional district level, click [here](https://colab.research.google.com/github/edgi-govdata-archiving/ECHO-Cross-Program/blob/master/AllPrograms.ipynb). For national data, click [here](https://colab.research.google.com/github/edgi-govdata-archiving/ECHO-Cross-Program/blob/master/ECHO_National.ipynb).
+The reliability of data in figures throughout this report is indicated by the figure subtitle and degree of transparency. Figure transparency illustrates data reliability: the more transparent, the more uncertain the data. See the data limitations page (Page 10) to view the transparency-coding table
+
+\pagebreak
+
+<hr style="height:3px;border-width:0;color: #C1E0D7;background-color: #C1E0D7; margin-top: 2em">
+<h4>Report Generated on 11.21.2020<span style="padding-left:400px">Page 5</span></h4> 
+
+<h1><span style="margin-bottom:0px; padding-bottom:0px">Recent Non-Compliance in this District</span></h1>
+<font size="2">These figures show the ten facilities in this district with the worst history of environmental compliance based on their number of noncompliant quarters in the past 3 years (not necessarily consecutive).</font>
+
+```{r, fig.height = 7, fig.width = 5, fig.align = "left"}
+#call in data and clean up 
+CAAbadactors <- `noncomp_CAA_pg6_TX-34`
+CAAbadactors <-CAAbadactors[!(CAAbadactors$noncomp_count==0),]
+nrows_caa <- nrow( CAAbadactors )
+if ( nrows_caa > 0 ) {
+  CAAbadactors <- CAAbadactors[-c(11:20),]
+  CAAbadactors$Facility <- CAAbadactors$FAC_NAME
+  CAAbadactors$Facility <- strtrim(CAAbadactors$Facility, 30)
+  
+  bar_width <- 0.8
+  if ( nrows_caa < 4 ) {
+    bar_width <- 0.2
+  }
+ 
+    #Let's try the CAA plot 
+ 
+  if ( nrows_caa == 1 ) {
+     CAAfacilities <- CAAbadactors %>%
+      mutate(Facility = fct_reorder(Facility, noncomp_count)) %>%
+      ggplot(aes(x=Facility, y=noncomp_count))+
+      geom_col(width = 0.1)+
+      scale_fill_viridis(discrete = TRUE, option="B")+
+      labs(y="Quarters in Violation", x="", title="CAA Violators")+
+      scale_y_continuous(expand=c(0,0))+
+      # scale_x_discrete(expand=c(0,0))+
+      theme_meg()+
+      theme(axis.text.y=element_text(size=12, face = "bold", color="black"), axis.title.x = element_text(size=14), axis.text.x=
+              element_text(size=14,face = "bold"), plot.title=element_text(size=16))+
+      coord_flip()
+   
+  } else {
+    CAAfacilities <- CAAbadactors %>%
+      mutate(Facility = fct_reorder(Facility, noncomp_count)) %>%
+      ggplot( mapping=aes(x=Facility, y=noncomp_count, fill=Facility, group=1))+
+      geom_bar(stat="identity", show.legend = FALSE, width=bar_width)+
+      scale_fill_viridis(discrete = TRUE, option="B")+
+      labs(y="Quarters in Violation", x="", title="CAA Violators")+
+      scale_y_continuous(expand=c(0,0), limits=c(0,12))+
+      scale_x_discrete(expand=c(0,0))+
+      theme_meg()+
+      theme(axis.text.y=element_text(size=12, face = "bold", color="black"), axis.title.x = element_text(size=14), axis.text.x=element_text(size=14,face = "bold"), plot.title=element_text(size=16))+
+      coord_flip()
+  }
+  ggsave("CAAfacilities.png", CAAfacilities, path=here("CD_Dirs/TX34"), scale = 3, width=7, height=4, units=c("cm"))
+}
+
+#call in data and clean up 
+CWAbadactors <- `noncomp_CWA_pg6_TX-34`
+CWAbadactors <-CWAbadactors[!(CWAbadactors$noncomp_count==0),]
+nrows_cwa <- nrow( CWAbadactors )
+if ( nrows_cwa > 0 ) {
+  CWAbadactors <- CWAbadactors[-c(11:20),]
+  CWAbadactors$Facility <- CWAbadactors$FAC_NAME
+  CWAbadactors$Facility <- strtrim(CWAbadactors$Facility, 30)
+  
+  bar_width <- 0.8
+  if ( nrows_cwa < 4 ) {
+    bar_width <- 0.2
+  }
+ 
+    #Let's try the CWA plot 
+ 
+  if ( nrows_cwa == 1 ) {
+     CWAfacilities <- CWAbadactors %>%
+      mutate(Facility = fct_reorder(Facility, noncomp_count)) %>%
+      ggplot(aes(x=Facility, y=noncomp_count))+
+      geom_col(width = 0.1)+
+      scale_fill_viridis(discrete = TRUE, option="B")+
+      labs(y="Quarters in Violation", x="", title="CWA Violators")+
+      scale_y_continuous(expand=c(0,0), breaks=c(0,3,6,9,13), limits=c(0,13))+
+      # scale_x_discrete(expand=c(0,0))+
+      theme_meg()+
+      theme(axis.text.y=element_text(size=12, face = "bold", color="black"), axis.title.x = element_text(size=14), axis.text.x=
+              element_text(size=14,face = "bold"), plot.title=element_text(size=16))+
+      coord_flip()
+   
+  } else {
+    CWAfacilities <- CWAbadactors %>%
+      mutate(Facility = fct_reorder(Facility, noncomp_count)) %>%
+      ggplot( mapping=aes(x=Facility, y=noncomp_count, fill=Facility, group=1))+
+      geom_bar(stat="identity", show.legend = FALSE, width=bar_width)+
+      scale_fill_viridis(discrete = TRUE, option="B")+
+      labs(y="Quarters in Violation", x="", title="CWA Violators")+
+      scale_y_continuous(expand=c(0,0), breaks=c(0,3,6,9,13), limits=c(0,13))+
+      scale_x_discrete(expand=c(0,0))+
+      theme_meg()+
+      theme(axis.text.y=element_text(size=12, face = "bold", color="black"), axis.title.x = element_text(size=14), axis.text.x=element_text(size=14,face = "bold"), plot.title=element_text(size=16))+
+      coord_flip()
+  }
+  ggsave("CWAfacilities.png", CWAfacilities, path=here("CD_Dirs/TX34"), scale = 3, width=7, height=4, units=c("cm"))
+}
+
+#call in data and clean up 
+RCRAbadactors <- `noncomp_RCRA_pg7_TX-34`
+RCRAbadactors <-RCRAbadactors[!(RCRAbadactors$noncomp_count==0),]
+nrows_rcra <- nrow( RCRAbadactors )
+if ( nrows_rcra > 0 ) {
+  RCRAbadactors <- RCRAbadactors[-c(11:20),]
+  RCRAbadactors$Facility <- RCRAbadactors$FAC_NAME
+  RCRAbadactors$Facility <- strtrim(RCRAbadactors$Facility, 30)
+  
+  bar_width <- 0.8
+  if ( nrows_rcra < 4 ) {
+    bar_width <- 0.2
+  }
+ 
+    #Let's try the RCRA plot 
+ 
+  if ( nrows_rcra == 1 ) {
+     RCRAfacilities <- RCRAbadactors %>%
+      mutate(Facility = fct_reorder(Facility, noncomp_count)) %>%
+      ggplot(aes(x=Facility, y=noncomp_count))+
+      geom_col(width = 0.1)+
+      scale_fill_viridis(discrete = TRUE, option="B")+
+      labs(y="Quarters in Violation", x="", title="RCRA Violators")+
+      scale_y_continuous(expand=c(0,0))+
+      # scale_x_discrete(expand=c(0,0))+
+      theme_meg()+
+      theme(axis.text.y=element_text(size=12, face = "bold", color="black"), axis.title.x = element_text(size=14), axis.text.x=
+              element_text(size=14,face = "bold"), plot.title=element_text(size=16))+
+      coord_flip()
+   
+  } else {
+    RCRAfacilities <- RCRAbadactors %>%
+      mutate(Facility = fct_reorder(Facility, noncomp_count)) %>%
+      ggplot( mapping=aes(x=Facility, y=noncomp_count, fill=Facility, group=1))+
+      geom_bar(stat="identity", show.legend = FALSE, width=bar_width)+
+      scale_fill_viridis(discrete = TRUE, option="B")+
+      labs(y="Quarters in Violation", x="", title="RCRA Violators")+
+      scale_y_continuous(expand=c(0,0), limits=c(0,12))+
+      scale_x_discrete(expand=c(0,0))+
+      theme_meg()+
+      theme(axis.text.y=element_text(size=12, face = "bold", color="black"), axis.title.x = element_text(size=14), axis.text.x=element_text(size=14,face = "bold"), plot.title=element_text(size=16))+
+      coord_flip()
+  }
+  ggsave("RCRAfacilities.png", RCRAfacilities, path=here("CD_Dirs/TX34"), scale = 3, width=7, height=4, units=c("cm"))
+}
+
+#CAAfacilities / CWAfacilities / RCRAfacilities 
+
+```
+`r if ( nrows_caa == 0) { 
+    "<br /><h3> No se informa de violadores consistentes de la Ley de Aire Limpio (CAA) en ECHO</h3>"
+  } else {
+    "<br /><a ><img src=\"../CD_Dirs/TX34/CAAfacilities.png\" style=\"float: left; width: 55%; 
+      height: 60%; margin-right: 5%\" ></a>
+    <font size=\"3\">**ECHO reports for facilities:**</font><font size=\"1.5\"><br />"
+  }`
+[`r na.omit(CAAbadactors[1,8]) `](`r na.omit(CAAbadactors[1,5]) `)
+`r if ( nrows_caa > 0 ) { "<br />" }`
+[`r na.omit(CAAbadactors[2,8]) `](`r na.omit(CAAbadactors[2,5]) `)
+`r if ( nrows_caa > 0 ) { "<br />" }`
+[`r na.omit(CAAbadactors[3,8]) `](`r na.omit(CAAbadactors[3,5]) `)
+`r if ( nrows_caa > 0 ) { "<br />" }`
+[`r na.omit(CAAbadactors[4,8]) `](`r na.omit(CAAbadactors[4,5]) `)
+`r if ( nrows_caa > 0 ) { "<br />" }`
+[`r na.omit(CAAbadactors[5,8]) `](`r na.omit(CAAbadactors[5,5]) `)
+`r if ( nrows_caa > 0 ) { "<br />" }`
+[`r na.omit(CAAbadactors[6,8]) `](`r na.omit(CAAbadactors[6,5]) `)
+`r if ( nrows_caa > 0 ) { "<br />" }`
+[`r na.omit(CAAbadactors[7,8]) `](`r na.omit(CAAbadactors[7,5]) `)
+`r if ( nrows_caa > 0 ) { "<br />" }`
+[`r na.omit(CAAbadactors[8,8]) `](`r na.omit(CAAbadactors[8,5]) `)
+`r if ( nrows_caa > 0 ) { "<br />" }`
+[`r na.omit(CAAbadactors[9,8]) `](`r na.omit(CAAbadactors[9,5]) `)
+`r if ( nrows_caa > 0 ) { "<br />" }`
+[`r na.omit(CAAbadactors[10,8]) `](`r na.omit(CAAbadactors[10,5]) `)
+`r if ( nrows_caa > 0 ) { "</font>" }`
+
+`r if ( nrows_rcra == 0) { 
+    "<br /><h3>No se informa de violadores consistentes de la Ley de Conservación y Recuperación de Recursos (RCRA) en ECHO</h3>"
+  } else {
+    "<br /><a ><img src=\"../CD_Dirs/TX34/RCRAfacilities.png\" style=\"float: left; width: 55%; 
+      height: 60%; margin-right: 5%\" ></a>
+    <font size=\"3\">**ECHO reports for facilities:**</font><font size=\"1.5\"><br />"
+  }`
+[`r na.omit(RCRAbadactors[1,8]) `](`r na.omit(RCRAbadactors[1,5]) `)
+<br />
+[`r na.omit(RCRAbadactors[2,8]) `](`r na.omit(RCRAbadactors[2,5]) `)
+<br />
+[`r na.omit(RCRAbadactors[3,8]) `](`r na.omit(RCRAbadactors[3,5]) `)
+<br />
+[`r na.omit(RCRAbadactors[4,8]) `](`r na.omit(RCRAbadactors[4,5]) `)
+<br />
+[`r na.omit(RCRAbadactors[5,8]) `](`r na.omit(RCRAbadactors[5,5]) `)
+<br />
+[`r na.omit(RCRAbadactors[6,8]) `](`r na.omit(RCRAbadactors[6,5]) `)
+<br />
+[`r na.omit(RCRAbadactors[7,8]) `](`r na.omit(RCRAbadactors[7,5]) `)
+<br />
+[`r na.omit(RCRAbadactors[8,8]) `](`r na.omit(RCRAbadactors[8,5]) `)
+<br />
+[`r na.omit(RCRAbadactors[9,8]) `](`r na.omit(RCRAbadactors[9,5]) `)
+<br />
+[`r na.omit(RCRAbadactors[10,8]) `](`r na.omit(RCRAbadactors[10,5]) `)
+`r if ( nrows_rcra > 0 ) { "</font>" }`
+
+`r if ( nrows_cwa == 0) { 
+    "<br /><h3>No se informa de violadores consistentes de la Ley de Agua Limpia (CWA) en ECHO</h3>"
+  } else {
+    "<br /><a ><img src=\"../CD_Dirs/TX34/CWAfacilities.png\" style=\"float: left; width: 55%; 
+      height: 60%; margin-right: 5%\" ></a>
+    <font size=\"3\">**ECHO reports for facilities:**</font><font size=\"1.5\"><br />"
+  }`
+[`r na.omit(CWAbadactors[1,8]) `](`r na.omit(CWAbadactors[1,5]) `)
+<br />
+[`r na.omit(CWAbadactors[2,8]) `](`r na.omit(CWAbadactors[2,5]) `)
+<br />
+[`r na.omit(CWAbadactors[3,8]) `](`r na.omit(CWAbadactors[3,5]) `)
+<br />
+[`r na.omit(CWAbadactors[4,8]) `](`r na.omit(CWAbadactors[4,5]) `)
+<br />
+[`r na.omit(CWAbadactors[5,8]) `](`r na.omit(CWAbadactors[5,5]) `)
+<br />
+[`r na.omit(CWAbadactors[6,8]) `](`r na.omit(CWAbadactors[6,5]) `)
+<br />
+[`r na.omit(CWAbadactors[7,8]) `](`r na.omit(CWAbadactors[7,5]) `)
+<br />
+[`r na.omit(CWAbadactors[8,8]) `](`r na.omit(CWAbadactors[8,5]) `)
+<br />
+[`r na.omit(CWAbadactors[9,8]) `](`r na.omit(CWAbadactors[9,5]) `)
+<br />
+[`r na.omit(CWAbadactors[10,8]) `](`r na.omit(CWAbadactors[10,5]) `)
+`r if ( nrows_cwa > 0 ) { "</font>" }`
+
+
+
+\pagebreak
+
+<hr style="height:3px;border-width:0;color: #C1E0D7;background-color: #C1E0D7; margin-top: 2em">
+<h4>Report Generated on 11.21.2020<span style="padding-left:400px">Page 6</span></h4>
+
+# Clean Air Act
+
+<div class="text-box-info">
+
+The [Clean Air Act (CAA)](https://www.epa.gov/laws-regulations/summary-clean-air-act) regulates air emissions from mobile sources, such as cars, and stationary sources, such as refineries and power plants. *Please note, in this report we are only utilizing data from stationary air emission sources.* For the CAA, violations are most commonly recognized via inspections. Infrequent inspection usually results in fewer identified violations. If CAA violations have decreased, make sure to check whether inspections have also decreased as recent cuts in inspections are likely related to drops in CAA violations. Unless thorough inspections are occurring regularly, fewer violations does not necessarily mean air quality has improved. 
+[More info on CAA](https://docs.google.com/presentation/d/1MzRQf3QeJqmYMSttdk0ghrXeOmOZgOV_MTynl-ri6Ik/edit?usp=sharing)
+
+</div>
+<h2>There are `r activefacilities[1,2] ` facilities currently reporting under the `r activefacilities[1,1]` in this district</h2>
+```{r, fig.height = 5, fig.width = 8, fig.align = "center"}
+
+#clean up data
+CAAviolations <- `violations_CAA_pg5_TX-34` 
+names(CAAviolations)[1] <- "Date"
+CAAviolations <- CAAviolations[-c(20),]
+CAAviolations$President <- as.character("Bush")
+CAAviolations[9:16,3] <- as.character("Obama")
+CAAviolations[17:19,3] <- as.character("Trump")
+
+
+
+vCAAgraph <- ggplot(CAAviolations, mapping=aes(x=factor(Date), y=Count, fill=President, group=1))+
+  geom_bar(stat="identity", show.legend = FALSE, alpha=.3)+
+  scale_fill_manual(values=c("#450d54", "#22908d", "#e56d13"))+
+  labs(y=" # Violations", x="Year", title="CAA Violations\n", subtitle ="Very incomplete data")+
+  scale_y_continuous(expand=c(0,0), limits=c(0,max(CAAviolations$Count+(.2*max(CAAviolations$Count)))))+
+  scale_x_discrete(breaks=c(2004,2008,2012, 2016, 2019))+
+  theme_meg()+
+  theme(axis.text.x=element_text(size=10),
+        axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5))
+
+#clean up data
+CAAinspections <- `inspections_CAA_pg5_TX-34`
+names(CAAinspections)[1] <- "Date"
+CAAinspections <- CAAinspections[-c(20),]
+CAAinspections$President <- as.character("Bush")
+CAAinspections[9:16,3] <- as.character("Obama")
+CAAinspections[17:19,3] <- as.character("Trump")
+
+iCAAgraph <- ggplot(CAAinspections, mapping=aes(x=factor(Date), y=Count, fill=President, group=1))+
+  geom_bar(stat="identity", show.legend = FALSE, alpha=.6)+
+  scale_fill_manual(values=c("#450d54", "#22908d", "#e56d13"))+
+  labs(y=" # Inspections", x="Year", title="CAA Inspections\n", subtitle ="Potentially incomplete data")+
+  #ggtitle("CAA Inspections")+
+  scale_y_continuous(expand=c(0,0), limits=c(0,max(CAAinspections$Count+(.2*max(CAAinspections$Count)))))+
+  scale_x_discrete(breaks=c(2004,2008,2012, 2016, 2019))+
+  theme_meg()+
+  theme(axis.text.x=element_text(size=10),
+        axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5))
+
+#clean up data
+CAAenforcement <- `enforcements_CAA_pg5_TX-34`
+CAAenforcement <- CAAenforcement[-c(20),]
+names(CAAenforcement)[1] <- "Date"
+CAAenforcement$President <- as.character("Bush")
+CAAenforcement[9:16,4] <- as.character("Obama")
+CAAenforcement[17:19,4] <- as.character("Trump")
+
+#adjust for inflation
+CAAenforcement <- cbind(CAAenforcement, inflation)
+CAAenforcement$inflationadjust <- as.numeric(CAAenforcement$Amount*CAAenforcement$base)
+
+##make a new amount column /1000
+CAAenforcement$Amountinthousands <- ((CAAenforcement$inflationadjust)/1000)
+CAAenforcement$Amountinthousands <-round(CAAenforcement$Amountinthousands,2)
+
+eCAAgraph <- ggplot(CAAenforcement, mapping=aes(x=factor(Date), y=Count, fill=President, group=1))+
+  geom_bar(stat="identity", show.legend = FALSE, alpha=.6)+
+  scale_fill_manual(values=c("#450d54", "#22908d", "#e56d13"))+
+  labs(y=" # Actions", x="Year", title="CAA Enforcement Actions\n", subtitle ="Potentially incomplete data")+
+  scale_y_continuous(expand=c(0,0), limits=c(0,max(CAAviolations$Count+(.2*max(CAAviolations$Count)))))+
+  scale_x_discrete(breaks=c(2004,2008,2012, 2016, 2019))+
+  geom_text(aes(label=Count, family="Georgia", fontface="bold"), position = position_dodge(0.9), vjust = -0.1, size=3)+
+  theme_meg()+
+  theme(axis.text.x=element_text(size=10),
+        axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5))
+
+fineCAAgraph <- ggplot(CAAenforcement, mapping=aes(x=factor(Date), y=Amountinthousands, fill=President, group=1))+
+  geom_bar(stat="identity", alpha=.6)+
+  scale_fill_manual(values=c("#450d54", "#22908d", "#e56d13"))+
+  labs(y=" Fines ($1000s)", x="Year", title="CAA Fines\n", subtitle ="Potentially incomplete data", caption="Values adjusted for inflation. Note, the y-axis reports values in\n1000's. A value of $2000 represents $2,000,000 (2 million dollars).")+
+  scale_y_continuous(expand=c(0,0), limits=c(0,max(CAAenforcement$Amountinthousands+(.2*max(CAAenforcement$Amountinthousands)))))+
+  scale_x_discrete(breaks=c(2004,2008,2012, 2016, 2019))+
+  theme_meg()+
+  theme(axis.text.x=element_text(size=10),
+        axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5), plot.caption = element_text(size=8))
+
+
+
+(iCAAgraph | vCAAgraph) / (eCAAgraph | fineCAAgraph)
+
+
+
+```
+These figures show patterns of CAA inspections, violations, enforcement actions and fines in this district since 2001 based on available EPA data (see page 10). The bars are colored by president. Figure transparency illustrates data reliability: the more transparent, the more uncertain the data. Data on CAA violations is particularly unreliable as emissions are often not directly monitored but are estimates. Inspection, enforcement, and fine data can be unreliable because state reporting to ECHO may be incomplete.For access to the Jupyter Notebook which pulls data from ECHO at the state and congressional district level, click [here](https://colab.research.google.com/github/edgi-govdata-archiving/ECHO-Cross-Program/blob/master/AllPrograms.ipynb). 
+
+\pagebreak
+
+<hr style="height:3px;border-width:0;color: #C1E0D7;background-color: #C1E0D7; margin-top: 2em">
+<h4>Report Generated on 11.21.2020<span style="padding-left:400px">Page 7</span></h4> 
+
+# Clean Water Act 
+
+<div class="text-box-info">
+The [Clean Water Act (CWA)](https://www.epa.gov/laws-regulations/summary-clean-water-act) establishes quality standards for surface waters. In this report, we focus on CWA’s National Pollutant Discharge Elimination System (NPDES) which permits facilities to discharge certain kinds and amounts of pollutants. Unlike the CAA, under the CWA effluent (waste emissions) is directly measured and routinely reported electronically to ECHO. CWA violations are automatically triggered if data is not submitted and if contaminant levels in effluent exceed the permitted amount. Such CWA violations can lead to inspections. [More info on CWA](https://docs.google.com/presentation/d/1g6ZN3B5jvs3F1VAigiUtNNezjXdJnzuELfo9Deo9Y2w/edit?usp=sharing)
+</div>
+<h2>There are `r activefacilities[2,2] ` facilities currently reporting under the 
+`r activefacilities[2,1]` in this district</h2> 
+```{r, fig.height = 5, fig.width = 8, fig.align = "center"}
+
+#clean up data
+
+# data cleaned elsewhere
+#plot
+vCWAgraph <- ggplot(CWAviolations, mapping=aes(x=factor(YEAR), y=Count, fill=President, group=1))+
+  geom_bar(stat="identity", show.legend = FALSE)+
+  scale_fill_manual(values=c("#450d54", "#22908d", "#e56d13"))+
+  labs(y=" # Violations", x="Year", title="CWA Violations\n", subtitle ="Mostly complete data")+
+  scale_y_continuous(expand=c(0,0), limits=c(0,max(CWAviolations$Count+(.2*max(CWAviolations$Count)))))+
+  scale_x_discrete(breaks=c(2004,2008,2012,2016,2019))+
+  theme_meg()+
+  theme(axis.text.x=element_text(size=10),
+        axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5))
+
+#clean up data
+CWAinspections <- `inspections_CWA_pg6_TX-34`
+names(CWAinspections)[1] <- "Date"
+CWAinspections <- CWAinspections[-c(20),]
+CWAinspections$President <- as.character("Bush")
+CWAinspections[9:16,3] <- as.character("Obama")
+CWAinspections[17:19,3] <- as.character("Trump")
+
+iCWAgraph <- ggplot(CWAinspections, mapping=aes(x=factor(Date), y=Count, fill=President, group=1))+
+  geom_bar(stat="identity", show.legend = FALSE, alpha=.6)+
+  scale_fill_manual(values=c("#450d54", "#22908d", "#e56d13"))+
+  labs(y=" # Inspections", x="Year", title="CWA Inspections\n", subtitle ="Potentially incomplete data")+
+  ggtitle("CWA Inspections")+
+  scale_y_continuous(expand=c(0,0), limits=c(0,max(CWAinspections$Count+(.2*max(CWAinspections$Count)))))+
+  scale_x_discrete(breaks=c(2004,2008,2012,2016, 2019))+
+  theme_meg()+
+  theme(axis.text.x=element_text(size=10),
+        axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5))
+
+#clean up data
+CWAenforcement <- `enforcements_CWA_pg6_TX-34`
+names(CWAenforcement)[1] <- "Date"
+CWAenforcement <- CWAenforcement[-c(20),]
+CWAenforcement$President <- as.character("Bush")
+CWAenforcement[8:16,4] <- as.character("Obama")
+CWAenforcement[17:19,4] <- as.character("Trump")
+
+#adjust for inflation
+CWAenforcement <- cbind(CWAenforcement, inflation)
+CWAenforcement$inflationadjust <- as.numeric(CWAenforcement$Amount*CWAenforcement$base)
+
+##make a new amount column /1000
+CWAenforcement$Amountinthousands <- ((CWAenforcement$inflationadjust)/1000)
+CWAenforcement$Amountinthousands <-round(CWAenforcement$Amountinthousands,2)
+
+eCWAgraph <- ggplot(CWAenforcement, mapping=aes(x=factor(Date), y=Count, fill=President, group=1))+
+  geom_bar(stat="identity", show.legend = FALSE, alpha=.6)+
+  scale_fill_manual(values=c("#450d54", "#22908d", "#e56d13"))+
+  labs(y=" # Actions", x="Year", title="CWA Enforcement Actions\n", subtitle="Potentially incomplete data")+
+  #ggtitle("CWA Enforcement Actions")+
+  scale_y_continuous(expand=c(0,0), limits=c(0,max(CWAviolations$Count+(.2*max(CWAviolations$Count)))))+
+  scale_x_discrete(breaks=c(2004,2008,2012, 2016, 2019))+
+  geom_text(aes(label=Count, family="Georgia", fontface="bold"), position = position_dodge(0.9), vjust = -0.1, size=3)+
+  theme_meg()+
+  theme(axis.text.x=element_text(size=10),
+        axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5))
+
+fineCWAgraph <- ggplot(CWAenforcement, mapping=aes(x=factor(Date), y=Amountinthousands, fill=President, group=1))+
+  geom_bar(stat="identity", alpha=.6)+
+  scale_fill_manual(values=c("#450d54", "#22908d", "#e56d13"))+
+  labs(y=" Fines($1000s)", x="Year", title="CWA Fines\n", subtitle="Potentially incomplete data", caption="Values adjusted for inflation. Note, the y-axis reports values in\n1000's. A value of $2000 represents $2,000,000 (2 million dollars).")+
+  #ggtitle("CWA Fines")+
+  scale_y_continuous(expand=c(0,0), limits=c(0,max(CWAenforcement$Amountinthousands+(.2*max(CWAenforcement$Amountinthousands)))))+
+  scale_x_discrete(breaks=c(2004,2008,2012, 2016,2019))+
+  theme_meg()+
+  theme(axis.text.x=element_text(size=10),
+        axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5), plot.caption = element_text(size=8))
+
+
+(iCWAgraph | vCWAgraph) / (eCWAgraph | fineCWAgraph)
+
+
+
+```	
+These figures show patterns of Clean Water Act inspections, violations, enforcement actions and fines in this district since 2001 based on available EPA data (see page 10). The bars are colored by president. Figure transparency illustrates data reliability: the more transparent, the more uncertain the data. Data on CWA violations is particularly reliable as effluent violations are automatically reported to EPA.
+For access to the Jupyter Notebook which pulls data from ECHO at the state and congressional district level, click [here](https://colab.research.google.com/github/edgi-govdata-archiving/ECHO-Cross-Program/blob/master/AllPrograms.ipynb).
+
+<br />
+<br />
+
+\pagebreak
+
+<hr style="height:3px;border-width:0;color: #C1E0D7;background-color: #C1E0D7; margin-top: 2em">
+<h4>Report Generated on 11.21.2020<span style="padding-left:400px">Page 8</span></h4>
+
+# Resource Conservation and Recovery Act 
+
+
+<div class="text-box-info">
+
+The [Resource Conservation and Recovery Act (RCRA)](https://www.epa.gov/laws-regulations/summary-resource-conservation-and-recovery-act) gives EPA the authority to control hazardous waste from "cradle-to-grave", regulating the generation, transportation, treatment, storage, and disposal of hazardous waste. Facilities self-report under RCRA, like the CAA, and violations are most often found after an inspection. If RCRA violations have decreased, make sure to check whether inspections have also decreased as recent cuts in inspections are likely related to drops in RCRA violations. [More info on RCRA](https://docs.google.com/presentation/d/1lV9b_vkcfCbTz8uss1XjXLHy2svpi2tmizb6et1Wfkc/edit?usp=sharing)
+</div>
+<h2>There are `r activefacilities[3,2] ` facilities currently reporting under
+`r activefacilities[3,1]` in this district</h2>
+```{r, fig.height = 5, fig.width = 8, fig.align = "center"}
+
+#clean up data
+RCRAviolations <- `violations_RCRA_pg7_TX-34`
+names(RCRAviolations)[1] <- "Date"
+RCRAviolations <- RCRAviolations[-c(20),]
+RCRAviolations$President <- as.character("Bush")
+RCRAviolations[9:16,3] <- as.character("Obama")
+RCRAviolations[17:19,3] <- as.character("Trump")
+
+vRCRAgraph <- ggplot(RCRAviolations, mapping=aes(x=factor(Date), y=Count, fill=President, group=1))+
+  geom_bar(stat="identity", show.legend = FALSE, alpha=.3)+
+  scale_fill_manual(values=c("#450d54", "#22908d", "#e56d13"))+
+  labs(y=" # Violations", x="Year", title = "RCRA violations\n", subtitle = "Very incomplete data")+
+  #ggtitle("RCRA violations")+
+  scale_y_continuous(expand=c(0,0), limits=c(0,max(RCRAviolations$Count+(.2*max(RCRAviolations$Count)))))+
+  scale_x_discrete(breaks=c(2004,2008,2012,2016,2019))+
+  theme_meg()+
+  theme(axis.text.x=element_text(size=10),
+        axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5))
+
+#clean up data
+RCRAinspections <- `inspections_RCRA_pg7_TX-34`
+names(RCRAinspections)[1] <- "Date"
+RCRAinspections <- RCRAinspections[-c(20),]
+RCRAinspections$President <- as.character("Bush")
+RCRAinspections[9:16,3] <- as.character("Obama")
+RCRAinspections[17:19,3] <- as.character("Trump")
+
+iRCRAgraph <- ggplot(RCRAinspections, mapping=aes(x=factor(Date), y=Count, fill=President, group=1))+
+  geom_bar(stat="identity", show.legend = FALSE, alpha=.6)+
+  scale_fill_manual(values=c("#450d54", "#22908d", "#e56d13"))+
+  labs(y=" # Inspections", x="Year", title="RCRA Inspections\n", subtitle="Potentially incomplete data")+
+  #ggtitle("RCRA Inspections")+
+  scale_y_continuous(expand=c(0,0), limits=c(0,max(RCRAinspections$Count+(.2*max(RCRAinspections$Count)))))+
+  scale_x_discrete(breaks=c(2004,2008,2012,2016, 2019))+
+  theme_meg()+
+  theme(axis.text.x=element_text(size=10),
+        axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5))
+
+
+#clean up data
+RCRAenforcement <- `enforcements_RCRA_pg7_TX-34`
+names(RCRAenforcement)[1] <- "Date"
+RCRAenforcement <- RCRAenforcement[-c(20),]
+RCRAenforcement$President <- as.character("Bush")
+RCRAenforcement[8:16,4] <- as.character("Obama")
+RCRAenforcement[17:19,4] <- as.character("Trump")
+
+#adjust for inflation
+RCRAenforcement <- cbind(RCRAenforcement, inflation)
+RCRAenforcement$inflationadjust <- as.numeric(RCRAenforcement$Amount*RCRAenforcement$base)
+
+##make a new amount column /1000
+RCRAenforcement$Amountinthousands <- ((RCRAenforcement$inflationadjust)/1000)
+RCRAenforcement$Amountinthousands <-round(RCRAenforcement$Amountinthousands,2)
+
+eRCRAgraph <- ggplot(RCRAenforcement, mapping=aes(x=factor(Date), y=Count, fill=President, group=1))+
+  geom_bar(stat="identity", show.legend = FALSE, alpha=.6)+
+  scale_fill_manual(values=c("#450d54", "#22908d", "#e56d13"))+
+  labs(y=" # Actions", x="Year", title="RCRA Enforcement Actions\n", subtitle = "Potentially incomplete data")+
+  scale_y_continuous(expand=c(0,0), limits=c(0,max(RCRAviolations$Count+(.2*max(RCRAviolations$Count)))))+
+  scale_x_discrete(breaks=c(2004,2008,2012, 2016, 2019))+
+  geom_text(aes(label=Count, family="Georgia", fontface="bold"), position = position_dodge(0.9), vjust = -0.1, size=3)+
+  theme_meg()+
+  theme(axis.text.x=element_text(size=10),
+        axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5))
+
+fineRCRAgraph <- ggplot(RCRAenforcement, mapping=aes(x=factor(Date), y=Amountinthousands, fill=President, group=1))+
+  geom_bar(stat="identity", alpha=.6)+
+  scale_fill_manual(values=c("#450d54", "#22908d", "#e56d13"))+
+  labs(y=" Fines($1000s)", x="Year", title="RCRA Fines\n", subtitle = "Potentially incomplete data", caption="Values adjusted for inflation. Note, the y-axis reports values in\n1000's. A value of $2000 represents $2,000,000 (2 million dollars).")+
+  scale_y_continuous(expand=c(0,0), limits=c(0,max(RCRAenforcement$Amountinthousands+(.2*max(RCRAenforcement$Amountinthousands)))))+
+  scale_x_discrete(breaks=c(2004,2008,2012, 2016,2019))+
+  theme_meg()+
+  theme(axis.text.x=element_text(size=10),
+        axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5), plot.caption = element_text(size=8))
+
+
+(iRCRAgraph | vRCRAgraph) / (eRCRAgraph | fineRCRAgraph)
+
+
+
+```	
+These figures show patterns of RCRA inspections, violations, enforcement actions and fines in this district since 2001 based on available EPA data (see page 10). The bars are colored by president. Figure transparency illustrates data reliability: the more transparent, the more uncertain the data. Data on RCRA violations is particularly unreliable as violations are not necessarily directly measured. Inspection, enforcement, and fine data can be unreliable because state reporting to ECHO may be incomplete.For access to the Jupyter Notebooks which pull data from ECHO at the state and congressional district level, click [here](https://colab.research.google.com/github/edgi-govdata-archiving/ECHO-Cross-Program/blob/master/AllPrograms.ipynb).
+
+<br />
+<br />
+
+\pagebreak
+
+<hr style="height:3px;border-width:0;color: #C1E0D7;background-color: #C1E0D7; margin-top: 2em">
+<h4>Report Generated on 11.21.2020<span style="padding-left:400px">Page 9</span></h4>
+
+# Legislator Information 
+<br />
+<a ><img src="../CD_images/TX34_rep.jpeg" style="float: left; width: 25%; margin-right: 5%" ></a>
+
+
+<h2>[`r leg_info$name`](`r leg_info$wikipedia_url`) (`r leg_info$party`)</h2>
+
+## In office since `r leg_info$since_date`
+
+### [Govtrack web page](`r leg_info$govtrack_url`)
+
+<br />
+<br />
+<br />
+<br />
+<br />
+
+### This member of Congress serves on the following committees: 
+
+```{r, results='asis'}
+for ( committee in committees ) {
+  cat('\n')
+  cat( sprintf( "## Committee Name: %s", committee[[1]]$name ), '\n' )
+  cat( sprintf( "Jurisdiction: %s", committee[[1]]$jurisdiction ), '\n' )
+  cat( sprintf( "[Committee web page](%s)", committee[[1]]$url ), '\n' )
+  for ( i in 2:length(committee) ) {
+    if ( i > length(committee) ) {
+      break;
+    }
+    cat('\n')
+    cat( sprintf( "###   Subcommittee: %s, Rank: %s",
+                    committee[[i]]$name, committee[[i]]$rank ), '\n' )
+  }
+}
+```
+
+
+\pagebreak
+
+<hr style="height:3px;border-width:0;color: #C1E0D7;background-color: #C1E0D7; margin-top: 2em">
+<h4>Report Generated on 11.21.2020<span style="padding-left:400px">Page 10</span></h4> 
+
+# About the EPA Data Analyzed in this Report Card and its Limitations  
+The data in this report is from EPA’s publicly-available [ECHO database](https://echo.epa.gov/) that compiles information from a number of distinct state and federal sources. However, poor reporting by states and inconsistent reporting schemes result in data gaps and inaccuracies. EPA lists numerous specific issues on its [“Known Data Problems”](https://echo.epa.gov/resources/echo-data/known-data-problems) page. In addition, EPA [notes](https://echo.epa.gov/tools/data-downloads) that data on inspections, violations, and enforcement actions prior to 2001 should be treated as incomplete and unreliable. For that reason, we have only tracked data back to 2001. In addition to many data entry errors -- too numerous to list here -- there are several major problems with ECHO: 
+
+* There is serious under-recording and under-reporting of CAA violations at the state level. Most CAA violations -- [perhaps 85% or more](http://eelp.law.harvard.edu/wp-content/uploads/Cynthia-Giles-Part-2-FINAL.pdf) -- do not make it into ECHO. Violation data is therefore inaccurate and misleading: <span style="color:#569b5e">states which report the fewest violations may be states whose recording and reporting of violations is actually the poorest.</span>
+* Although there is no specific information about the quality of data on RCRA violations, it is likely that this program, like the CAA, has serious reporting problems. Therefore, RCRA violations data should also be considered inaccurate and potentially misleading. The key difference between these and the CWA is that the CWA entails mandatory electronic self-reporting.
+* ECHO does not record how many regulated facilities there were for programs in previous years. Therefore, we cannot calculate the number of inspections, enforcement actions, and violations per regulated facility before 2019.
+
+### Data reliability coding
+In this report, we have divided data issues into three categories, using transparencies in graphs as well as subtitles to indicate data reliability and completeness. See the table below: 
+
+<a ><img src="../logosandimages/datareliabilitytable.png" style="float: center; width: 100%" ></a>
+
+### Notes on 2020 data
+We do not include data from 2020 because we are only part way through the year. It is important to note, as well, that data from 2020 will be strongly influenced by the EPA’s decision to suspend, from March through August, pollution monitoring requirements for industries that claim to have been impacted by COVID-19. EDGI’s report on this policy [“More Permission to Pollute”](https://envirodatagov.org/more-permission-to-pollute-the-decline-of-epa-enforcement-and-industry-compliance-during-covid/) found that, despite relatively few facilities claiming the COVID exemption, a much larger proportion of facilities are still failing to report environmental data. 
+
+\pagebreak
+
+<hr style="height:3px;border-width:0;color: #C1E0D7;background-color: #C1E0D7; margin-top: 2em">
+<h4>Report Generated on 11.21.2020<span style="padding-left:400px">Page 11</span></h4>
+
+# How and why EEW developed the metrics in this report
+
+## Page 2: Trump Administration Grade
+
+To enable direct comparison between changes in enforcement and violations since the Trump Administration took office, we calculate the percent change in Clean Water Act violations and enforcement actions per district or state between Trump’s first three years in office, and the historical average in each district from 2001 to 2016. We analyze data since 2001, as EPA is most confident in its own data since 2001. We analyze violations data just for the Clean Water Act because that data is the most complete due to routine digital reporting requirements. We analyze all forms of enforcement actions, informal and formal. All data is drawn from the ECHO database. 
+
+We describe rates to be “Much Worse” if the percent increase in violations or decrease in enforcement actions is greater than 100%, “Worse” if the percent change is between 0% and 100% percent and “the same” if there is no change. 
+
+We describe rates to be “Better” if violation rates decreased or enforcement rates increased by 0% to 100% and “Much Better” if rates of enforcement or compliance increased by more than 100%.
+
+<br />
+
+### This District or State in comparison dot plot: 
+
+<br />
+
+The dot plot shows the number of Clean Water Act violations in this state or district compared to all others in this Senate or House committee in 2019. We use Clean Water Act data as it is the most reliable and use 2019 as we have the most confidence about data per 1000 facilities in that year. We provide this metric as some districts’ rates of violations and enforcement may not have changed because their performance is consistently poor or good.
+
+## Page 3: Highlights from this District
+
+Trump and Obama Administration comparison: To enable comparison to a more recent administration we compare levels of inspection and enforcement in the first three years of the Obama administration to the first three years of the Trump administration. For these figures inspections and enforcement numbers for the CWA, CAA and RCRA are combined. We compare to only the first 3 years of each Administration's term for parity.
+
+<br />
+
+### Facilities in Violation (non-compliant facilities): 
+
+<br />
+
+To highlight the problem of chronic and routine violations of major environmental laws, this bullet point provides data on the number of facilities in each Congressional District or state which have been out of compliance with environmental laws for 9 or more months in the past 3 years under the Clean Water Act.
+
+\pagebreak
+
+<hr style="height:3px;border-width:0;color: #C1E0D7;background-color: #C1E0D7; margin-top: 2em">
+<h4>Report Generated on 11.21.2020<span style="padding-left:400px">Page 12</span></h4>
+
+# How and why EEW developed the metrics in this report (continued)
+
+## Page 4: This District in Comparison
+
+To generate a comparison across Congressional Districts, each of which has a different number of facilities, we look at the average number of violations, inspections and enforcement actions per 1000 facilities. In states where there are fewer than 1000 facilities this requires us to scale up their data. 
+
+
+## Page 5: Recent Noncompliance in this District
+
+To examine facilities with consistent records of noncompliance, we provide information on the 10 facilities with the most quarters of non-compliance under the CAA, CWA, and RCRA. Important notes here: These charts show the number of quarters of non-compliance, not exactly *which* quarters they were out of compliance. Non-compliance shown here may not be consecutive. Quarters can also be confusing: there are 4 quarters in a year, so 12 quarters equals 3 years of time. In some locations there may be more than 10 facilities out of compliance for all 12 quarters. We limit our figures to 10 facilities for space and clarity. A list of 20 facilities can be found in the Jupyter notebook for that district or state. Additionally, the x-axis for these figures displays a maximum of 12 quarters for the CAA and RCRA, but 13 for the CWA. Under the CWA, violations are reported automatically, so we have violations information for the first three quarters of 2020 for the CWA, and only the first two quarters of 2020 for CAA and RCRA. 
+
+
+\pagebreak
+
+<hr style="height:3px;border-width:0;color: #C1E0D7;background-color: #C1E0D7; margin-top: 2em">
+<h4>Report Generated on 11.21.2020<span style="padding-left:400px">Page 13</span></h4>
+
+# About the Authors and Links to Data 
+
+### About EEW 
+Environmental Enforcement Watch (EEW) is a collaborative project across working groups of the Environmental Data and Governance Initiative (EDGI). The EEW project builds on EDGI’s 2019 [Sheep in the Closet Report](https://envirodatagov.org/publication/a-sheep-in-the-closet-the-erosion-of-enforcement-at-the-epa/) that documents large declines in EPA enforcement of environmental laws. This project uses data from EPA’s [ECHO database](https://echo.epa.gov/), revealing how useful ECHO could be for communities to track pollution and EPA responses in their areas. However, it also reveals the inaccessibility of ECHO for non-specialists, and major omissions, errors, and confusions present in the data itself (see page 10). EEW aims to highlight gaps and inadequacies in the enforcement of environmental laws and to help investigate whether EPA is fulfilling its congressionally-mandated duty to enforce environmental laws. EEW’s data analysis is conducted using open source and publicly available data using Jupyter Notebooks developed by EDGI members. 
+
+<h3><span style="color:#569b5e">A full list of EEW members, including their roles in this project, can be found [here](https://www.environmentalenforcementwatch.org/about/).</span></h3> 
+
+### About this Project 
+This EEW project aims to make EPA data more directly accessible to the public and their representatives.In our first iteration of this project, we released reports for the 76  Senators and House Representatives that sit on the House Energy & Commerce Committee and the Senate Environment & Public Works Committee. We are now making report cards available for *every* state and congressional district in the US. By providing a novel look at the chronic state of non-compliance, we hope to provide representatives with the information they need to evaluate the state of environmental law compliance and enforcement in their communities so they might more effectively hold EPA accountable.
+
+
+### Useful Links
+[State and Congressional District Jupyter Notebooks](https://colab.research.google.com/github/edgi-govdata-archiving/ECHO-Cross-Program/blob/master/AllPrograms.ipynb) | 
+[National-Level Jupyter Notebook](https://colab.research.google.com/github/edgi-govdata-archiving/ECHO-Cross-Program/blob/master/ECHO_National.ipynb) |
+[Github Repository to produce reports](https://github.com/edgi-govdata-archiving/CD-report) | 
+[EEW website](https://www.environmentalenforcementwatch.org) |
+<a href = "mailto: environmentalenforcementwatch@gmail.com">Contact Us</a> |
+[Link to download PDF version of this report](https://github.com/edgi-govdata-archiving/CD-report/blob/master/reportcards/TX34_2020.pdf)
+
+<div class="text-box-info">
+<h3>About EDGI</h3>
+<font size="2">EDGI is an international network of over 175 members from more than 80 different academic institutions and non-profits, comprised foremost by grassroots volunteer efforts. Since 2016, EDGI has served as a preeminent watchdog group for federal environmental data, generating international effort to duplicate and monitor repositories of public data that are vital to environmental health research and knowledge.
+EDGI’s work has been widely acknowledged, leading to EDGI testifying before Congress on declines in EPA enforcement, and hundreds of mentions in leading national and international media such as _The New York Times_,_The Washington Post_, Vice News, and CNN. For more about our work, read our [2019 Annual Report](https://envirodatagov.org/publication/edgi-annual-report-2019/) and [2020 Annual Report](https://envirodatagov.org/publication/edgi-annual-report-2020/). For more on EDGI see [our website](https://envirodatagov.org/).</font>
+</div>
+<a href="https://www.environmentalenforcementwatch.org/"><img src="../logosandimages/eew_logo.png" style="float: left; width: 9%; margin-left: 30%"></a>
+<a href="https://envirodatagov.org/"><img src="../logosandimages/edgi_logo.png" style="float: right; width: 15%; margin-right: 30%" ></a>
+
