@@ -26,7 +26,7 @@ The AllPrograms.py program writes into tables in the local region.db SQLite data
 
 # Using Regions.py to get data from regions.db in R
 * Functions available through Regions.py
-```
+```R
 u <- import( 'Region' )
 # region <- u$Region(type='State', state='TX')
 region <- u$Region(type='Congressional District', value='34', state='TX')
