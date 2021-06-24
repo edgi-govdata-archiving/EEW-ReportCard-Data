@@ -2,7 +2,7 @@ import pdb
 import os
 import pandas as pd
 import sqlite3
-from AllPrograms_db import get_region_rowid
+from AllPrograms_db import get_region_rowid, write_single_cd_states
 
 
 class Region:
@@ -37,6 +37,7 @@ class Region:
         cursor = conn.cursor()
 
         self.region_id = get_region_rowid( cursor, self.state, self.value )
+        conn.close()
 
     '''
         CREATE TABLE per_fac (
@@ -47,19 +48,44 @@ class Region:
         count real,
         unique(region_id,program,type,year));
     '''
-    def get_usa_per_1000( self, type, year ):
+    def get_per_1000( self, type, region, year ):
         # type is 'inspections' or 'violations'
+        # region is 'USA', 'State', 'CD'
+        if ( region == 'USA' or region == 'State' ):
+            return self._get_region_per_1000( type, region, year )
+        # For CDs we can just use the per_fac table and
+        # active_facilities for the region
         conn = sqlite3.connect("region.db")
-        cursor = conn.cursor()
+
+        sql = 'select program as Program, 1000. * count as Per1000 from per_fac'
+        sql += ' where region_id={} and type=\'{}\' and year={}'
+        sql = sql.format( self.region_id, type, year )
+        df = pd.read_sql_query( sql,conn )
+        return df
+
+    def _get_region_per_1000( self, type, region, year ):
+        # type is 'inspections' or 'violations'
+        # region is 'USA', 'State', 'CD'
+        conn = sqlite3.connect("region.db")
 
         sql = 'select program, sum(count) from active_facilities '
+        if ( region == 'State' ):
+            sql += ' where region_id in ( select rowid from regions '
+            sql += ' where state=\'{}\' )'
         sql += ' group by program'
-        sql = sql.format( year )
+        if ( region == 'State' ):
+            sql = sql.format( self.state )
         df_fac = pd.read_sql_query( sql,conn )
 
-        sql = 'select program, sum(count) from {} where '
-        sql += ' year={} group by program'
-        sql = sql.format( type, year )
+        sql = 'select program, sum(count) from {} where year={}'
+        if ( region == 'State' ):
+            sql += ' and region_id in ( select rowid from regions '
+            sql += ' where state=\'{}\' )'
+        sql += ' group by program'
+        if ( region == 'State' ):
+            sql = sql.format( type, year, self.state )
+        else:
+            sql = sql.format( type, year )
         df_insp = pd.read_sql_query( sql, conn )
 
         # df_merged = pd.merge( df_fac, df_insp )
@@ -71,7 +97,8 @@ class Region:
         type_cap = type.capitalize()
         df_joined.columns = ['Program', 'Facilities', type_cap ]
         df_joined['Per1000'] = 1000. * df_joined[type_cap] / df_joined['Facilities']
-        return df_joined
+        df = df_joined.drop( ['Facilities', type_cap], axis='columns' )
+        return df
 
     def get_cwa_per_1000( self, year ):
         conn = sqlite3.connect("region.db")
@@ -162,7 +189,49 @@ class Region:
                 violations += fetch[0] if fetch[0] is not None else 0
             per_1000 = 0 if active == 0 else 1000. * violations / active
             results[ state ] = ( per_1000, 'State' )
-        return results
+        conn.close()
+        df = pd.DataFrame.from_dict( results, orient='index', 
+                        columns=['Num.per.1000', 'Region'])
+        df.reset_index( inplace=True )
+        df = df.rename( columns={ 'index':'CD.State'})
+        return df
+
+    def get_recurring_violations( self, program ):
+        conn = sqlite3.connect("region.db")
+        cursor = conn.cursor()
+
+        sql = 'select sum(count) from active_facilities where '
+        sql += ' program=\'{}\' and region_id in ( select rowid from regions'
+        sql += ' where state=\'{}\' )'
+        sql = sql.format( program, self.state )
+        cursor.execute( sql )
+        fetched = cursor.fetchone()
+        state_facilities = fetched[0]
+        
+        sql = 'select sum(violations) from recurring_violations where '
+        sql += ' program=\'{}\' and region_id in ( select rowid from regions'
+        sql += ' where state=\'{}\' )'
+        sql = sql.format( program, self.state )
+        cursor.execute( sql )
+        fetched = cursor.fetchone()
+        state_violators = fetched[0]
+        
+        sql = 'select violations, facilities from recurring_violations '
+        sql += ' where program=\'{}\' and region_id={}'
+        sql = sql.format( program, self.region_id )
+        cursor.execute( sql )
+        cd_fac_viol = cursor.fetchone()
+
+        data = [{ 'CD': self.state, 'Facilities': state_violators,
+                    'Percent': 100. * state_violators / state_facilities 
+                    if state_facilities > 0 else -1 },
+                { 'CD': '{}{}'.format( self.state, self.value ),
+                    'Facilities': cd_fac_viol[0],
+                    'Percent': 100. * cd_fac_viol[0] / cd_fac_viol[1] 
+                    if cd_fac_viol[1] > 0 else -1 }
+                ]
+        df = pd.DataFrame( data )
+        return df
 
     def get_inflation( self, base_year ):
         # base_year is the year for which a dollar is a dollar
@@ -178,10 +247,16 @@ class Region:
             # pdb.set_trace()
             if row['year'] > base_year:
                 continue
-            inflation_by_year[row['year']] = calculated_inflation
+            inflation_by_year[int(row['year'])] = calculated_inflation
             if row['year'] <= base_year:
                 calculated_inflation *= 1.0 + .01 * row['rate']
-        return inflation_by_year
+        df = pd.DataFrame.from_dict( inflation_by_year, orient='index' )
+        df = df.sort_index()
+        df.reset_index( inplace=True )
+        # df = df.reindex()
+        df.columns = ['Year', 'rate']
+        # df = df.rename( columns=['Year', 'rate'])
+        return df
 
     def get_active_facilities( self ):
         conn = sqlite3.connect("region.db")
@@ -191,24 +266,27 @@ class Region:
         sql = sql.format( self.region_id )
         return pd.read_sql_query( sql,conn )
 
-    def get_cwa_violations( self, base_year ):
+    def get_events( self, type, program, base_year ):
         conn = sqlite3.connect("region.db")
-        cursor = conn.cursor()
 
-        sql = 'select year, count from violations where region_id={}'
-        sql += ' and program=\'CWA\' and year <= {}'
-        sql = sql.format( self.region_id, base_year )
+        if ( type == 'inspections' ):
+            sql = 'select year Date, sum(count) Count from inspections'
+        elif ( type == 'enforcements' ):
+            sql = 'select year Year, sum(amount) Amount, sum(count) Count '
+            sql += ' from enforcements'
+        elif ( type == 'violations' ):
+            sql = 'select year, count from violations'
+        else:
+            return None
+        sql += ' where region_id={} and year <= {} '
+        if ( program != 'All' ):
+            sql += ' and program=\'{}\''
+        sql += ' group by year'
+        if ( program == 'All' ):
+            sql = sql.format( self.region_id, base_year )
+        else:
+            sql = sql.format( self.region_id, base_year, program )
         return pd.read_sql_query( sql,conn )
-
-    def get_enforcements( self, base_year ):
-        conn = sqlite3.connect("region.db")
-        cursor = conn.cursor()
-
-        sql = 'select year, sum(amount), sum(count) from enforcements'
-        sql += ' where region_id={} and year <= {} group by year'
-        sql = sql.format( self.region_id, base_year )
-        return pd.read_sql_query( sql,conn )
-
 
     '''
         # How to do totals for enforcements, violations, inspections.

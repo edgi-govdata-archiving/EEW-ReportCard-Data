@@ -326,7 +326,7 @@ def main(argv):
             if pgm_count_caa > 0 and num is not None:
                 num = num / pgm_count_caa
                 print("CAA inspections per regulated facilities: ", num)
-                AllPrograms_db.write_per_fac("CAA", ds_type, "inspections", 2020, num)
+                AllPrograms_db.write_per_fac("CAA", ds_type, "inspections", focus_year, num)
         except pd.errors.OutOfBoundsDatetime:
             print("Bad date in cd CWA data")
         try:
@@ -336,7 +336,7 @@ def main(argv):
             if pgm_count_caa > 0 and num is not None:
                 num /= pgm_count_caa
                 print("CAA violations per regulated facilities: ", num)
-                AllPrograms_db.write_per_fac("CAA", ds_type, "violations", 2020, num)
+                AllPrograms_db.write_per_fac("CAA", ds_type, "violations", focus_year, num)
         except pd.errors.OutOfBoundsDatetime:
             print("Bad date in cd CWA data")
         try:
@@ -346,7 +346,7 @@ def main(argv):
             if pgm_count_cwa > 0 and num is not None:
                 num /= pgm_count_cwa
                 print("CWA inspections per regulated facilities: ", num)
-                AllPrograms_db.write_per_fac("CWA", ds_type, "inspections", 2020, num)
+                AllPrograms_db.write_per_fac("CWA", ds_type, "inspections", focus_year, num)
         except pd.errors.OutOfBoundsDatetime:
             print("Bad date in cd CWA data")
         try:
@@ -355,7 +355,7 @@ def main(argv):
                 num = effluent_violations_focus_year[(state, cd)]
                 if pgm_count_cwa > 0 and num is not None:
                     num = num / pgm_count_cwa
-                    AllPrograms_db.write_per_fac("CWA", ds_type, "violations", 2020, num)
+                    AllPrograms_db.write_per_fac("CWA", ds_type, "violations", focus_year, num)
         except pd.errors.OutOfBoundsDatetime:
             print("Bad date in state CWA data")
         try:
@@ -365,7 +365,7 @@ def main(argv):
             if pgm_count_rcra > 0 and num is not None:
                 num /= pgm_count_rcra
                 print("RCRA inspections per regulated facilities: ", num)
-                AllPrograms_db.write_per_fac("RCRA", ds_type, "inspections", 2020, num)
+                AllPrograms_db.write_per_fac("RCRA", ds_type, "inspections", focus_year, num)
         except pd.errors.OutOfBoundsDatetime:
             print("Bad date in cd CWA data")
         try:
@@ -375,7 +375,7 @@ def main(argv):
             if pgm_count_rcra > 0 and num is not None:
                 num /= pgm_count_rcra
                 print("RCRA violations per regulated facilities: ", num)
-                AllPrograms_db.write_per_fac("RCRA", "ds_type", "violations", 2020, num)
+                AllPrograms_db.write_per_fac("RCRA", ds_type, "violations", focus_year, num)
         except pd.errors.OutOfBoundsDatetime:
             print("Bad date in cd CWA data")
 

@@ -44,7 +44,8 @@ def write_active_facs(active_facs, state, cd=None):
 
 
 def write_recurring_violations(state, cd, viol_list):
-    ins_sql = "insert into recurring_violations (region_id,program,facilities,violations) values ({},'{}',{},{})"
+    ins_sql = "insert into recurring_violations (region_id,program,violations,facilities)"
+    ins_sql += " values ({},'{}',{},{})"
     ins_sql += (
         " on conflict(region_id,program) do update set facilities = {}, violations = {}"
     )

@@ -70,14 +70,32 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 ```{r echo=FALSE}
 virtualenv_python('edgienv')
 u <- import( 'Region' )
+# region <- u$Region(type='State', state='TX')
 region <- u$Region(type='Congressional District', value='34', state='TX')
-USAinspectionsper1000_All <- region$get_usa_per_1000( 'inspections', 2020 )
-USAviolationsper1000_All <- region$get_usa_per_1000( 'violations', 2020 )
+USAinspectionsper1000_All <- region$get_per_1000( 'inspections', 'USA', 2020 )
+inspectionsper1000_state <- region$get_per_1000( 'inspections', 'State', 2020 )
+inspectionsper1000_cd <- region$get_per_1000( 'inspections', 'CD', 2020 )
+USAviolationsper1000_All <- region$get_per_1000( 'violations', 'USA', 2020 )
+violationsper1000_state <- region$get_per_1000( 'violations', 'State', 2020 )
+violationsper1000_cd <- region$get_per_1000( 'violations', 'CD', 2020 )
 inflation <- region$get_inflation( 2020 )
 CWAper1000 <- region$get_cwa_per_1000( 2020 )
 active_facilities <- region$get_active_facilities()
-CWAviolations <- region$get_cwa_violations( 2020 )
-enforcement <- region$get_enforcements( 2020 )
+violations <- region$get_events( 'violations', 'All', 2020 )
+CAAviolations <- region$get_events( 'violations', 'CAA', 2020 )
+CWAviolations <- region$get_events( 'violations', 'CWA', 2020 )
+RCRAviolations <- region$get_events( 'violations', 'RCRA', 2020 )
+enforcement <- region$get_events( 'enforcements', 'All', 2020 )
+CAAenforcement <- region$get_events( 'enforcements', 'CAA', 2020 )
+CWAenforcement <- region$get_events( 'enforcements', 'CWA', 2020 )
+RCRAenforcement <- region$get_events( 'enforcements', 'RCRA', 2020 )
+CAArecurring <- region$get_recurring_violations( 'CAA' )
+CWArecurring <- region$get_recurring_violations( 'CWA' )
+RCRArecurring <- region$get_recurring_violations( 'RCRA' )
+inspections <- region$get_events( 'inspections', 'All', 2020 )
+CAAinspections <- region$get_events( 'inspections', 'CAA', 2020 )
+CWAinspections <- region$get_events( 'inspections', 'CWA', 2020 )
+RCRAinspections <- region$get_events( 'inspections', 'RCRA', 2020 )
 ```
 
 
@@ -97,7 +115,7 @@ names(inflation)[2] <- "base"
 #   assign(name, read.csv(here("CD_Dirs/TX34", i)))
 # }
 
-# activefacilities <- `active-facilities_All_pg3_TX-34`
+# SH - activefacilities <- `active-facilities_All_pg3_TX-34`
 
 #set up a theme default to reduce code block later 
 theme_meg <- function () { 
@@ -153,16 +171,16 @@ A regulated facility in this report is a facility that reports air or water emis
 ```{r echo=FALSE}
 
 ##getting %difference CWA violations
-# CWAviolations <- `violations_CWA_pg6_TX-34`
+# SH CWAviolations <- `violations_CWA_pg6_TX-34`
 names(CWAviolations)[2] <- "Count"
-names(CWAviolations)[1] <- "YEAR"
-CWAviolations <- CWAviolations[-c(20),]
+names(CWAviolations)[1] <- "Year"  # SH
+# SH - CWAviolations <- CWAviolations[-c(20),]
 CWAviolations$President <- as.character("Bush")
 CWAviolations[9:16,3] <- as.character("Obama")
-CWAviolations[17:19,3] <- as.character("Trump")
+CWAviolations[17:20,3] <- as.character("Trump") # SH
 
 vCWAchange <- data.frame("BushObamaAverage" =mean(CWAviolations[1:16,2]),
-                             "Trump Average" =mean(CWAviolations[17:19,2]))
+                             "Trump Average" =mean(CWAviolations[17:20,2])) # SH
 
 vCWAchange$PercentDifference <- as.numeric(100*(vCWAchange[1,2]-vCWAchange[1,1])/
                                                  vCWAchange[1,1])
@@ -175,9 +193,9 @@ vCWAchange$Positive <- abs(vCWAchange$PercentDifference)
 vCWAchange$Value <- ifelse(vCWAchange$PercentDifference>=0, "increase", "decrease")
 
 #enforcement % difference
-# enforcement <- `enforcements_All_pg3_TX-34`
+# SH - enforcement <- `enforcements_All_pg3_TX-34`
 names(enforcement)[1] <- "Date"
-enforcement <- enforcement[-c(20),]
+# SH - enforcement <- enforcement[-c(20),]
 enforcement$Amount <- round(enforcement$Amount,2)
 #add presidental years
 enforcement$President <- as.character("Bush")
@@ -246,11 +264,11 @@ dotplot <-ggplot(CWAper100, aes(x=Region, y=Per100, fill=Highlight))+
   theme(axis.line.x=element_blank(), axis.title.x=element_blank(),
         legend.title = element_blank(), axis.text.x=element_text(size=10, hjust=.6), legend.position = c(0.1,.8), axis.ticks.x=element_blank())+scale_x_discrete(labels=c("Congressional Districts","States"))
 
-ggsave("dotplot_TX34.png", dotplot, path=here("CD_Dirs/TX34"), scale = 2, width=8, height=5, units=c("cm"))
+ggsave("dotplot_TX34.png", dotplot, path=here(), scale = 2, width=8, height=5, units=c("cm"))
 
 ```
  
-<a ><img src="../CD_Dirs/TX34/dotplot_TX34.png" style="float: left; width: 100%; height: 60%; margin-right: 5%" ></a>
+<a ><img src="dotplot_TX34.png" style="float: left; width: 100%; height: 60%; margin-right: 5%" ></a>
 
 *This is an average, it does not mean that every facility has a violation. Some facilities may have many more than 1 or zero.
 <br />
@@ -267,13 +285,13 @@ ggsave("dotplot_TX34.png", dotplot, path=here("CD_Dirs/TX34"), scale = 2, width=
 
 ##first let's fix up the data
 #ok so We'll put the % in the title for the state, and try to figure out the same for TX 34
-CAArecurring <- `recurring-violations_All_pg3_TX-34`[-c(2,3,5,6),]
+# SH - CAArecurring <- `recurring-violations_All_pg3_TX-34`[-c(2,3,5,6),]
 CAArecurring <- CAArecurring %>%
-  select(CD,Facilities, Percent)
+  select(CD, Facilities, Percent)
 names(CAArecurring)[1] <- "Region"
 CAArecurring[1,1] <- as.character("Rest of State")
 CAArecurring[2,1] <- as.character("TX 34")
-CAArecurring$Region2 <- as.character("All of OR")
+# SH - CAArecurring$Region2 <- as.character("All of OR")
 CAArecurring[2,4] <- as.character("TX 34")
 CAArecurring$RecurringViolators <- (as.numeric(CAArecurring[1,2]-CAArecurring[2,2]))
 CAArecurring[2,5] <- as.numeric(CAArecurring[2,2])
@@ -285,7 +303,7 @@ CAArecurring[3] <-round(CAArecurring[3],2)
 
 ##first let's fix up the data
 #ok so We'll put the % in the title for the state, and try to figure out the same for TX 34
-CWArecurring <- `recurring-violations_All_pg3_TX-34`[-c(1,3,4,6),]
+# SH - CWArecurring <- `recurring-violations_All_pg3_TX-34`[-c(1,3,4,6),]
 CWArecurring <- CWArecurring %>%
   select(CD,Facilities, Percent)
 names(CWArecurring)[1] <- "Region"
@@ -303,7 +321,7 @@ CWArecurring[3] <-round(CWArecurring[3],0)
 
 ##first let's fix up the data
 #ok so We'll put the % in the title for the state, and try to figure out the same for TX 34
-RCRArecurring <- `recurring-violations_All_pg3_TX-34`[-c(1,2,4,5),]
+# SH - RCRArecurring <- `recurring-violations_All_pg3_TX-34`[-c(1,2,4,5),]
 RCRArecurring <- RCRArecurring %>%
   select(CD,Facilities, Percent)
 names(RCRArecurring)[1] <- "Region"
@@ -324,10 +342,11 @@ RCRArecurring[3] <-round(RCRArecurring[3],2)
 ##So, we're going to do the first 3 years of Obama and Trump so average
 #[9:11,2] Obama
 # [17:19,2] Trump
-effluentviolations <- `violations_CWA_pg3_TX-34`
-effluentviolations <- effluentviolations[-c(20),]
+# SH - effluentviolations <- `violations_CWA_pg3_TX-34`
+# SH - effluentviolations <- effluentviolations[-c(20),]
+effluentviolations <- CWAviolations # SH
 effluentchange <- data.frame("Obama Average" =mean(effluentviolations[9:11,2]),
-                             "Trump Average" =mean(effluentviolations[17:19,2]))
+                             "Trump Average" =mean(effluentviolations[17:20,2])) # SH
 effluentchange$PercentDifference <- as.numeric(100*(effluentchange[1,2]-effluentchange[1,1])/
                                                  effluentchange[1,1])
 effluentchange[,1:3] <-round(effluentchange[,1:3],2)
@@ -336,15 +355,16 @@ effluentchange[,1:3] <-round(effluentchange[,1:3],2)
 #first add in the Presidential Years
 effluentviolations$President <- as.character("Bush")
 effluentviolations[9:16,3] <- as.character("Obama")
-effluentviolations[17:19,3] <- as.character("Trump")
+effluentviolations[17:20,3] <- as.character("Trump") # SH
 
+# SH - Changed y=Violations to y=Count
 effluentgraph <- ggplot(effluentviolations, mapping=aes(x=factor(Year),
-  y=Violations, fill=President, group=1))+
+  y=Count, fill=President, group=1))+
   geom_bar(stat="identity")+
   scale_fill_manual(values=c("#450d54", "#22908d", "#e56d13"))+
   labs(y=" # Violations", x="Year", title="Clean Water Act Violations\n", subtitle ="Mostly complete data")+
-  scale_y_continuous(expand=c(0,0), limits=c(0,max(effluentviolations$Violations+(.2*max(effluentviolations$Violations)))))+
-  scale_x_discrete(breaks=c(2004,2008,2012,2016,2019))+
+  scale_y_continuous(expand=c(0,0), limits=c(0,max(effluentviolations$Count+(.2*max(effluentviolations$Count)))))+
+  scale_x_discrete(breaks=c(2004,2008,2012,2016,2020))+
   theme_meg()+
   theme(axis.text.x=element_text(size=9),
         axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5, size=9), plot.title = 
@@ -355,7 +375,7 @@ effluentgraph <- ggplot(effluentviolations, mapping=aes(x=factor(Year),
 ##So, we're going to do the first 3 years of Obama and Trump so average
 #[9:11,2] Obama
 # [17:19,2] Trump
-inspections <- `inspections_All_pg3_TX-34`
+# SH - inspections <- `inspections_All_pg3_TX-34`
 names(inspections)[1] <- "Date"
 inspections <- inspections[-c(20),]
 inspectionchange <- data.frame("Obama Average" =mean(inspections[9:11,2]),
@@ -372,7 +392,7 @@ inspectionchange$Positive <- abs(inspectionchange$PercentDifference)
 #first add in the Presidential Years
 inspections$President <- as.character("Bush")
 inspections[9:16,3] <- as.character("Obama")
-inspections[17:19,3] <- as.character("Trump")
+inspections[17:20,3] <- as.character("Trump") # SH
 
 inspectiongraph <- ggplot(inspections, mapping=aes(x=factor(Date),
                                                         y=Count, fill=President, group=1))+
@@ -380,24 +400,24 @@ inspectiongraph <- ggplot(inspections, mapping=aes(x=factor(Date),
   scale_fill_manual(values=c("#450d54", "#22908d", "#e56d13"))+
   labs(y="Inspections", x="Year", title="Facility Inspections-CAA,CWA,RCRA\n", subtitle = "Potentially incomplete data")+
   scale_y_continuous(expand=c(0,0), limits=c(0,max(inspections$Count+(.2*max(inspections$Count)))))+
-  scale_x_discrete(breaks=c(2004,2008,2012,2016,2019))+
+  scale_x_discrete(breaks=c(2004,2008,2012,2016,2020))+
   theme_meg()+
   theme(axis.text.x=element_text(size=9),
         axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5, size=9), plot.title = 
-          element_text(lineheight = .1, size=10))
+          element_text(lineheight = .1, size=10)) # SH
 
 #enforcement
 ##So, we're going to do the first 3 years of Obama and Trump so average
 #[9:11,2] Obama
 # [17:19,2] Trump
-enforcement <- `enforcements_All_pg3_TX-34`
+# SH - enforcement <- `enforcements_All_pg3_TX-34`
 names(enforcement)[1] <- "Date"
-enforcement <- enforcement[-c(20),]
+# SH - enforcement <- enforcement[-c(20),]
 enforcement$Amount <- round(enforcement$Amount,0)
 enforcementchange <- data.frame("Obama Average Count" =mean(enforcement[9:11,3]),
-                               "Trump Average Count" =mean(enforcement[17:19,3]),
+                               "Trump Average Count" =mean(enforcement[17:20,3]),
                                "Obama Average Fine" =mean(enforcement[9:11,2]),
-                               "Trump Average Fine" =mean(enforcement[17:19,2]))
+                               "Trump Average Fine" =mean(enforcement[17:20,2])) # SH
 enforcementchange$PercentDifferenceCount <- as.numeric(100*(enforcementchange[1,2]-enforcementchange[1,1])/
                                                    enforcementchange[1,1])
 enforcementchange$PercentDifferenceFine <- as.numeric(100*(enforcementchange[1,4]-enforcementchange[1,3])/
@@ -411,7 +431,7 @@ enforcementchange$FineChange <- ifelse(enforcementchange$PercentDifferenceFine>=
 enforcementchange$PositiveFine <- abs(enforcementchange$PercentDifferenceFine)
 
 #adjust for inflation
-inflation <- inflation[-c(20:107),]
+# SH - inflation <- inflation[-c(20:107),]
 enforcement <- cbind(enforcement, inflation)
 enforcement$inflationadjust <- as.numeric(enforcement$Amount*enforcement$base)
 
@@ -421,8 +441,8 @@ enforcement$Amountinthousands <-round(enforcement$Amountinthousands,2)
 
 #add presidental years
 enforcement$President <- as.character("Bush")
-enforcement[9:16,8] <- as.character("Obama")
-enforcement[17:19,8] <- as.character("Trump")
+enforcement[9:16,4] <- as.character("Obama") # SH 
+enforcement[17:20,4] <- as.character("Trump")  # SH
 
 #plot change in enforcement
 enforcementactiongraph <- ggplot(enforcement, mapping=aes(x=factor(Date),y=Count, fill=President, group=1))+
@@ -430,7 +450,7 @@ enforcementactiongraph <- ggplot(enforcement, mapping=aes(x=factor(Date),y=Count
   scale_fill_manual(values=c("#450d54", "#22908d", "#e56d13"))+
   labs(y="# Actions", x="Year", title="Enforcement Actions-CAA,CWA,RCRA\n", subtitle = "Potentially incomplete data")+
   scale_y_continuous(expand=c(0,0), limits=c(0,max(effluentviolations$Violations+(.2*max(effluentviolations$Violations)))))+
-  scale_x_discrete(breaks=c(2004,2008,2012,2016,2019))+
+  scale_x_discrete(breaks=c(2004,2008,2012,2016,2020))+
   geom_text(aes(label=Count, family="Georgia", fontface="bold"), position = position_dodge(0.9), vjust = -0.1, size=3)+
   theme_meg()+
   theme(axis.text.x=element_text(size=9),
@@ -442,7 +462,7 @@ enforcementfinegraph <- enforcement %>% ggplot()+
   scale_fill_manual(values=c("#450d54", "#22908d", "#e56d13"))+
   labs(y="Fines ($1000s)", x="Year", caption="Values adjusted for inflation. Note, the y-axis reports values in 1000's. A value of $2000\nrepresents $2,000,000 (2 million dollars).", title="Enforcement Fines-CAA,CWA,RCRA\n", subtitle="Potentially incomplete data")+
   scale_y_continuous(expand=c(0,0), limits=c(0,max(enforcement$Amountinthousands+(.2*max(enforcement$Amountinthousands)))))+
-  scale_x_discrete(breaks=c(2004,2008,2012,2016,2019))+
+  scale_x_discrete(breaks=c(2004,2008,2012,2016,2020))+
   theme_meg()+
   theme(axis.text.x=element_text(size=9),
         axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5, size=9), plot.caption = element_text(size=10), plot.title = 
@@ -457,8 +477,8 @@ enforcementfinegraph <- enforcement %>% ggplot()+
 
 * <h3>Under the Clean Water Act, the law whose regulation is best documented by available EPA data, <span style="color:#569b5e">`r CWArecurring[2,2]` facilities, representing `r CWArecurring[2,3]`% of all regulated facilities in TX34,</span> were in violation for <span style="color:#569b5e">at least 9 months of the last 3 years.</span></h3>
 ```{r echo=FALSE, out.width= "95%", out.extra='style="float:center; padding:0px"'}
-
-effluentgraph/inspectiongraph/enforcementactiongraph/enforcementfinegraph
+effluentgraph/inspectiongraph/enforcementactiongraph
+# effluentgraph/inspectiongraph/enforcementactiongraph/enforcementfinegraph
 
 ```
 
@@ -477,11 +497,16 @@ The reliability of data in figures throughout this report is indicated by the fi
 #let's combine the inspections data at national, state, CD level 
 names(USAinspectionsper1000_All)[2] <- "Inspectionsper1000"
 USAinspectionsper1000_All$Region <- as.factor("National")
-names(`inspectionsper1000_All_pg4_TX-112920.csv`)[2] <- "Inspectionsper1000"
-`inspectionsper1000_All_pg4_TX-112920.csv`$Region <- as.factor("State")
-names(`inspectionsper1000_All_pg4_TX-34`)[2] <- "Inspectionsper1000"
-`inspectionsper1000_All_pg4_TX-34`$Region <- as.factor("Congressional District")
-inspectionsper1000 <- rbind(USAinspectionsper1000_All, `inspectionsper1000_All_pg4_TX-112920.csv`, `inspectionsper1000_All_pg4_TX-34`)
+# SH - names(`inspectionsper1000_All_pg4_TX-112920.csv`)[2] <- "Inspectionsper1000"
+# SH - `inspectionsper1000_All_pg4_TX-112920.csv`$Region <- as.factor("State")
+# SH - names(`inspectionsper1000_All_pg4_TX-34`)[2] <- "Inspectionsper1000"
+# SH - `inspectionsper1000_All_pg4_TX-34`$Region <- as.factor("Congressional District")
+# SH - inspectionsper1000 <- rbind(USAinspectionsper1000_All, `inspectionsper1000_All_pg4_TX-112920.csv`, `inspectionsper1000_All_pg4_TX-34`)
+names(inspectionsper1000_state)[2] <- "Inspectionsper1000"
+inspectionsper1000_state$Region <- as.factor("State")
+names(inspectionsper1000_cd)[2] <- "Inspectionsper1000"
+inspectionsper1000_cd$Region <- as.factor("Congressional District")
+inspectionsper1000 <- rbind(USAinspectionsper1000_All, inspectionsper1000_state, inspectionsper1000_cd)
 inspectionsper1000$Inspectionsper1000 <- as.numeric(inspectionsper1000$Inspectionsper1000)
 inspectionsper1000[2] <-round(inspectionsper1000[2],0) 
 
@@ -501,11 +526,16 @@ inspect1000bar <- ggplot(inspectionsper1000, aes(fill=Region, y=Inspectionsper10
 #let's combine the violations data at national, state, CD level 
 names(USAviolationsper1000_All)[2] <- "violationsper1000"
 USAviolationsper1000_All$Region <- as.factor("National")
-names(`violationsper1000_All_pg4_TX-112920.csv`)[2] <- "violationsper1000"
-`violationsper1000_All_pg4_TX-112920.csv`$Region <- as.factor("State")
-names(`violationsper1000_All_pg4_TX-34`)[2] <- "violationsper1000"
-`violationsper1000_All_pg4_TX-34`$Region <- as.factor("Congressional District")
-violationsper1000 <- rbind(USAviolationsper1000_All, `violationsper1000_All_pg4_TX-112920.csv`, `violationsper1000_All_pg4_TX-34`)
+# SH - names(`violationsper1000_All_pg4_TX-112920.csv`)[2] <- "violationsper1000"
+# SH - `violationsper1000_All_pg4_TX-112920.csv`$Region <- as.factor("State")
+# SH - names(`violationsper1000_All_pg4_TX-34`)[2] <- "violationsper1000"
+# SH - `violationsper1000_All_pg4_TX-34`$Region <- as.factor("Congressional District")
+# SH - violationsper1000 <- rbind(USAviolationsper1000_All, `violationsper1000_All_pg4_TX-112920.csv`, `violationsper1000_All_pg4_TX-34`)
+names(violationsper1000_state)[2] <- "violationsper1000"
+violationsper1000_state$Region <- as.factor("State")
+names(violationsper1000_cd)[2] <- "violationsper1000"
+violationsper1000_cd$Region <- as.factor("Congressional District")
+violationsper1000 <- rbind(USAviolationsper1000_All, violationsper1000_state, violationsper1000_cd)
 violationsper1000$violationsper1000 <- as.numeric(violationsper1000$violationsper1000)
 violationsper1000[2] <-round(violationsper1000[2],0)
 
@@ -804,9 +834,9 @@ vCAAgraph <- ggplot(CAAviolations, mapping=aes(x=factor(Date), y=Count, fill=Pre
         axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5))
 
 #clean up data
-CAAinspections <- `inspections_CAA_pg5_TX-34`
-names(CAAinspections)[1] <- "Date"
-CAAinspections <- CAAinspections[-c(20),]
+# SH - CAAinspections <- `inspections_CAA_pg5_TX-34`
+# SH - names(CAAinspections)[1] <- "Date"
+# SH - CAAinspections <- CAAinspections[-c(20),]
 CAAinspections$President <- as.character("Bush")
 CAAinspections[9:16,3] <- as.character("Obama")
 CAAinspections[17:19,3] <- as.character("Trump")
@@ -823,9 +853,9 @@ iCAAgraph <- ggplot(CAAinspections, mapping=aes(x=factor(Date), y=Count, fill=Pr
         axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5))
 
 #clean up data
-CAAenforcement <- `enforcements_CAA_pg5_TX-34`
-CAAenforcement <- CAAenforcement[-c(20),]
-names(CAAenforcement)[1] <- "Date"
+# SH - CAAenforcement <- `enforcements_CAA_pg5_TX-34`
+# SH - CAAenforcement <- CAAenforcement[-c(20),]
+# SH - names(CAAenforcement)[1] <- "Date"
 CAAenforcement$President <- as.character("Bush")
 CAAenforcement[9:16,4] <- as.character("Obama")
 CAAenforcement[17:19,4] <- as.character("Trump")
