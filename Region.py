@@ -27,11 +27,12 @@ class Region:
         The DataSet objects for the region 
     '''
 
-    def __init__(self, type, value=None, state=None):
+    def __init__(self, type, value=None, state=None, programs=None):
 
         self.type = type  # Region type
         self.value = value  # Region instance
         self.state = state  # State
+        self.programs = programs # The EPA programs to include
 
         conn = sqlite3.connect("region.db")
         cursor = conn.cursor()
@@ -51,6 +52,7 @@ class Region:
     def get_per_1000( self, type, region, year ):
         # type is 'inspections' or 'violations'
         # region is 'USA', 'State', 'CD'
+        # programs is a list of the programs to be included--CAA, CWA, etc.
         if ( region == 'USA' or region == 'State' ):
             return self._get_region_per_1000( type, region, year )
         # For CDs we can just use the per_fac table and
@@ -59,7 +61,11 @@ class Region:
 
         sql = 'select program as Program, 1000. * count as Per1000 from per_fac'
         sql += ' where region_id={} and type=\'{}\' and year={}'
-        sql = sql.format( self.region_id, type, year )
+        if ( self.programs is None ):
+            sql += ' and program in (\'{}\')'
+            sql = sql.format( self.region_id, type, year, '\',\''.join( self.programs ))
+        else:
+            sql = sql.format( self.region_id, type, year )
         df = pd.read_sql_query( sql,conn )
         return df
 
@@ -69,23 +75,27 @@ class Region:
         conn = sqlite3.connect("region.db")
 
         sql = 'select program, sum(count) from active_facilities '
+        if ( self.programs is not None ):
+            sql += ' where program in (\'{}\') '
+            sql = sql.format( '\',\''.join(self.programs))
         if ( region == 'State' ):
-            sql += ' where region_id in ( select rowid from regions '
+            sql += ' and region_id in ( select rowid from regions '
             sql += ' where state=\'{}\' )'
-        sql += ' group by program'
-        if ( region == 'State' ):
             sql = sql.format( self.state )
-        df_fac = pd.read_sql_query( sql,conn )
+        sql += ' group by program'
+        df_fac = pd.read_sql_query( sql, conn )
 
         sql = 'select program, sum(count) from {} where year={}'
         if ( region == 'State' ):
             sql += ' and region_id in ( select rowid from regions '
             sql += ' where state=\'{}\' )'
-        sql += ' group by program'
-        if ( region == 'State' ):
             sql = sql.format( type, year, self.state )
         else:
             sql = sql.format( type, year )
+        if ( self.programs is not None ):
+            sql += ' and program in (\'{}\')'
+            sql = sql.format( '\',\''.join(self.programs) )
+        sql += ' group by program'
         df_insp = pd.read_sql_query( sql, conn )
 
         # df_merged = pd.merge( df_fac, df_insp )

@@ -71,7 +71,7 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 virtualenv_python('edgienv')
 u <- import( 'Region' )
 # region <- u$Region(type='State', state='TX')
-region <- u$Region(type='Congressional District', value='34', state='TX')
+region <- u$Region(type='Congressional District', value='34', state='TX', programs=c('CAA', 'CWA', 'RCRA'))
 USAinspectionsper1000_All <- region$get_per_1000( 'inspections', 'USA', 2020 )
 inspectionsper1000_state <- region$get_per_1000( 'inspections', 'State', 2020 )
 inspectionsper1000_cd <- region$get_per_1000( 'inspections', 'CD', 2020 )
@@ -338,6 +338,7 @@ RCRArecurring[3] <-round(RCRArecurring[3],2)
 
 ```{r echo=FALSE}
 ##getting %difference effluent violations
+enforcement <- region$get_events( 'enforcements', 'All', 2020 )
 
 ##So, we're going to do the first 3 years of Obama and Trump so average
 #[9:11,2] Obama
@@ -432,7 +433,7 @@ enforcementchange$PositiveFine <- abs(enforcementchange$PercentDifferenceFine)
 
 #adjust for inflation
 # SH - inflation <- inflation[-c(20:107),]
-enforcement <- cbind(enforcement, inflation)
+enforcement <- cbind(enforcement, inflation) #SH
 enforcement$inflationadjust <- as.numeric(enforcement$Amount*enforcement$base)
 
 ##make a new amount column /1000
@@ -477,9 +478,7 @@ enforcementfinegraph <- enforcement %>% ggplot()+
 
 * <h3>Under the Clean Water Act, the law whose regulation is best documented by available EPA data, <span style="color:#569b5e">`r CWArecurring[2,2]` facilities, representing `r CWArecurring[2,3]`% of all regulated facilities in TX34,</span> were in violation for <span style="color:#569b5e">at least 9 months of the last 3 years.</span></h3>
 ```{r echo=FALSE, out.width= "95%", out.extra='style="float:center; padding:0px"'}
-effluentgraph/inspectiongraph/enforcementactiongraph
-# effluentgraph/inspectiongraph/enforcementactiongraph/enforcementfinegraph
-
+effluentgraph/inspectiongraph/enforcementactiongraph/enforcementfinegraph
 ```
 
 The reliability of data in figures throughout this report is indicated by the figure subtitle and degree of transparency. See the data limitations page (Page 10) to view the transparency-coding table and access state and congressional district data [here](https://colab.research.google.com/github/edgi-govdata-archiving/ECHO-Cross-Program/blob/master/AllPrograms.ipynb).
@@ -551,8 +550,11 @@ violations1000bar <- ggplot(violationsper1000, aes(fill=Region, y=violationsper1
   theme_meg()+
   theme(legend.position = c(0.8, 0.5))
 
-inspect1000bar / violations1000bar
   
+```
+```{r echo=FALSE, out.width= "95%", out.extra='style="float:center; padding:0px"'}
+inspect1000bar 
+# / violations1000bar
 ```
 <br />
 
