@@ -6,7 +6,7 @@ to make it available for the generation of Rmd report cards.
 
 # Developer setup
 * Python and SQLite are required.
-* The ECHO_modules repository, must be checked out into the home directory of this project.
+* The ECHO_modules repository, must be checked out into the home directory of this project. Currently we are using the watershed-geo branch of ECHO_modules.
 * The latest leg_info.db SQLite database of legislator information, from the EEW-Report-Making repository, needs to be placed into the home directory of this project.
 
 # Getting data from the Stonybrook University (SBU) ECHO database 
