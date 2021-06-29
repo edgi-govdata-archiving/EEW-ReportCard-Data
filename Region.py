@@ -264,28 +264,20 @@ class Region:
         df = df.sort_index()
         df.reset_index( inplace=True )
         # df = df.reindex()
-        df.columns = ['Year', 'rate']
+        # df.columns = ['Year', 'rate']
         # df = df.rename( columns=['Year', 'rate'])
         return df
-
-    def get_active_facilities( self ):
-        conn = sqlite3.connect("region.db")
-        cursor = conn.cursor()
-
-        sql = 'select program, count from active_facilities where region_id={}'
-        sql = sql.format( self.region_id )
-        return pd.read_sql_query( sql,conn )
 
     def get_events( self, type, program, base_year ):
         conn = sqlite3.connect("region.db")
 
         if ( type == 'inspections' ):
-            sql = 'select year Date, sum(count) Count from inspections'
+            sql = 'select year Year, sum(count) Count from inspections'
         elif ( type == 'enforcements' ):
             sql = 'select year Year, sum(amount) Amount, sum(count) Count '
             sql += ' from enforcements'
         elif ( type == 'violations' ):
-            sql = 'select year, count from violations'
+            sql = 'select year Year, count as Count from violations'
         else:
             return None
         sql += ' where region_id={} and year <= {} '
@@ -297,6 +289,27 @@ class Region:
         else:
             sql = sql.format( self.region_id, base_year, program )
         return pd.read_sql_query( sql,conn )
+
+    def get_non_compliants( self, program ):
+        conn = sqlite3.connect("region.db")
+
+        sql = 'select fac_name, noncomp_count, formal_action_count, dfr_url,'
+        sql += ' fac_lat, fac_long from non_compliants where program=\'{}\''
+        sql += ' and region_id={} and noncomp_count > 0'
+        sql = sql.format( program, self.region_id )
+        return pd.read_sql_query( sql, conn )
+
+    def get_active_facilities( self, program ):
+        conn = sqlite3.connect("region.db")
+        cursor = conn.cursor()
+
+        sql = 'select count from active_facilities where region_id={}'
+        sql += ' and program=\'{}\''
+        sql = sql.format( self.region_id, program )
+        cursor.execute( sql )
+        fetch = cursor.fetchone()
+        return fetch[0] if fetch else 0
+
 
     '''
         # How to do totals for enforcements, violations, inspections.
