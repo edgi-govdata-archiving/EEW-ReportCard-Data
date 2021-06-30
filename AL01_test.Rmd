@@ -28,11 +28,21 @@ library(ggrepel)
 library(stringr)
 loadfonts()
 
+load("names.rda")
+names <- cd2
+rm(cd2)
+
+#filter the names dataframe to the region you want to make a report for
+selected <- names %>% filter(names$Identity == "AL01")
+cd_state = (selected$Identity)
+full_name = (selected$full_name)
+state <- (selected$State)
+
 CD <- '01'
-CD_ord <- '1st'
-state <- 'AL'
-long_state <- "Alabama's"
-cd_state <- paste(state, CD, sep="")
+#^need to fix this in names dataframe 
+
+
+
 output_loc <- paste('Output/',cd_state,"/",sep="")
 dir.create(output_loc)
 
@@ -74,7 +84,7 @@ dbDisconnect( conn )
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 ```
 
-```{r echo=FALSE}
+```{r echo=FALSE, include=FALSE}
 virtualenv_python('edgienv')
 u <- import( 'Region' )
 region <- u$Region(type='Congressional District', value=CD, state=state, programs=c('CAA', 'CWA', 'RCRA'))
@@ -128,7 +138,7 @@ map_src <- paste('CD_maps/',state,CD,'_map.png',sep='')
  Congressional Report Card
  </span></div>
  <hr style="height:3px;border-width:0; margin-left:15px; margin-right:15px;color: #b9b9b9;background-color: #b9b9b9; margin-top: 0em; margin-bottom: 0em">
-##### `r long_state` `r CD_ord` District; seat held by `r leg_info$name` since `r leg_info$since_year` 
+##### `r full_name`; seat held by `r leg_info$name` since `r leg_info$since_year` 
  <div class="container">
   <img src="`r map_src`" alt="Snow" style="width:100%;">
    <div class="bottom-left">Map shows congressional district or state with clusters of regulated facilities</div>
@@ -139,7 +149,7 @@ map_src <- paste('CD_maps/',state,CD,'_map.png',sep='')
 \pagebreak
 
 
-<h4>Report Generated on 11.21.2020<span style="padding-left:400px">Page 1</span></h4>
+<h4>Report Generated on `r format(Sys.time(), '%B %d, %Y')`<span style="padding-left:400px">Page 1</span></h4>
 
 # Introduction 
 
@@ -160,7 +170,7 @@ A regulated facility in this report is a facility that reports air or water emis
 \pagebreak
 
 <hr style="height:3px;border-width:0;color: #C1E0D7;background-color: #C1E0D7; margin-top: 2em">
-<h4>Report Generated on 11.21.2020<span style="padding-left:400px">Page 2</span></h4>
+<h4>Report Generated on `r format(Sys.time(), '%B %d, %Y')`<span style="padding-left:400px">Page 2</span></h4>
 
 # Key Changes in this District under the Trump Administration
 
@@ -272,26 +282,10 @@ dotplot_loc <- paste(output_loc,"dotplot_",cd_state,".png",sep="")
 \pagebreak
 
 <hr style="height:3px;border-width:0;color: #C1E0D7;background-color: #C1E0D7; margin-top: 2em">
-<h4>Report Generated on 11.21.2020<span style="padding-left:400px">Page 3</span></h4>
+<h4>Report Generated on `r format(Sys.time(), '%B %d, %Y')`<span style="padding-left:400px">Page 3</span></h4>
 ```{r echo=FALSE}
-#CAA
-
-##first let's fix up the data
-#ok so We'll put the % in the title for the state, and try to figure out the same for the state/CD
-CAArecurring <- CAArecurring %>%
-  select(CD, Facilities, Percent)
-names(CAArecurring)[1] <- "Region"
-CAArecurring[1,1] <- as.character("Rest of State")
-CAArecurring[2,1] <- as.character(paste(state,CD))
-CAArecurring[2,4] <- as.character(paste(state,CD))
-CAArecurring$RecurringViolators <- (as.numeric(CAArecurring[1,2]-CAArecurring[2,2]))
-CAArecurring[2,5] <- as.numeric(CAArecurring[2,2])
-CAArecurring$Proportional <- (as.numeric((100/(CAArecurring[1,2]))*CAArecurring[1,5]))
-CAArecurring[2,6] <- as.numeric(100-CAArecurring[1,6])
-CAArecurring[3] <-round(CAArecurring[3],2)
 
 #CWA
-
 ##first let's fix up the data
 #ok so We'll put the % in the title for the state, and try to figure out the same for the state/CD
 CWArecurring <- CWArecurring %>%
@@ -306,21 +300,7 @@ CWArecurring$Proportional <- (as.numeric((100/(CWArecurring[1,2]))*CWArecurring[
 CWArecurring[2,6] <- as.numeric(100-CWArecurring[1,6])
 CWArecurring[3] <-round(CWArecurring[3],0)
 
-#RCRA
-
-##first let's fix up the data
-#ok so We'll put the % in the title for the state, and try to figure out the same for the state/CD
-RCRArecurring <- RCRArecurring %>%
-  select(CD,Facilities, Percent)
-names(RCRArecurring)[1] <- "Region"
-RCRArecurring[1,1] <- as.character("Rest of State")
-RCRArecurring[2,1] <- as.character(paste(state,CD))
-RCRArecurring[2,4] <- as.character(paste(state,CD))
-RCRArecurring$RecurringViolators <- (as.numeric(RCRArecurring[1,2]-RCRArecurring[2,2]))
-RCRArecurring[2,5] <- as.numeric(RCRArecurring[2,2])
-RCRArecurring$Proportional <- (as.numeric((100/(RCRArecurring[1,2]))*RCRArecurring[1,5]))
-RCRArecurring[2,6] <- as.numeric(100-RCRArecurring[1,6])
-RCRArecurring[3] <-round(RCRArecurring[3],2)
+#we don't currently utilize the recurring # or % under the CAA or RCRA b/c of the unreliability of the data. We do call that data from the regions.db, however. If and when this is needed, you can use the code above from CWA to replicate the process for these other acts 
 ```
 
 ```{r echo=FALSE}
@@ -452,7 +432,7 @@ enforcementfinegraph <- enforcement %>% ggplot()+
           element_text(lineheight = .1, size=10))
 
 ```
-# Highlights for `r long_state` `r CD_ord` District
+# Highlights for  `r full_name`
 
 * <h3>Comparing the first 3 years of the Obama administration to the first 3 years of the Trump administration, there has been a <span style="color:#569b5e">`r inspectionchange[1,5]`% `r inspectionchange[1,4]` in inspections,  `r enforcementchange[1,10]`%  `r enforcementchange[1,9]` in fines</span>, and a <span style="color:#569b5e">`r enforcementchange[1,8]`% `r enforcementchange[1,7]` in enforcement actions.</span></h3>
 
@@ -468,7 +448,7 @@ The reliability of data in figures throughout this report is indicated by the fi
 \pagebreak
 
 <hr style="height:3px;border-width:0;color: #C1E0D7;background-color: #C1E0D7; margin-top: 2em">
-<h4>Report Generated on 11.21.2020<span style="padding-left:400px">Page 4</span></h4>
+<h4>Report Generated on `r format(Sys.time(), '%B %d, %Y')`<span style="padding-left:400px">Page 4</span></h4>
 
 # This District in Comparison
 ```{r, fig.height = 6, fig.width = 8, fig.align = "left"}
@@ -537,12 +517,13 @@ The reliability of data in figures throughout this report is indicated by the fi
 \pagebreak
 
 <hr style="height:3px;border-width:0;color: #C1E0D7;background-color: #C1E0D7; margin-top: 2em">
-<h4>Report Generated on 11.21.2020<span style="padding-left:400px">Page 5</span></h4> 
+<h4>Report Generated on `r format(Sys.time(), '%B %d, %Y')`<span style="padding-left:400px">Page 5</span></h4> 
 
 <h1><span style="margin-bottom:0px; padding-bottom:0px">Recent Non-Compliance in this District</span></h1>
 <font size="2">These figures show the ten facilities in this district with the worst history of environmental compliance based on their number of noncompliant quarters in the past 3 years (not necessarily consecutive).</font>
 
-```{r, fig.height = 7, fig.width = 5, fig.align = "left"}
+```{r echo=FALSE, out.extra='style="float: left; width: 50%; height: 30%; margin-right: 5%"'}
+#```{r echo=FALSE, out.width= "40%", out.height="40%", out.extra='style="float:left"'}
 #call in data and clean up 
 nrows_caa <- nrow( CAAbadactors )
 if ( nrows_caa > 0 ) {
@@ -567,9 +548,8 @@ if ( nrows_caa > 0 ) {
       scale_y_continuous(expand=c(0,0))+
       # scale_x_discrete(expand=c(0,0))+
       theme_meg()+
-      theme(axis.text.y=element_text(size=12, face = "bold", color="black"), axis.title.x = element_text(size=14), axis.text.x=
-              element_text(size=14,face = "bold"), plot.title=element_text(size=16))+
-      coord_flip()
+  theme(axis.text.y=element_text(size=14, face = "bold", color="black"), axis.title.x = element_text(size=16), axis.text.x=element_text(size=16,face = "bold"), plot.title=element_text(size=18))+
+  coord_flip()
    
   } else {
     CAAfacilities <- CAAbadactors %>%
@@ -581,12 +561,33 @@ if ( nrows_caa > 0 ) {
       scale_y_continuous(expand=c(0,0), limits=c(0,12))+
       scale_x_discrete(expand=c(0,0))+
       theme_meg()+
-      theme(axis.text.y=element_text(size=12, face = "bold", color="black"), axis.title.x = element_text(size=14), axis.text.x=element_text(size=14,face = "bold"), plot.title=element_text(size=16))+
-      coord_flip()
+  theme(axis.text.y=element_text(size=14, face = "bold", color="black"), axis.title.x = element_text(size=16), axis.text.x=element_text(size=16,face = "bold"), plot.title=element_text(size=18))+
+  coord_flip()
   }
-  ggsave("CAAfacilities.png", CAAfacilities, path=here(output_loc), scale = 3, width=7, height=4, units=c("cm"))
 }
 
+CAAfacilities
+
+```
+<p style="text-align: right;"><font size="3">**ECHO reports for facilities:**</font></p>
+
+<p style="text-align: right;">[`r na.omit(CAAbadactors[1,7]) `](`r na.omit(CAAbadactors[1,4]) `)</p>
+<p style="text-align: right;">[`r na.omit(CAAbadactors[2,7]) `](`r na.omit(CAAbadactors[2,4]) `)</p>
+<p style="text-align: right;">[`r na.omit(CAAbadactors[3,7]) `](`r na.omit(CAAbadactors[3,4]) `)</p>
+<p style="text-align: right;">[`r na.omit(CAAbadactors[4,7]) `](`r na.omit(CAAbadactors[4,4]) `)</p>
+<p style="text-align: right;">[`r na.omit(CAAbadactors[5,7]) `](`r na.omit(CAAbadactors[5,4]) `)</p>
+<p style="text-align: right;">[`r na.omit(CAAbadactors[6,7]) `](`r na.omit(CAAbadactors[6,4]) `)</p>
+<p style="text-align: right;">[`r na.omit(CAAbadactors[7,7]) `](`r na.omit(CAAbadactors[7,4]) `)</p>
+<p style="text-align: right;">[`r na.omit(CAAbadactors[8,7]) `](`r na.omit(CAAbadactors[8,4]) `)</p>
+<p style="text-align: right;">[`r na.omit(CAAbadactors[9,7]) `](`r na.omit(CAAbadactors[9,4]) `)</p>
+<p style="text-align: right;">[`r na.omit(CAAbadactors[10,7]) `](`r na.omit(CAAbadactors[10,4]) `)</p>
+
+<br />
+<br />
+<br />
+<br />
+
+```{r echo=FALSE, out.extra='style="float: left; width: 50%; height: 30%; margin-right: 5%; margin-top:1.5%"'}
 #call in data and clean up 
 nrows_rcra <- nrow( RCRAbadactors )
 if ( nrows_rcra > 0 ) {
@@ -611,9 +612,8 @@ if ( nrows_rcra > 0 ) {
       scale_y_continuous(expand=c(0,0))+
       # scale_x_discrete(expand=c(0,0))+
       theme_meg()+
-      theme(axis.text.y=element_text(size=12, face = "bold", color="black"), axis.title.x = element_text(size=14), axis.text.x=
-              element_text(size=14,face = "bold"), plot.title=element_text(size=16))+
-      coord_flip()
+  theme(axis.text.y=element_text(size=14, face = "bold", color="black"), axis.title.x = element_text(size=16), axis.text.x=element_text(size=16,face = "bold"), plot.title=element_text(size=18))+
+  coord_flip()
    
   } else {
     RCRAfacilities <- RCRAbadactors %>%
@@ -624,13 +624,35 @@ if ( nrows_rcra > 0 ) {
       labs(y="Quarters in Violation", x="", title="RCRA Violators")+
       scale_y_continuous(expand=c(0,0), limits=c(0,12))+
       scale_x_discrete(expand=c(0,0))+
-      theme_meg()+
-      theme(axis.text.y=element_text(size=12, face = "bold", color="black"), axis.title.x = element_text(size=14), axis.text.x=element_text(size=14,face = "bold"), plot.title=element_text(size=16))+
-      coord_flip()
+       theme_meg()+
+  theme(axis.text.y=element_text(size=14, face = "bold", color="black"), axis.title.x = element_text(size=16), axis.text.x=element_text(size=16,face = "bold"), plot.title=element_text(size=18))+
+  coord_flip()
   }
-  ggsave("RCRAfacilities.png", RCRAfacilities, path=here(output_loc), scale = 3, width=7, height=4, units=c("cm"))
 }
 
+RCRAfacilities
+
+```
+<p style="text-align: right;"><font size="3">**ECHO reports for facilities:**</font></p>
+
+<p style="text-align: right;">[`r na.omit(RCRAbadactors[1,7]) `](`r na.omit(RCRAbadactors[1,4]) `)</p>
+<p style="text-align: right;">[`r na.omit(RCRAbadactors[2,7]) `](`r na.omit(RCRAbadactors[2,4]) `)</p>
+<p style="text-align: right;">[`r na.omit(RCRAbadactors[3,7]) `](`r na.omit(RCRAbadactors[3,4]) `)</p>
+<p style="text-align: right;">[`r na.omit(RCRAbadactors[4,7]) `](`r na.omit(RCRAbadactors[4,4]) `)</p>
+<p style="text-align: right;">[`r na.omit(RCRAbadactors[5,7]) `](`r na.omit(RCRAbadactors[5,4]) `)</p>
+<p style="text-align: right;">[`r na.omit(RCRAbadactors[6,7]) `](`r na.omit(RCRAbadactors[6,4]) `)</p>
+<p style="text-align: right;">[`r na.omit(RCRAbadactors[7,7]) `](`r na.omit(RCRAbadactors[7,4]) `)</p>
+<p style="text-align: right;">[`r na.omit(RCRAbadactors[8,7]) `](`r na.omit(RCRAbadactors[8,4]) `)</p>
+<p style="text-align: right;">[`r na.omit(RCRAbadactors[9,7]) `](`r na.omit(RCRAbadactors[9,4]) `)</p>
+<p style="text-align: right;">[`r na.omit(RCRAbadactors[10,7]) `](`r na.omit(RCRAbadactors[10,4]) `)</p>
+
+<br />
+<br />
+<br />
+<br />
+
+
+```{r echo=FALSE, out.extra='style="float: left; width: 50%; height: 30%; margin-right: 5%; margin-top:1.5%"'}
 #call in data and clean up 
 nrows_cwa <- nrow( CWAbadactors )
 if ( nrows_cwa > 0 ) {
@@ -654,10 +676,9 @@ if ( nrows_cwa > 0 ) {
       labs(y="Quarters in Violation", x="", title="CWA Violators")+
       scale_y_continuous(expand=c(0,0), breaks=c(0,3,6,9,13), limits=c(0,13))+
       # scale_x_discrete(expand=c(0,0))+
-      theme_meg()+
-      theme(axis.text.y=element_text(size=12, face = "bold", color="black"), axis.title.x = element_text(size=14), axis.text.x=
-              element_text(size=14,face = "bold"), plot.title=element_text(size=16))+
-      coord_flip()
+    theme_meg()+
+  theme(axis.text.y=element_text(size=14, face = "bold", color="black"), axis.title.x = element_text(size=16), axis.text.x=element_text(size=16,face = "bold"), plot.title=element_text(size=18))+
+  coord_flip()
    
   } else {
     CWAfacilities <- CWAbadactors %>%
@@ -669,114 +690,36 @@ if ( nrows_cwa > 0 ) {
       scale_y_continuous(expand=c(0,0), breaks=c(0,3,6,9,13), limits=c(0,13))+
       scale_x_discrete(expand=c(0,0))+
       theme_meg()+
-      theme(axis.text.y=element_text(size=12, face = "bold", color="black"), axis.title.x = element_text(size=14), axis.text.x=element_text(size=14,face = "bold"), plot.title=element_text(size=16))+
-      coord_flip()
+  theme(axis.text.y=element_text(size=14, face = "bold", color="black"), axis.title.x = element_text(size=16), axis.text.x=element_text(size=16,face = "bold"), plot.title=element_text(size=18))+
+  coord_flip()
   }
-  ggsave("CWAfacilities.png", CWAfacilities, path=here(output_loc), scale = 3, width=7, height=4, units=c("cm"))
 }
 
-CAAfacilities / CWAfacilities / RCRAfacilities 
-
-img_start <- "'<br /><a ><img src=\""
-img_part2 <- "\" style=\"float: left; width: 55%; height: 60%; margin-right: 5%\" ></a>    <font size=\"3\">**ECHO reports for facilities:**</font><font size=\"1.5\"><br />'"
-
-CAA_fac_src <- paste(output_loc,"CAAfacilities.png",sep="")
-CWA_fac_src <- paste(output_loc,"CWAfacilities.png",sep="")
-RCRA_fac_src <- paste(output_loc,"RCRAfacilities.png",sep="")
-
-CAA_img <- paste(img_start,CAA_fac_src,img_part2,sep="")
-CWA_img <- paste(img_start,CWA_fac_src,img_part2,sep="")
-RCRA_img <- paste(img_start,RCRA_fac_src,img_part2,sep="")
-
-#    "<br /><a ><img src=\""`r fac_src`"\" style=\"float: left; width: 55%; 
-#      height: 60%; margin-right: 5%\" ></a>
-#    <font size=\"3\">**ECHO reports for facilities:**</font><font size=\"1.5\"><br />"
+CWAfacilities
 
 ```
-`r if ( nrows_caa == 0) { 
-    "<br /><h3> No se informa de violadores consistentes de la Ley de Aire Limpio (CAA) en ECHO</h3>"
-  } else {
-    CAA_img
-  }`
-[`r na.omit(CAAbadactors[1,8]) `](`r na.omit(CAAbadactors[1,5]) `)
-`r if ( nrows_caa > 0 ) { "<br />" }`
-[`r na.omit(CAAbadactors[2,8]) `](`r na.omit(CAAbadactors[2,5]) `)
-`r if ( nrows_caa > 0 ) { "<br />" }`
-[`r na.omit(CAAbadactors[3,8]) `](`r na.omit(CAAbadactors[3,5]) `)
-`r if ( nrows_caa > 0 ) { "<br />" }`
-[`r na.omit(CAAbadactors[4,8]) `](`r na.omit(CAAbadactors[4,5]) `)
-`r if ( nrows_caa > 0 ) { "<br />" }`
-[`r na.omit(CAAbadactors[5,8]) `](`r na.omit(CAAbadactors[5,5]) `)
-`r if ( nrows_caa > 0 ) { "<br />" }`
-[`r na.omit(CAAbadactors[6,8]) `](`r na.omit(CAAbadactors[6,5]) `)
-`r if ( nrows_caa > 0 ) { "<br />" }`
-[`r na.omit(CAAbadactors[7,8]) `](`r na.omit(CAAbadactors[7,5]) `)
-`r if ( nrows_caa > 0 ) { "<br />" }`
-[`r na.omit(CAAbadactors[8,8]) `](`r na.omit(CAAbadactors[8,5]) `)
-`r if ( nrows_caa > 0 ) { "<br />" }`
-[`r na.omit(CAAbadactors[9,8]) `](`r na.omit(CAAbadactors[9,5]) `)
-`r if ( nrows_caa > 0 ) { "<br />" }`
-[`r na.omit(CAAbadactors[10,8]) `](`r na.omit(CAAbadactors[10,5]) `)
-`r if ( nrows_caa > 0 ) { "</font>" }`
+<p style="text-align: right;"><font size="3">**ECHO reports for facilities:**</font></p>
 
-`r if ( nrows_rcra == 0) { 
-    "<br /><h3>No se informa de violadores consistentes de la Ley de Conservación y Recuperación de Recursos (RCRA) en ECHO</h3>"
-  } else {
-    RCRA_img
-  }`
-[`r na.omit(RCRAbadactors[1,8]) `](`r na.omit(RCRAbadactors[1,5]) `)
-<br />
-[`r na.omit(RCRAbadactors[2,8]) `](`r na.omit(RCRAbadactors[2,5]) `)
-<br />
-[`r na.omit(RCRAbadactors[3,8]) `](`r na.omit(RCRAbadactors[3,5]) `)
-<br />
-[`r na.omit(RCRAbadactors[4,8]) `](`r na.omit(RCRAbadactors[4,5]) `)
-<br />
-[`r na.omit(RCRAbadactors[5,8]) `](`r na.omit(RCRAbadactors[5,5]) `)
-<br />
-[`r na.omit(RCRAbadactors[6,8]) `](`r na.omit(RCRAbadactors[6,5]) `)
-<br />
-[`r na.omit(RCRAbadactors[7,8]) `](`r na.omit(RCRAbadactors[7,5]) `)
-<br />
-[`r na.omit(RCRAbadactors[8,8]) `](`r na.omit(RCRAbadactors[8,5]) `)
-<br />
-[`r na.omit(RCRAbadactors[9,8]) `](`r na.omit(RCRAbadactors[9,5]) `)
-<br />
-[`r na.omit(RCRAbadactors[10,8]) `](`r na.omit(RCRAbadactors[10,5]) `)
-`r if ( nrows_rcra > 0 ) { "</font>" }`
+<p style="text-align: right;">[`r na.omit(CWAbadactors[1,7]) `](`r na.omit(CWAbadactors[1,4]) `)</p>
+<p style="text-align: right;">[`r na.omit(CWAbadactors[2,7]) `](`r na.omit(CWAbadactors[2,4]) `)</p>
+<p style="text-align: right;">[`r na.omit(CWAbadactors[3,7]) `](`r na.omit(CWAbadactors[3,4]) `)</p>
+<p style="text-align: right;">[`r na.omit(CWAbadactors[4,7]) `](`r na.omit(CWAbadactors[4,4]) `)</p>
+<p style="text-align: right;">[`r na.omit(CWAbadactors[5,7]) `](`r na.omit(CWAbadactors[5,4]) `)</p>
+<p style="text-align: right;">[`r na.omit(CWAbadactors[6,7]) `](`r na.omit(CWAbadactors[6,4]) `)</p>
+<p style="text-align: right;">[`r na.omit(CWAbadactors[7,7]) `](`r na.omit(CWAbadactors[7,4]) `)</p>
+<p style="text-align: right;">[`r na.omit(CWAbadactors[8,7]) `](`r na.omit(CWAbadactors[8,4]) `)</p>
+<p style="text-align: right;">[`r na.omit(CWAbadactors[9,7]) `](`r na.omit(CWAbadactors[9,4]) `)</p>
+<p style="text-align: right;">[`r na.omit(CWAbadactors[10,7]) `](`r na.omit(CWAbadactors[10,4]) `)</p>
 
-`r if ( nrows_cwa == 0) { 
-    "<br /><h3>No se informa de violadores consistentes de la Ley de Agua Limpia (CWA) en ECHO</h3>"
-  } else {
-    CWA_img
-  }`
-[`r na.omit(CWAbadactors[1,8]) `](`r na.omit(CWAbadactors[1,5]) `)
 <br />
-[`r na.omit(CWAbadactors[2,8]) `](`r na.omit(CWAbadactors[2,5]) `)
 <br />
-[`r na.omit(CWAbadactors[3,8]) `](`r na.omit(CWAbadactors[3,5]) `)
 <br />
-[`r na.omit(CWAbadactors[4,8]) `](`r na.omit(CWAbadactors[4,5]) `)
 <br />
-[`r na.omit(CWAbadactors[5,8]) `](`r na.omit(CWAbadactors[5,5]) `)
-<br />
-[`r na.omit(CWAbadactors[6,8]) `](`r na.omit(CWAbadactors[6,5]) `)
-<br />
-[`r na.omit(CWAbadactors[7,8]) `](`r na.omit(CWAbadactors[7,5]) `)
-<br />
-[`r na.omit(CWAbadactors[8,8]) `](`r na.omit(CWAbadactors[8,5]) `)
-<br />
-[`r na.omit(CWAbadactors[9,8]) `](`r na.omit(CWAbadactors[9,5]) `)
-<br />
-[`r na.omit(CWAbadactors[10,8]) `](`r na.omit(CWAbadactors[10,5]) `)
-`r if ( nrows_cwa > 0 ) { "</font>" }`
-
-
 
 \pagebreak
 
 <hr style="height:3px;border-width:0;color: #C1E0D7;background-color: #C1E0D7; margin-top: 2em">
-<h4>Report Generated on 11.21.2020<span style="padding-left:400px">Page 6</span></h4>
+<h4>Report Generated on `r format(Sys.time(), '%B %d, %Y')`<span style="padding-left:400px">Page 6</span></h4>
 
 # Clean Air Act
 
@@ -805,8 +748,6 @@ vCAAgraph <- ggplot(CAAviolations, mapping=aes(x=factor(Year), y=Count, fill=Pre
   theme_meg()+
   theme(axis.text.x=element_text(size=10),
         axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5))
-
-vCAAgraph
 
 #clean up data
 CAAinspections$President <- as.character("Bush")
@@ -868,7 +809,7 @@ These figures show patterns of CAA inspections, violations, enforcement actions 
 \pagebreak
 
 <hr style="height:3px;border-width:0;color: #C1E0D7;background-color: #C1E0D7; margin-top: 2em">
-<h4>Report Generated on 11.21.2020<span style="padding-left:400px">Page 7</span></h4> 
+<h4>Report Generated on `r format(Sys.time(), '%B %d, %Y')`<span style="padding-left:400px">Page 7</span></h4> 
 
 # Clean Water Act 
 
@@ -964,7 +905,7 @@ For access to the Jupyter Notebook which pulls data from ECHO at the state and c
 \pagebreak
 
 <hr style="height:3px;border-width:0;color: #C1E0D7;background-color: #C1E0D7; margin-top: 2em">
-<h4>Report Generated on 11.21.2020<span style="padding-left:400px">Page 8</span></h4>
+<h4>Report Generated on `r format(Sys.time(), '%B %d, %Y')`<span style="padding-left:400px">Page 8</span></h4>
 
 # Resource Conservation and Recovery Act 
 
@@ -1063,7 +1004,7 @@ These figures show patterns of RCRA inspections, violations, enforcement actions
 \pagebreak
 
 <hr style="height:3px;border-width:0;color: #C1E0D7;background-color: #C1E0D7; margin-top: 2em">
-<h4>Report Generated on 11.21.2020<span style="padding-left:400px">Page 9</span></h4>
+<h4>Report Generated on `r format(Sys.time(), '%B %d, %Y')`<span style="padding-left:400px">Page 9</span></h4>
 
 # Legislator Information 
 <br />
@@ -1108,7 +1049,7 @@ pdf_url <- paste("https://github.com/edgi-govdata-archiving/CD-report/blob/maste
 \pagebreak
 
 <hr style="height:3px;border-width:0;color: #C1E0D7;background-color: #C1E0D7; margin-top: 2em">
-<h4>Report Generated on 11.21.2020<span style="padding-left:400px">Page 10</span></h4> 
+<h4>Report Generated on `r format(Sys.time(), '%B %d, %Y')`<span style="padding-left:400px">Page 10</span></h4> 
 
 # About the EPA Data Analyzed in this Report Card and its Limitations  
 The data in this report is from EPA’s publicly-available [ECHO database](https://echo.epa.gov/) that compiles information from a number of distinct state and federal sources. However, poor reporting by states and inconsistent reporting schemes result in data gaps and inaccuracies. EPA lists numerous specific issues on its [“Known Data Problems”](https://echo.epa.gov/resources/echo-data/known-data-problems) page. In addition, EPA [notes](https://echo.epa.gov/tools/data-downloads) that data on inspections, violations, and enforcement actions prior to 2001 should be treated as incomplete and unreliable. For that reason, we have only tracked data back to 2001. In addition to many data entry errors -- too numerous to list here -- there are several major problems with ECHO: 
@@ -1128,7 +1069,7 @@ We do not include data from 2020 because we are only part way through the year. 
 \pagebreak
 
 <hr style="height:3px;border-width:0;color: #C1E0D7;background-color: #C1E0D7; margin-top: 2em">
-<h4>Report Generated on 11.21.2020<span style="padding-left:400px">Page 11</span></h4>
+<h4>Report Generated on `r format(Sys.time(), '%B %d, %Y')`<span style="padding-left:400px">Page 11</span></h4>
 
 # How and why EEW developed the metrics in this report
 
@@ -1163,7 +1104,7 @@ To highlight the problem of chronic and routine violations of major environmenta
 \pagebreak
 
 <hr style="height:3px;border-width:0;color: #C1E0D7;background-color: #C1E0D7; margin-top: 2em">
-<h4>Report Generated on 11.21.2020<span style="padding-left:400px">Page 12</span></h4>
+<h4>Report Generated on `r format(Sys.time(), '%B %d, %Y')`<span style="padding-left:400px">Page 12</span></h4>
 
 # How and why EEW developed the metrics in this report (continued)
 
@@ -1180,7 +1121,7 @@ To examine facilities with consistent records of noncompliance, we provide infor
 \pagebreak
 
 <hr style="height:3px;border-width:0;color: #C1E0D7;background-color: #C1E0D7; margin-top: 2em">
-<h4>Report Generated on 11.21.2020<span style="padding-left:400px">Page 13</span></h4>
+<h4>Report Generated on `r format(Sys.time(), '%B %d, %Y')`<span style="padding-left:400px">Page 13</span></h4>
 
 # About the Authors and Links to Data 
 
