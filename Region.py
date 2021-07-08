@@ -225,21 +225,25 @@ class Region:
         cursor.execute( sql )
         fetched = cursor.fetchone()
         state_violators = fetched[0]
-        
-        sql = 'select violations, facilities from recurring_violations '
-        sql += ' where program=\'{}\' and region_id={}'
-        sql = sql.format( program, self.region_id )
-        cursor.execute( sql )
-        cd_fac_viol = cursor.fetchone()
-
-        data = [{ 'CD': self.state, 'Facilities': state_violators,
+        data = [{ 'State': self.state, 'Facilities': state_violators,
                     'Percent': 100. * state_violators / state_facilities 
                     if state_facilities > 0 else -1 },
+                ]
+
+        if ( self.value is not None ):       
+            sql = 'select violations, facilities from recurring_violations '
+            sql += ' where program=\'{}\' and region_id={}'
+            sql = sql.format( program, self.region_id )
+            cursor.execute( sql )
+            cd_fac_viol = cursor.fetchone()
+
+            data.append(
                 { 'CD': '{}{}'.format( self.state, self.value ),
                     'Facilities': cd_fac_viol[0],
                     'Percent': 100. * cd_fac_viol[0] / cd_fac_viol[1] 
                     if cd_fac_viol[1] > 0 else -1 }
-                ]
+            )
+
         df = pd.DataFrame( data )
         return df
 
@@ -280,14 +284,21 @@ class Region:
             sql = 'select year Year, count as Count from violations'
         else:
             return None
-        sql += ' where region_id={} and year <= {} '
+        if ( self.value is None ):
+            sql += ' where region_id in ( select rowid from regions where '
+            sql += ' state=\'{}\')' 
+            sql = sql.format( self.state )
+        else:
+            sql += ' where region_id={}'
+            sql = sql.format( self.region_id )
+        sql += ' and year <= {} '
         if ( program != 'All' ):
             sql += ' and program=\'{}\''
         sql += ' group by year'
         if ( program == 'All' ):
-            sql = sql.format( self.region_id, base_year )
+            sql = sql.format( base_year )
         else:
-            sql = sql.format( self.region_id, base_year, program )
+            sql = sql.format( base_year, program )
         return pd.read_sql_query( sql,conn )
 
     def get_non_compliants( self, program ):
@@ -295,17 +306,30 @@ class Region:
 
         sql = 'select fac_name, noncomp_count, formal_action_count, dfr_url,'
         sql += ' fac_lat, fac_long from non_compliants where program=\'{}\''
-        sql += ' and region_id={} and noncomp_count > 0'
-        sql = sql.format( program, self.region_id )
+        sql += ' and noncomp_count > 0'
+        sql = sql.format( program )
+        if ( self.value is None ):
+            # Look at the entire state
+            sql += ' and region_id in (select rowid from regions where state=\'{}\')'
+            sql = sql.format( self.state )
+        else:
+            sql += ' and region_id={}'
+            sql = sql.format( self.region_id )
         return pd.read_sql_query( sql, conn )
 
     def get_active_facilities( self, program ):
         conn = sqlite3.connect("region.db")
         cursor = conn.cursor()
 
-        sql = 'select count from active_facilities where region_id={}'
-        sql += ' and program=\'{}\''
-        sql = sql.format( self.region_id, program )
+        if ( self.value is None ):
+            # Sum active facilities over all regions in the state
+            sql = 'select sum(count) from active_facilities where region_id in ('
+            sql += ' select rowid from regions where state=\'{}\') and program=\'{}\''
+            sql = sql.format( self.state, program )
+        else:
+            sql = 'select count from active_facilities where region_id={}'
+            sql += ' and program=\'{}\''
+            sql = sql.format( self.region_id, program )
         cursor.execute( sql )
         fetch = cursor.fetchone()
         return fetch[0] if fetch else 0
