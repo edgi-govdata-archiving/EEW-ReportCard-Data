@@ -16,12 +16,13 @@ only need to be run when congressional districts change, or when legislators cha
 # Very Occasional Tasks
 Most of the data gathering shown in the diagram is done infrequently.  The leg_info.py script that builds the leg_info.db SQLite database of legislator data only needs to be run when legislators change.  The same is true of the get_leg_image.py script that gets the images for the current legislators.  The RegionMap.py program that creates maps of the congressional districts and states only needs to be run when districts are re-drawn.
 
-# Getting data from the Stonybrook University (SBU) ECHO database 
+# Getting data from the Stonybrook University (SBU) ECHO database - AllPrograms.py
 Monthly we will extract the data needed for all Congressional and State report cards from the Stonybrook database.  This is stored in a local SQLite database, region.db.
 The extraction is performed by the AllPrograms.py program.  AllPrograms.py must gather a large volume of data in order to filter
 it for the report cards, so it isn't able to process all Congressional districts at once.  The list of CDs to be processed for a single run of AllPrograms.py must be reduced to around 60 per run. A script run_AllPrograms.sh runs AllPrograms.py with batches of congressional districts.  The districts are listed in 9 files state_cd-X.csv, where X is 1 to 9.
 The script is run as follows:
 * run_AllPrograms.sh
+* 
 A log file, AllPrograms.log, can be viewed to determine if there was any problem encountered in running the AllPrograms.py on any of the state_cd-X.csv files.
 
 Within run_AllPrograms.sh, the commands run are:
@@ -43,8 +44,18 @@ The AllPrograms.py program writes into tables in the local region.db SQLite data
 * TBD - We should also archive the regions.db before cleaning it.  
 
 # Local region.db SQLite database
-* Tables
-* The schema is in region_db.schema.  
+
+The schema of this small, local database is in region_db.schema.  The tables are:
+* regions - This identifies all of the regions (congressional districts) for which data exists. All other tables link via the regions table's rowid index.
+* active_facilities - the count of facilities for each program--CAA, CWA, RCRA, GHG
+* per_fac - counts of violations, etc. (type) by program (CAA, etc.) by year, per facility
+* violations - counts of violations by program by year
+* enforcements - counts of enforcements and penalty amounts by program by year
+* ghg_emissions - amounts by year
+* non_compliants - facilities, quarters of non-compliance, formal actions, URL, latitude and longitude by program
+* violations_by_facilities - number of facilities and non-compliant quarters by program
+* enf_per_fac - number of facilities, count of enforcements, amount of enforcements by year and program
+* inflation - yearly inflation factors
 
 # Using Regions.py to get data from regions.db in R
 * Functions available through Regions.py
