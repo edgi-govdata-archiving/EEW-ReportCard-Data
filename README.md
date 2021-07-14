@@ -11,7 +11,7 @@ This repository contains code and scripts for gathering data from the Stonybrook
 # Overall Process
 This diagram shows the overall process of getting the data for the report cards.  It looks complicated, but many of the steps
 only need to be run when congressional districts change, or when legislators change.
-![alt text](https://github.com/edgi-govdata-archiving/EEW-ReportCard-Data/blob/main/ReportCard-process-flow.jpg?raw=true)
+![alt text](https://github.com/edgi-govdata-archiving/EEW-ReportCard-Data/main/ReportCard-process-flow.jpg?raw=true)
 
 # Very Occasional Tasks
 Most of the data gathering shown in the diagram is done infrequently.  The leg_info.py script that builds the leg_info.db SQLite database of legislator data only needs to be run when legislators change.  The same is true of the get_leg_image.py script that gets the images for the current legislators.  The RegionMap.py program that creates maps of the congressional districts and states only needs to be run when districts are re-drawn.
