@@ -19,24 +19,14 @@ Most of the data gathering shown in the diagram is done infrequently.  The leg_i
 # Getting data from the Stonybrook University (SBU) ECHO database - AllPrograms.py
 Monthly we will extract the data needed for all Congressional and State report cards from the Stonybrook database.  This is stored in a local SQLite database, region.db.
 The extraction is performed by the AllPrograms.py program.  AllPrograms.py must gather a large volume of data in order to filter
-it for the report cards, so it isn't able to process all Congressional districts at once.  The list of CDs to be processed for a single run of AllPrograms.py must be reduced to around 60 per run. A script run_AllPrograms.sh runs AllPrograms.py with batches of congressional districts.  The districts are listed in 9 files state_cd-X.csv, where X is 1 to 9.
-The script is run as follows:
+it for the report cards, so it isn't able to process all Congressional districts at once.  The list of CDs to be processed for a single run of AllPrograms.py must be reduced to around 60 per run. 
+
+The -c argument to AllPrograms.py is a list of comma-separated state, CD number pairs (e.g. AL,1).  The -f option specifies the focus year of the data, which is generally the last full year of reliable data. (In 2021 we are specifying 2020 as the focus year.)
+
+A script run_AllPrograms.sh runs AllPrograms.py with batches of congressional districts.  The districts are listed in 9 files state_cd-X.csv, where X is 1 to 9. The script is run as follows:
 * run_AllPrograms.sh
-* 
+
 A log file, AllPrograms.log, can be viewed to determine if there was any problem encountered in running the AllPrograms.py on any of the state_cd-X.csv files.
-
-Within run_AllPrograms.sh, the commands run are:
-* python AllPrograms.py -c state_cd-1.csv -f 2020 > AllPrograms.log
-* python AllPrograms.py -c state_cd-2.csv -f 2020 >> AllPrograms.log
-* python AllPrograms.py -c state_cd-3.csv -f 2020 >> AllPrograms.log
-* python AllPrograms.py -c state_cd-4.csv -f 2020 >> AllPrograms.log
-* python AllPrograms.py -c state_cd-5.csv -f 2020 >> AllPrograms.log
-* python AllPrograms.py -c state_cd-6.csv -f 2020 >> AllPrograms.log
-* python AllPrograms.py -c state_cd-7.csv -f 2020 >> AllPrograms.log
-* python AllPrograms.py -c state_cd-8.csv -f 2020 >> AllPrograms.log
-* python AllPrograms.py -c state_cd-9.csv -f 2020 >> AllPrograms.log
-
-The -c argument is a list of comma-separated state, CD number pairs (e.g. AL,1).  The -f option specifies the focus year of the data, which is generally the last full year of reliable data. (In 2021 we are specifying 2020 as the focus year.)
 
 The AllPrograms.py program writes into tables in the local region.db SQLite database. The schema for this database is in region_db.schema.
 * TBD - The goal is to make the monthly run of the run_AllPrograms.sh an automated cron job.
