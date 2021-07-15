@@ -26,6 +26,8 @@ The -c argument to _AllPrograms.py_ is a list of comma-separated state, CD numbe
 A script _run_AllPrograms.sh_ runs _AllPrograms.py_ with batches of congressional districts.  The districts are listed in 9 files _state_cd-X.csv_, where X is 1 to 9. The script is run as follows:
 * run_AllPrograms.sh
 
+_run_AllPrograms.sh_ first backs up the current _region.db_ database, appending the current date to the file name. Then it cleans out the tables that will be re-populated by running _AllPrograms.py_. 
+
 A log file, _AllPrograms.log_, can be viewed to determine if there was any problem encountered in running the _AllPrograms.py_ on any of the _state_cd-X.csv_ files.
 
 The _AllPrograms.py_ program writes into tables in the local _region.db_ SQLite database. The schema for this database is in _region_db.schema_.
@@ -48,6 +50,10 @@ The schema of this small, local database is in _region_db.schema_.  The tables i
 * inflation - yearly inflation factors
 
 ## Using Regions.py to get data from regions.db in R
+In the .Rmd templates, the _reticulate_ R package is employed to allow the use of the Python _Region.py_ code in the R Markdown file.
+
+The _Region_ object is imported, and the constructor is called with the _type_ parameter set to 'State' or 'Congressional District', _value_ set to the CD number (or omitted for states) and _state_ set as expected.  The _region_ variable created can then be used to request data through the functions provided.
+
 * Functions available through _Regions.py_ include:
 ```R
 u <- import( 'Region' )
