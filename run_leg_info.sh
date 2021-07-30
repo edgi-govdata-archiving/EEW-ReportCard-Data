@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd /home/steve/EEW-ReportCard-Data/
+
 CURRENTDATE=`date +"%Y-%m-%d"`
 SAVENAME=leg_info.db-${CURRENTDATE}
 IMAGESNAME=CD_images-${CURRENTDATE}.tar.xz
@@ -15,4 +17,6 @@ SAVENAME=leg_info.log-${CURRENTDATE}
 echo 'Running the leg_info.py commands to populate leg_info.db' >> leg_info.log
 date >> leg_info.log
 python3 leg_info.py >> leg_info.log
+date >> leg_info.log
+python3 committees.py >> leg_info.log
 date >> leg_info.log

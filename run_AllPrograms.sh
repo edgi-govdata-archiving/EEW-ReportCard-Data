@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd /home/steve/EEW-ReportCard-Data/
+
 CURRENTDATE=`date +"%Y-%m-%d"`
 SAVENAME=region.db-${CURRENTDATE}
 echo 'Saving the current region.db' > AllPrograms.log
