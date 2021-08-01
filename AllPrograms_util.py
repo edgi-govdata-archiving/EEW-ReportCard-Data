@@ -50,6 +50,9 @@ def get_cwa_df(df):
             "FAC_PERCENT_MINORITY",
             "FAC_POP_DEN",
             "FAC_DERIVED_HUC",
+            "FAC_SIC_CODES",
+            "FAC_NAICS_CODES",
+            "DFR_URL"
         ]
     )
     d = df.groupby(pd.to_datetime(df["YEAR"], format="%Y").dt.to_period("Y")).sum()

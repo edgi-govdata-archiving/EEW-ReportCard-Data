@@ -61,7 +61,7 @@ def mapper(df, no_text=False, map_radius=1, map_opacity=.1):
 
 
 def usage():
-    print( 'Usage: RegionMaps.py -c maps_todo.csv' )
+    print( 'Usage: RegionMap.py -c maps_todo.csv' )
     exit
 
 

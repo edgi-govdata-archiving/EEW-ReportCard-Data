@@ -68,3 +68,7 @@ unique( region_id, program, year ));
 CREATE TABLE inflation (
 year tinyint,
 rate real );
+CREATE TABLE real_cds (
+state char(5),
+cd tinyint,
+unique(state,cd));

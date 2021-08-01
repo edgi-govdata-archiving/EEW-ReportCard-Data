@@ -114,14 +114,7 @@ class Region:
         conn = sqlite3.connect("region.db")
         cursor = conn.cursor()
 
-        '''
-        real_regions contains all the legitimate CDs for the states
-        regions includes all identified in ECHO_EXPORTER, which
-        include many CDs that do not really exist.
-        real_regions identifies single-cd states by having a cd
-        value of 0.
-        '''
-        sql = 'select state, cd from real_regions'
+        sql = 'select state, cd from real_cds'
         df_real = pd.read_sql_query( sql, conn )
         # Results will be dictionary with key=AL01, state/cd,
         # and values a tuple (Num per 1000, Region) where
@@ -146,13 +139,18 @@ class Region:
                     sql = sql.format( region_id[0] )
                     cursor.execute( sql )
                     fetch = cursor.fetchone()
-                    active += fetch[0] if fetch[0] is not None else 0
+                    if fetch:
+                        active += fetch[0] if fetch[0] else 0
+                        print( 'State={}, adding {} facilities'.format( state, fetch[0]))
                     sql = 'select sum(count) from violations where'
                     sql += ' program=\'CWA\' and region_id={} and year={}'
                     sql = sql.format( region_id[0], year )
                     cursor.execute( sql )
                     fetch = cursor.fetchone()
-                    violations += fetch[0] if fetch[0] is not None else 0
+                    if fetch:
+                        violations += fetch[0] if fetch[0] else 0
+                        print( 'State={}, adding {} violations, region={}'.format( state, fetch[0], region_id))
+                print( 'State={}, facilities={}, violations={}'.format( state, active, violations ))
                 per_1000 = 0 if active == 0 else 1000. * violations / active
                 results[ key ] = ( per_1000, 'Congressional District' ) 
             else:
@@ -163,17 +161,25 @@ class Region:
                 sql = sql.format( region_id )
                 cursor.execute( sql )
                 fetch = cursor.fetchone()
-                active = fetch[0] if fetch[0] is not None else 0
+                active = 0
+                if fetch:
+                    active = fetch[0]
+                else:
+                    print( 'No active facilities in region_id={}, {}-{}'.format( region_id, state, cd ))
                 sql = 'select count from violations where'
                 sql += ' program=\'CWA\' and region_id={} and year={}'
                 sql = sql.format( region_id, year )
                 cursor.execute( sql )
                 fetch = cursor.fetchone()
-                violations = fetch[0] if fetch and fetch[0] is not None else 0
+                violations = 0
+                if fetch:
+                    violations = fetch[0]
+                else:
+                    print( 'No violations in region_id={}, {}-{}'.format( region_id, state, cd ))
                 per_1000 = 0 if active == 0 else 1000. * violations / active
                 results[ key ] = ( per_1000, 'Congressional District' ) 
         # Repeat this for all states
-        sql = 'select distinct(state) from real_regions'
+        sql = 'select distinct(state) from regions'
         df_real = pd.read_sql_query( sql, conn )
         for idx, row in df_real.iterrows():
             state = row['state']
