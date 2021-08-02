@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd /home/karen/workspace/EDGI/EEW-ReportCard-Data/
+cd /home/steve/EEW-ReportCard-Data/
 
 CURRENTDATE=`date +"%Y-%m-%d"`
 SAVENAME=leg_info.db-${CURRENTDATE}

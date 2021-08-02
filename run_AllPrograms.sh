@@ -4,11 +4,13 @@ cd /home/steve/EEW-ReportCard-Data/
 
 CURRENTDATE=`date +"%Y-%m-%d"`
 SAVENAME=region.db-${CURRENTDATE}
+LOGNAME=AllPrograms.log-${CURRENTDATE}
+mv AllPrograms.log ${LOGNAME}
+
 echo 'Saving the current region.db' > AllPrograms.log
-date >> AllPrograms.log
 cp region.db ${SAVENAME}
+date >> AllPrograms.log
 echo 'Saving the log file from the last population of region.db' >> AllPrograms.log
-SAVENAME=AllPrograms.log-${CURRENTDATE}
 
 echo 'Cleaning out the affected tables' >> AllPrograms.log
 sqlite3 region.db < clean_regions.sql

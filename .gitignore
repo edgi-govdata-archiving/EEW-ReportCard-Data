@@ -5,3 +5,4 @@
 *.log
 *.tar.xz
 region.db-*
+leg_info.db-*
