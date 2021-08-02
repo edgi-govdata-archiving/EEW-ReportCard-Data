@@ -1,0 +1,211 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=Ubuntu+Condensed&display=swap');
+
+:root {
+--pagedjs-margin-right: 0in !important;
+--pagedjs-margin-left: 0in !important;
+--pagedjs-margin-top: 0in !important;
+--pagedjs-margin-bottom: 0in !important;
+}
+
+/* Fonts */
+
+
+/* Headers */
+h1 {
+  font-family: Ubuntu Condensed;
+  text-transform: uppercase;
+  color: white;
+  background-color: #3c5b8c;
+  size: 5em;
+  padding-left: 40px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  margin-top: 5px;
+}
+
+h2 {
+  font-family: Ubuntu Condensed;
+  text-transform: none;
+  color: #569b5e;
+  size: 4em;
+  padding-left: 40px;
+}
+
+h3 {
+  font-family: Open Sans;
+  text-transform: none;
+  font-weight: 600;
+  color: black;
+  font-size: 16px;
+  padding-left: 40px;
+  padding-bottom: 0px;
+  margin-bottom: 0px;
+  margin-top: 0px;
+  padding-top: 0px;
+}
+
+
+h4 {
+  font-family: Ubuntu Condensed;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  color: gray;
+  size: 1em;
+  padding-left: 35px;
+  margin-top: 0.1em;
+  margin-bottom: 0px;
+  padding-bottom: 0px;
+}
+
+h5 {
+  font-family: Ubuntu Condensed;
+  color: #3c5b8c;
+  background-color:white;
+  font-size: 2.7em;
+  padding-left: 25px;
+  padding-top: 25px;
+  padding-bottom: 20px;
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+h6 {
+  font-family: Ubuntu Condensed;
+  color: #cfe23f;
+  background-color: #4c95c8;
+  font-size: 1em;
+  padding-left: 15px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+/*title*/
+.title {
+  font-family: Ubuntu Condensed;
+  background-color: white;
+  color: #569b5e;
+  font-size: 2.8em;
+  padding-top: 0px;
+  padding-left: 25px;
+  padding-bottom: 0px;
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+
+/* Body */
+
+body {
+  font-family: Open Sans;
+  font-weight: 300;
+  font-size: .85em;
+  color: black;
+  background-color: white;
+  padding-left: 0px;
+}
+
+p {
+  font-family: Open Sans;
+  font-weight: 300;
+  color: black;
+  padding-left: 40px;
+  padding-right: 40px;
+  padding-top: 0px;
+  padding-bottom: 0px;
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+/* Text box 1 */
+
+.text-box-info {
+background-color: #E2EFE1;
+color: black;
+border-style: solid;
+border-width: 4px;
+border-radius: 8px; /*rounds corners*/
+border-color: #C8DCD2;
+margin-left: 20px;
+margin-right: 20px;
+}
+
+/* logobox */
+
+.logo-box {
+background-color: #c9d4ee;
+border-style: solid;
+border-width: 0px;
+border-color: white;
+margin-left: 15px;
+margin-right: 15px;
+}
+
+
+/* --- Circle --- */
+.circle {
+    width: 250px;
+    height: 250px;
+    background-color: #5D7E78;
+    border-color: #80918E;
+    border-width: 4px;
+    border-radius: 50%;
+    float: right;
+    -webkit-shape-outside: circle();
+    shape-outside: circle() margin-box;
+    margin-left: 20px;
+    margin-right: 40px;
+    margin-top: 1px;
+    margin-bottom: 90px;
+    shape-inside: circle();
+}
+
+/* --- Center alignment ---*/
+.aligncenter {
+    text-align: center;
+}
+
+/* -------- Text box over image --------*/
+
+/* Container holding the image and the text */
+.container {
+  position: relative;
+  text-align: center;
+  color: white;
+}
+
+
+/* Top left text */
+.top-left {
+  position: absolute;
+  top: 8px;
+  left: 16px;
+  font-family: Ubuntu Condensed;
+  text-transform: uppercase;
+  font-size: 3.5em;
+  color: #466A63;
+}
+
+/* Middle left text */
+.middle-left {
+  position: absolute;
+  top: 70px;
+  left: 16px;
+  font-family: Ubuntu Condensed;
+  text-transform: uppercase;
+  font-size: 2.5em;
+  color: black;
+}
+
+/* bottom left text */
+.bottom-left {
+  position: absolute;
+  background-color: #3c5b8c;
+  top: 693px;
+  left: 550px;
+  font-family: Ubuntu Condensed;
+  font-size: .8em;
+  color: white;
+}
+
