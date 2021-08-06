@@ -525,22 +525,21 @@ The reliability of data in figures throughout this report is indicated by the fi
 <font size="2">These figures show the ten facilities in this district with the worst history of environmental compliance based on their number of noncompliant quarters in the past 3 years (not necessarily consecutive).</font>
 
 ```{r echo=FALSE, out.extra='style="float: left; width: 50%; height: 30%; margin-right: 5%"'}
-#```{r echo=FALSE, out.width= "40%", out.height="40%", out.extra='style="float:left"'}
 #call in data and clean up 
-nrows_caa <- nrow( CAAbadactors )
-if ( nrows_caa > 0 ) {
+nrows_df <- nrow( CAAbadactors )
+if ( nrows_df > 0 ) {
   CAAbadactors <- CAAbadactors[-c(11:100),] # SH
   CAAbadactors$Facility <- CAAbadactors$fac_name # SH
   CAAbadactors$Facility <- strtrim(CAAbadactors$Facility, 30)
   
   bar_width <- 0.8
-  if ( nrows_caa < 4 ) {
+  if ( nrows_df < 4 ) {
     bar_width <- 0.2
   }
  
     #Let's try the CAA plot 
  
-  if ( nrows_caa == 1 ) {
+  if ( nrows_df == 1 ) {
      CAAfacilities <- CAAbadactors %>%
       mutate(Facility = fct_reorder(Facility, noncomp_count)) %>%
       ggplot(aes(x=Facility, y=noncomp_count))+
@@ -590,20 +589,20 @@ if ( nrows_caa > 0 ) {
 
 ```{r echo=FALSE, out.extra='style="float: left; width: 50%; height: 30%; margin-right: 5%; margin-top:1.5%"'}
 #call in data and clean up 
-nrows_rcra <- nrow( RCRAbadactors )
-if ( nrows_rcra > 0 ) {
+nrows_df <- nrow( RCRAbadactors )
+if ( nrows_df > 0 ) {
   RCRAbadactors <- RCRAbadactors[-c(11:100),] # SH - 
   RCRAbadactors$Facility <- RCRAbadactors$fac_name # SH - 
   RCRAbadactors$Facility <- strtrim(RCRAbadactors$Facility, 30)
   
   bar_width <- 0.8
-  if ( nrows_rcra < 4 ) {
+  if ( nrows_df < 4 ) {
     bar_width <- 0.2
   }
  
     #Let's try the RCRA plot 
  
-  if ( nrows_rcra == 1 ) {
+  if ( nrows_df == 1 ) {
      RCRAfacilities <- RCRAbadactors %>%
       mutate(Facility = fct_reorder(Facility, noncomp_count)) %>%
       ggplot(aes(x=Facility, y=noncomp_count))+
@@ -654,20 +653,20 @@ if ( nrows_rcra > 0 ) {
 
 ```{r echo=FALSE, out.extra='style="float: left; width: 50%; height: 30%; margin-right: 5%; margin-top:1.5%"'}
 #call in data and clean up 
-nrows_cwa <- nrow( CWAbadactors )
-if ( nrows_cwa > 0 ) {
+nrows_df <- nrow( CWAbadactors )
+if ( nrows_df > 0 ) {
   CWAbadactors <- CWAbadactors[-c(11:100),] # SH - 
   CWAbadactors$Facility <- CWAbadactors$fac_name # SH - 
   CWAbadactors$Facility <- strtrim(CWAbadactors$Facility, 30)
   
   bar_width <- 0.8
-  if ( nrows_cwa < 4 ) {
+  if ( nrows_df < 4 ) {
     bar_width <- 0.2
   }
  
     #Let's try the CWA plot 
  
-  if ( nrows_cwa == 1 ) {
+  if ( nrows_df == 1 ) {
      CWAfacilities <- CWAbadactors %>%
       mutate(Facility = fct_reorder(Facility, noncomp_count)) %>%
       ggplot(aes(x=Facility, y=noncomp_count))+
@@ -731,74 +730,93 @@ The [Clean Air Act (CAA)](https://www.epa.gov/laws-regulations/summary-clean-air
 <h2>There are `r region$get_active_facilities('CAA')` facilities currently reporting under the CAA in this district</h2>
 ```{r, fig.height = 5, fig.width = 8, fig.align = "center"}
 
-#clean up data
-names(CAAviolations)[1] <- "Year"
-CAAviolations <- CAAviolations[-c(20),]
-CAAviolations$President <- as.character("Bush")
-CAAviolations[9:16,3] <- as.character("Obama")
-CAAviolations[17:20,3] <- as.character("Trump") # SH
+hasCAAviolations <- FALSE
+nrows_df <- nrow( CAAviolations )
+if ( nrows_df > 0 ) {
+  hasCAAviolations <- TRUE
 
-vCAAgraph <- ggplot(CAAviolations, mapping=aes(x=factor(Year), y=Count, fill=President, group=1))+
-  geom_bar(stat="identity", show.legend = FALSE, alpha=.3)+
-  scale_fill_manual(values=c("#450d54", "#22908d", "#e56d13"))+
-  labs(y=" # Violations", x="Year", title="CAA Violations\n", subtitle ="Very incomplete data")+
-  scale_y_continuous(expand=c(0,0), limits=c(0,max(CAAviolations$Count+(.2*max(CAAviolations$Count)))))+
-  scale_x_discrete(breaks=c(2004,2008,2012, 2016, 2020))+
-  theme_meg()+
-  theme(axis.text.x=element_text(size=10),
-        axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5))
+  #clean up data
+  names(CAAviolations)[1] <- "Year"
+  CAAviolations <- CAAviolations[-c(20),]
+  CAAviolations$President <- as.character("Bush")
+  CAAviolations[9:16,3] <- as.character("Obama")
+  CAAviolations[17:20,3] <- as.character("Trump") # SH
+  
+  vCAAgraph <- ggplot(CAAviolations, mapping=aes(x=factor(Year), y=Count, fill=President, group=1))+
+    geom_bar(stat="identity", show.legend = FALSE, alpha=.3)+
+    scale_fill_manual(values=c("#450d54", "#22908d", "#e56d13"))+
+    labs(y=" # Violations", x="Year", title="CAA Violations\n", subtitle ="Very incomplete data")+
+    scale_y_continuous(expand=c(0,0), limits=c(0,max(CAAviolations$Count+(.2*max(CAAviolations$Count)))))+
+    scale_x_discrete(breaks=c(2004,2008,2012, 2016, 2020))+
+    theme_meg()+
+    theme(axis.text.x=element_text(size=10),
+          axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5))
+}
 
-#clean up data
-CAAinspections$President <- as.character("Bush")
-CAAinspections[9:16,3] <- as.character("Obama")
-CAAinspections[17:20,3] <- as.character("Trump") # SH
+hasCAAinspections <- FALSE
+nrows_df <- nrow( CAAinspections )
+if ( nrows_df > 0 ) {
+  hasCAAinspections <- TRUE
+  #clean up data
+  CAAinspections$President <- as.character("Bush")
+  CAAinspections[9:16,3] <- as.character("Obama")
+  CAAinspections[17:20,3] <- as.character("Trump") # SH
+  
+  iCAAgraph <- ggplot(CAAinspections, mapping=aes(x=factor(Year), y=Count, fill=President, group=1))+
+    geom_bar(stat="identity", show.legend = FALSE, alpha=.6)+
+    scale_fill_manual(values=c("#450d54", "#22908d", "#e56d13"))+
+    labs(y=" # Inspections", x="Year", title="CAA Inspections\n", subtitle ="Potentially incomplete data")+
+    #ggtitle("CAA Inspections")+
+    scale_y_continuous(expand=c(0,0), limits=c(0,max(CAAinspections$Count+(.2*max(CAAinspections$Count)))))+
+    scale_x_discrete(breaks=c(2004,2008,2012, 2016, 2020))+
+    theme_meg()+
+    theme(axis.text.x=element_text(size=10),
+          axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5))
+}
 
-iCAAgraph <- ggplot(CAAinspections, mapping=aes(x=factor(Year), y=Count, fill=President, group=1))+
-  geom_bar(stat="identity", show.legend = FALSE, alpha=.6)+
-  scale_fill_manual(values=c("#450d54", "#22908d", "#e56d13"))+
-  labs(y=" # Inspections", x="Year", title="CAA Inspections\n", subtitle ="Potentially incomplete data")+
-  #ggtitle("CAA Inspections")+
-  scale_y_continuous(expand=c(0,0), limits=c(0,max(CAAinspections$Count+(.2*max(CAAinspections$Count)))))+
-  scale_x_discrete(breaks=c(2004,2008,2012, 2016, 2020))+
-  theme_meg()+
-  theme(axis.text.x=element_text(size=10),
-        axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5))
+hasCAAenforcement <- FALSE
+nrows_df <- nrow( CAAenforcement_clean )
+if ( nrows_df > 0 ) {
+  hasCAAenforcement <- TRUE
+  #clean up data
+  CAAenforcement <- CAAenforcement_clean
+  CAAenforcement$President <- as.character("Bush")
+  CAAenforcement[9:16,4] <- as.character("Obama")
+  CAAenforcement[17:20,4] <- as.character("Trump") # SH
+  
+  #adjust for inflation
+  names(inflation)[names(inflation) == 'Year'] <- 'year' # SH
+  CAAenforcement <- cbind(CAAenforcement, inflation)
+  CAAenforcement$inflationadjust <- as.numeric(CAAenforcement$Amount*CAAenforcement$base)
+  
+  ##make a new amount column /1000
+  CAAenforcement$Amountinthousands <- ((CAAenforcement$inflationadjust)/1000)
+  CAAenforcement$Amountinthousands <-round(CAAenforcement$Amountinthousands,2)
+  
+  eCAAgraph <- ggplot(CAAenforcement, mapping=aes(x=factor(Year), y=Count, fill=President, group=1))+
+    geom_bar(stat="identity", show.legend = FALSE, alpha=.6)+
+    scale_fill_manual(values=c("#450d54", "#22908d", "#e56d13"))+
+    labs(y=" # Actions", x="Year", title="CAA Enforcement Actions\n", subtitle ="Potentially incomplete data")+
+    scale_y_continuous(expand=c(0,0), limits=c(0,max(CAAviolations$Count+(.2*max(CAAviolations$Count)))))+
+    scale_x_discrete(breaks=c(2004,2008,2012, 2016, 2020))+
+    geom_text(aes(label=Count, family="Georgia", fontface="bold"), position = position_dodge(0.9), vjust = -0.1, size=3)+
+    theme_meg()+
+    theme(axis.text.x=element_text(size=10),
+          axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5))
+  
+  fineCAAgraph <- ggplot(CAAenforcement, mapping=aes(x=factor(Year), y=Amountinthousands, fill=President, group=1))+
+    geom_bar(stat="identity", alpha=.6)+
+    scale_fill_manual(values=c("#450d54", "#22908d", "#e56d13"))+
+    labs(y=" Fines ($1000s)", x="Year", title="CAA Fines\n", subtitle ="Potentially incomplete data", caption="Values adjusted for inflation. Note, the y-axis reports values in\n1000's. A value of $2000 represents $2,000,000 (2 million dollars).")+
+    scale_y_continuous(expand=c(0,0), limits=c(0,max(CAAenforcement$Amountinthousands+(.2*max(CAAenforcement$Amountinthousands)))))+
+    scale_x_discrete(breaks=c(2004,2008,2012, 2016, 2020))+
+    theme_meg()+
+    theme(axis.text.x=element_text(size=10),
+          axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5), plot.caption = element_text(size=8))
+}
+```
 
-#clean up data
-CAAenforcement <- CAAenforcement_clean
-CAAenforcement$President <- as.character("Bush")
-CAAenforcement[9:16,4] <- as.character("Obama")
-CAAenforcement[17:20,4] <- as.character("Trump") # SH
-
-#adjust for inflation
-names(inflation)[names(inflation) == 'Year'] <- 'year' # SH
-CAAenforcement <- cbind(CAAenforcement, inflation)
-CAAenforcement$inflationadjust <- as.numeric(CAAenforcement$Amount*CAAenforcement$base)
-
-##make a new amount column /1000
-CAAenforcement$Amountinthousands <- ((CAAenforcement$inflationadjust)/1000)
-CAAenforcement$Amountinthousands <-round(CAAenforcement$Amountinthousands,2)
-
-eCAAgraph <- ggplot(CAAenforcement, mapping=aes(x=factor(Year), y=Count, fill=President, group=1))+
-  geom_bar(stat="identity", show.legend = FALSE, alpha=.6)+
-  scale_fill_manual(values=c("#450d54", "#22908d", "#e56d13"))+
-  labs(y=" # Actions", x="Year", title="CAA Enforcement Actions\n", subtitle ="Potentially incomplete data")+
-  scale_y_continuous(expand=c(0,0), limits=c(0,max(CAAviolations$Count+(.2*max(CAAviolations$Count)))))+
-  scale_x_discrete(breaks=c(2004,2008,2012, 2016, 2020))+
-  geom_text(aes(label=Count, family="Georgia", fontface="bold"), position = position_dodge(0.9), vjust = -0.1, size=3)+
-  theme_meg()+
-  theme(axis.text.x=element_text(size=10),
-        axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5))
-
-fineCAAgraph <- ggplot(CAAenforcement, mapping=aes(x=factor(Year), y=Amountinthousands, fill=President, group=1))+
-  geom_bar(stat="identity", alpha=.6)+
-  scale_fill_manual(values=c("#450d54", "#22908d", "#e56d13"))+
-  labs(y=" Fines ($1000s)", x="Year", title="CAA Fines\n", subtitle ="Potentially incomplete data", caption="Values adjusted for inflation. Note, the y-axis reports values in\n1000's. A value of $2000 represents $2,000,000 (2 million dollars).")+
-  scale_y_continuous(expand=c(0,0), limits=c(0,max(CAAenforcement$Amountinthousands+(.2*max(CAAenforcement$Amountinthousands)))))+
-  scale_x_discrete(breaks=c(2004,2008,2012, 2016, 2020))+
-  theme_meg()+
-  theme(axis.text.x=element_text(size=10),
-        axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5), plot.caption = element_text(size=8))
+```{r, fig.height = 5, fig.width = 8, fig.align = "center"}
 
 (iCAAgraph | vCAAgraph) / (eCAAgraph | fineCAAgraph)
 
@@ -819,82 +837,111 @@ The [Clean Water Act (CWA)](https://www.epa.gov/laws-regulations/summary-clean-w
 CWA in this district</h2> 
 ```{r, fig.height = 5, fig.width = 8, fig.align = "center"}
 
-#clean up data
+hasCWAviolations <- FALSE
+nrows_df <- nrow( CWAviolations )
+if ( nrows_df > 0 ) {
+  hasCWAviolations <- TRUE
+  #clean up data
+  
+  # data cleaned elsewhere
+  #plot
+  vCWAgraph <- ggplot(CWAviolations, mapping=aes(x=factor(Year), y=Count, fill=President, group=1))+
+    geom_bar(stat="identity", show.legend = FALSE)+
+    scale_fill_manual(values=c("#450d54", "#22908d", "#e56d13"))+
+    labs(y=" # Violations", x="Year", title="CWA Violations\n", subtitle ="Mostly complete data")+
+    scale_y_continuous(expand=c(0,0), limits=c(0,max(CWAviolations$Count+(.2*max(CWAviolations$Count)))))+
+    scale_x_discrete(breaks=c(2004,2008,2012,2016,2020))+
+    theme_meg()+
+    theme(axis.text.x=element_text(size=10),
+          axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5))
+}
+```
 
-# data cleaned elsewhere
-#plot
-vCWAgraph <- ggplot(CWAviolations, mapping=aes(x=factor(Year), y=Count, fill=President, group=1))+
-  geom_bar(stat="identity", show.legend = FALSE)+
-  scale_fill_manual(values=c("#450d54", "#22908d", "#e56d13"))+
-  labs(y=" # Violations", x="Year", title="CWA Violations\n", subtitle ="Mostly complete data")+
-  scale_y_continuous(expand=c(0,0), limits=c(0,max(CWAviolations$Count+(.2*max(CWAviolations$Count)))))+
-  scale_x_discrete(breaks=c(2004,2008,2012,2016,2020))+
-  theme_meg()+
-  theme(axis.text.x=element_text(size=10),
-        axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5))
+```{r, fig.height = 5, fig.width = 8, fig.align = "center"}
 
-#clean up data
-names(CWAinspections)[1] <- "Year"
-CWAinspections <- CWAinspections[-c(20),]
-CWAinspections$President <- as.character("Bush")
-CWAinspections[9:16,3] <- as.character("Obama")
-CWAinspections[17:20,3] <- as.character("Trump")
+hasCWAinspections <- FALSE
+nrows_df <- nrow( CWAinspections )
+if ( nrows_df > 0 ) {
+  hasCWAinspections <- TRUE
+  #clean up data
+  names(CWAinspections)[1] <- "Year"
+  CWAinspections <- CWAinspections[-c(20),]
+  CWAinspections$President <- as.character("Bush")
+  CWAinspections[9:16,3] <- as.character("Obama")
+  CWAinspections[17:20,3] <- as.character("Trump")
+  
+  iCWAgraph <- ggplot(CWAinspections, mapping=aes(x=factor(Year), y=Count, fill=President, group=1))+
+    geom_bar(stat="identity", show.legend = FALSE, alpha=.6)+
+    scale_fill_manual(values=c("#450d54", "#22908d", "#e56d13"))+
+    labs(y=" # Inspections", x="Year", title="CWA Inspections\n", subtitle ="Potentially incomplete data")+
+    ggtitle("CWA Inspections")+
+    scale_y_continuous(expand=c(0,0), limits=c(0,max(CWAinspections$Count+(.2*max(CWAinspections$Count)))))+
+    scale_x_discrete(breaks=c(2004,2008,2012,2016, 2020))+
+    theme_meg()+
+    theme(axis.text.x=element_text(size=10),
+          axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5))
+}
+```
 
-iCWAgraph <- ggplot(CWAinspections, mapping=aes(x=factor(Year), y=Count, fill=President, group=1))+
-  geom_bar(stat="identity", show.legend = FALSE, alpha=.6)+
-  scale_fill_manual(values=c("#450d54", "#22908d", "#e56d13"))+
-  labs(y=" # Inspections", x="Year", title="CWA Inspections\n", subtitle ="Potentially incomplete data")+
-  ggtitle("CWA Inspections")+
-  scale_y_continuous(expand=c(0,0), limits=c(0,max(CWAinspections$Count+(.2*max(CWAinspections$Count)))))+
-  scale_x_discrete(breaks=c(2004,2008,2012,2016, 2020))+
-  theme_meg()+
-  theme(axis.text.x=element_text(size=10),
-        axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5))
+```{r, fig.height = 5, fig.width = 8, fig.align = "center"}
 
-#clean up data
-CWAenforcement <- CWAenforcement_clean
-CWAenforcement <- CWAenforcement[-c(20),]
-CWAenforcement$President <- as.character("Bush")
-CWAenforcement[8:16,4] <- as.character("Obama")
-CWAenforcement[17:20,4] <- as.character("Trump")
+hasCWAenforcement <- FALSE
+nrows_df <- nrow( CWAenforcement_clean )
+if ( nrows_df > 0 ) {
+  hasCWAenforcement <- TRUE
+  #clean up data
+  CWAenforcement <- CWAenforcement_clean
+  CWAenforcement <- CWAenforcement[-c(20),]
+  CWAenforcement$President <- as.character("Bush")
+  CWAenforcement[8:16,4] <- as.character("Obama")
+  CWAenforcement[17:20,4] <- as.character("Trump")
+  
+  #adjust for inflation
+  names(inflation)[names(inflation) == 'Year'] <- 'year' # SH
+  CWAenforcement <- cbind(CWAenforcement, inflation)
+  CWAenforcement$inflationadjust <- as.numeric(CWAenforcement$Amount*CWAenforcement$base)
+  
+  ##make a new amount column /1000
+  CWAenforcement$Amountinthousands <- ((CWAenforcement$inflationadjust)/1000)
+  CWAenforcement$Amountinthousands <-round(CWAenforcement$Amountinthousands,2)
+  
+  eCWAgraph <- ggplot(CWAenforcement, mapping=aes(x=factor(Year), y=Count, fill=President, group=1))+
+    geom_bar(stat="identity", show.legend = FALSE, alpha=.6)+
+    scale_fill_manual(values=c("#450d54", "#22908d", "#e56d13"))+
+    labs(y=" # Actions", x="Year", title="CWA Enforcement Actions\n", subtitle="Potentially incomplete data")+
+    #ggtitle("CWA Enforcement Actions")+
+    scale_y_continuous(expand=c(0,0), limits=c(0,max(CWAviolations$Count+(.2*max(CWAviolations$Count)))))+
+    scale_x_discrete(breaks=c(2004,2008,2012, 2016, 2020))+
+    geom_text(aes(label=Count, family="Georgia", fontface="bold"), position = position_dodge(0.9), vjust = -0.1, size=3)+
+    theme_meg()+
+    theme(axis.text.x=element_text(size=10),
+          axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5))
 
-#adjust for inflation
-names(inflation)[names(inflation) == 'Year'] <- 'year' # SH
-CWAenforcement <- cbind(CWAenforcement, inflation)
-CWAenforcement$inflationadjust <- as.numeric(CWAenforcement$Amount*CWAenforcement$base)
+  fineCWAgraph <- ggplot(CWAenforcement, mapping=aes(x=factor(Year), y=Amountinthousands, fill=President, group=1))+
+    geom_bar(stat="identity", alpha=.6)+
+    scale_fill_manual(values=c("#450d54", "#22908d", "#e56d13"))+
+    labs(y=" Fines($1000s)", x="Year", title="CWA Fines\n", subtitle="Potentially incomplete data", caption="Values adjusted for inflation. Note, the y-axis reports values in\n1000's. A value of $2000 represents $2,000,000 (2 million dollars).")+
+    #ggtitle("CWA Fines")+
+    scale_y_continuous(expand=c(0,0), limits=c(0,max(CWAenforcement$Amountinthousands+(.2*max(CWAenforcement$Amountinthousands)))))+
+    scale_x_discrete(breaks=c(2004,2008,2012, 2016,2020))+
+    theme_meg()+
+    theme(axis.text.x=element_text(size=10),
+          axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5), plot.caption = element_text(size=8))
+}
+```
 
-##make a new amount column /1000
-CWAenforcement$Amountinthousands <- ((CWAenforcement$inflationadjust)/1000)
-CWAenforcement$Amountinthousands <-round(CWAenforcement$Amountinthousands,2)
+```{r, fig.height = 5, fig.width = 8, fig.align = "center"}
 
-eCWAgraph <- ggplot(CWAenforcement, mapping=aes(x=factor(Year), y=Count, fill=President, group=1))+
-  geom_bar(stat="identity", show.legend = FALSE, alpha=.6)+
-  scale_fill_manual(values=c("#450d54", "#22908d", "#e56d13"))+
-  labs(y=" # Actions", x="Year", title="CWA Enforcement Actions\n", subtitle="Potentially incomplete data")+
-  #ggtitle("CWA Enforcement Actions")+
-  scale_y_continuous(expand=c(0,0), limits=c(0,max(CWAviolations$Count+(.2*max(CWAviolations$Count)))))+
-  scale_x_discrete(breaks=c(2004,2008,2012, 2016, 2020))+
-  geom_text(aes(label=Count, family="Georgia", fontface="bold"), position = position_dodge(0.9), vjust = -0.1, size=3)+
-  theme_meg()+
-  theme(axis.text.x=element_text(size=10),
-        axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5))
-
-fineCWAgraph <- ggplot(CWAenforcement, mapping=aes(x=factor(Year), y=Amountinthousands, fill=President, group=1))+
-  geom_bar(stat="identity", alpha=.6)+
-  scale_fill_manual(values=c("#450d54", "#22908d", "#e56d13"))+
-  labs(y=" Fines($1000s)", x="Year", title="CWA Fines\n", subtitle="Potentially incomplete data", caption="Values adjusted for inflation. Note, the y-axis reports values in\n1000's. A value of $2000 represents $2,000,000 (2 million dollars).")+
-  #ggtitle("CWA Fines")+
-  scale_y_continuous(expand=c(0,0), limits=c(0,max(CWAenforcement$Amountinthousands+(.2*max(CWAenforcement$Amountinthousands)))))+
-  scale_x_discrete(breaks=c(2004,2008,2012, 2016,2020))+
-  theme_meg()+
-  theme(axis.text.x=element_text(size=10),
-        axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5), plot.caption = element_text(size=8))
-
-(iCWAgraph | vCWAgraph) / (eCWAgraph | fineCWAgraph)
-
-
+no_enforcement <- ""
+if ( hasCWAenforcement ) {
+  (iCWAgraph | vCWAgraph) / (eCWAgraph | fineCWAgraph)
+} else {
+  no_enforcement <- "<h3>(There is no enforcement or fine data for CWA in this district.)</h3>"
+  (iCWAgraph | vCWAgraph)
+}
 
 ```	
+`r no_enforcement`
 These figures show patterns of Clean Water Act inspections, violations, enforcement actions and fines in this district since 2001 based on available EPA data (see page 10). The bars are colored by president. Figure transparency illustrates data reliability: the more transparent, the more uncertain the data. Data on CWA violations is particularly reliable as effluent violations are automatically reported to EPA.
 For access to the Jupyter Notebook which pulls data from ECHO at the state and congressional district level, click [here](https://colab.research.google.com/github/edgi-govdata-archiving/ECHO-Cross-Program/blob/master/AllPrograms.ipynb).
 
@@ -917,83 +964,99 @@ The [Resource Conservation and Recovery Act (RCRA)](https://www.epa.gov/laws-reg
 RCRA in this district</h2>
 ```{r, fig.height = 5, fig.width = 8, fig.align = "center"}
 
-#clean up data
-RCRAviolations <- RCRAviolations[-c(20),]
-RCRAviolations$President <- as.character("Bush")
-RCRAviolations[9:16,3] <- as.character("Obama")
-RCRAviolations[17:20,3] <- as.character("Trump")
+hasRCRAviolations <- FALSE
+nrows_df <- nrow( RCRAviolations )
+if ( nrows_df > 0 ) {
+  hasRCRAviolations <- TRUE
+  #clean up data
+  RCRAviolations <- RCRAviolations[-c(20),]
+  RCRAviolations$President <- as.character("Bush")
+  RCRAviolations[9:16,3] <- as.character("Obama")
+  RCRAviolations[17:20,3] <- as.character("Trump")
+  
+  vRCRAgraph <- ggplot(RCRAviolations, mapping=aes(x=factor(Year), y=Count, fill=President, group=1))+
+    geom_bar(stat="identity", show.legend = FALSE, alpha=.3)+
+    scale_fill_manual(values=c("#450d54", "#22908d", "#e56d13"))+
+    labs(y=" # Violations", x="Year", title = "RCRA violations\n", subtitle = "Very incomplete data")+
+    #ggtitle("RCRA violations")+
+    scale_y_continuous(expand=c(0,0), limits=c(0,max(RCRAviolations$Count+(.2*max(RCRAviolations$Count)))))+
+    scale_x_discrete(breaks=c(2004,2008,2012,2016,2020))+
+    theme_meg()+
+    theme(axis.text.x=element_text(size=10),
+          axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5))
+}
 
-vRCRAgraph <- ggplot(RCRAviolations, mapping=aes(x=factor(Year), y=Count, fill=President, group=1))+
-  geom_bar(stat="identity", show.legend = FALSE, alpha=.3)+
-  scale_fill_manual(values=c("#450d54", "#22908d", "#e56d13"))+
-  labs(y=" # Violations", x="Year", title = "RCRA violations\n", subtitle = "Very incomplete data")+
-  #ggtitle("RCRA violations")+
-  scale_y_continuous(expand=c(0,0), limits=c(0,max(RCRAviolations$Count+(.2*max(RCRAviolations$Count)))))+
-  scale_x_discrete(breaks=c(2004,2008,2012,2016,2020))+
-  theme_meg()+
-  theme(axis.text.x=element_text(size=10),
-        axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5))
+hasRCRAinspections <- FALSE
+nrows_df <- nrow( RCRAinspections )
+if ( nrows_df > 0 ) {
+  hasRCRAinspections <- TRUE
+  #clean up data
+  RCRAinspections <- RCRAinspections[-c(20),]
+  RCRAinspections$President <- as.character("Bush")
+  RCRAinspections[9:16,3] <- as.character("Obama")
+  RCRAinspections[17:20,3] <- as.character("Trump")
+  
+  iRCRAgraph <- ggplot(RCRAinspections, mapping=aes(x=factor(Year), y=Count, fill=President, group=1))+
+    geom_bar(stat="identity", show.legend = FALSE, alpha=.6)+
+    scale_fill_manual(values=c("#450d54", "#22908d", "#e56d13"))+
+    labs(y=" # Inspections", x="Year", title="RCRA Inspections\n", subtitle="Potentially incomplete data")+
+    #ggtitle("RCRA Inspections")+
+    scale_y_continuous(expand=c(0,0), limits=c(0,max(RCRAinspections$Count+(.2*max(RCRAinspections$Count)))))+
+    scale_x_discrete(breaks=c(2004,2008,2012,2016, 2020))+
+    theme_meg()+
+    theme(axis.text.x=element_text(size=10),
+          axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5))
+}
 
-#clean up data
-RCRAinspections <- RCRAinspections[-c(20),]
-RCRAinspections$President <- as.character("Bush")
-RCRAinspections[9:16,3] <- as.character("Obama")
-RCRAinspections[17:20,3] <- as.character("Trump")
+hasRCRAenforcement <- FALSE
+nrows_df <- nrow( RCRAenforcement_clean )
+if ( nrows_df > 0 ) {
+  hasRCRAenforcement <- TRUE
+  #clean up data
+  RCRAenforcement <- RCRAenforcement_clean
+  RCRAenforcement <- RCRAenforcement[-c(20),]
+  RCRAenforcement$President <- as.character("Bush")
+  RCRAenforcement[8:16,4] <- as.character("Obama")
+  RCRAenforcement[17:20,4] <- as.character("Trump")
+  
+  #adjust for inflation
+  names(inflation)[names(inflation) == 'Year'] <- 'year' # SH
+  RCRAenforcement <- cbind(RCRAenforcement, inflation)
+  RCRAenforcement$inflationadjust <- as.numeric(RCRAenforcement$Amount*RCRAenforcement$base)
+  
+  ##make a new amount column /1000
+  RCRAenforcement$Amountinthousands <- ((RCRAenforcement$inflationadjust)/1000)
+  RCRAenforcement$Amountinthousands <-round(RCRAenforcement$Amountinthousands,2)
+  
+  eRCRAgraph <- ggplot(RCRAenforcement, mapping=aes(x=factor(Year), y=Count, fill=President, group=1))+
+    geom_bar(stat="identity", show.legend = FALSE, alpha=.6)+
+    scale_fill_manual(values=c("#450d54", "#22908d", "#e56d13"))+
+    labs(y=" # Actions", x="Year", title="RCRA Enforcement Actions\n", subtitle = "Potentially incomplete data")+
+    scale_y_continuous(expand=c(0,0), limits=c(0,max(RCRAviolations$Count+(.2*max(RCRAviolations$Count)))))+
+    scale_x_discrete(breaks=c(2004,2008,2012, 2016, 2020))+
+    geom_text(aes(label=Count, family="Georgia", fontface="bold"), position = position_dodge(0.9), vjust = -0.1, size=3)+
+    theme_meg()+
+    theme(axis.text.x=element_text(size=10),
+          axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5))
+  
+  fineRCRAgraph <- ggplot(RCRAenforcement, mapping=aes(x=factor(Year), y=Amountinthousands, fill=President, group=1))+
+    geom_bar(stat="identity", alpha=.6)+
+    scale_fill_manual(values=c("#450d54", "#22908d", "#e56d13"))+
+    labs(y=" Fines($1000s)", x="Year", title="RCRA Fines\n", subtitle = "Potentially incomplete data", caption="Values adjusted for inflation. Note, the y-axis reports values in\n1000's. A value of $2000 represents $2,000,000 (2 million dollars).")+
+    scale_y_continuous(expand=c(0,0), limits=c(0,max(RCRAenforcement$Amountinthousands+(.2*max(RCRAenforcement$Amountinthousands)))))+
+    scale_x_discrete(breaks=c(2004,2008,2012, 2016,2020))+
+    theme_meg()+
+    theme(axis.text.x=element_text(size=10),
+          axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5), plot.caption = element_text(size=8))
+}
 
-iRCRAgraph <- ggplot(RCRAinspections, mapping=aes(x=factor(Year), y=Count, fill=President, group=1))+
-  geom_bar(stat="identity", show.legend = FALSE, alpha=.6)+
-  scale_fill_manual(values=c("#450d54", "#22908d", "#e56d13"))+
-  labs(y=" # Inspections", x="Year", title="RCRA Inspections\n", subtitle="Potentially incomplete data")+
-  #ggtitle("RCRA Inspections")+
-  scale_y_continuous(expand=c(0,0), limits=c(0,max(RCRAinspections$Count+(.2*max(RCRAinspections$Count)))))+
-  scale_x_discrete(breaks=c(2004,2008,2012,2016, 2020))+
-  theme_meg()+
-  theme(axis.text.x=element_text(size=10),
-        axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5))
+if ( hasRCRAenforcement ) {
+  (iRCRAgraph | vRCRAgraph) / (eRCRAgraph | fineRCRAgraph)
+} else {
+  (iRCRAgraph | vRCRAgraph)
+}
 
-
-#clean up data
-RCRAenforcement <- RCRAenforcement_clean
-RCRAenforcement <- RCRAenforcement[-c(20),]
-RCRAenforcement$President <- as.character("Bush")
-RCRAenforcement[8:16,4] <- as.character("Obama")
-RCRAenforcement[17:20,4] <- as.character("Trump")
-
-#adjust for inflation
-names(inflation)[names(inflation) == 'Year'] <- 'year' # SH
-RCRAenforcement <- cbind(RCRAenforcement, inflation)
-RCRAenforcement$inflationadjust <- as.numeric(RCRAenforcement$Amount*RCRAenforcement$base)
-
-##make a new amount column /1000
-RCRAenforcement$Amountinthousands <- ((RCRAenforcement$inflationadjust)/1000)
-RCRAenforcement$Amountinthousands <-round(RCRAenforcement$Amountinthousands,2)
-
-eRCRAgraph <- ggplot(RCRAenforcement, mapping=aes(x=factor(Year), y=Count, fill=President, group=1))+
-  geom_bar(stat="identity", show.legend = FALSE, alpha=.6)+
-  scale_fill_manual(values=c("#450d54", "#22908d", "#e56d13"))+
-  labs(y=" # Actions", x="Year", title="RCRA Enforcement Actions\n", subtitle = "Potentially incomplete data")+
-  scale_y_continuous(expand=c(0,0), limits=c(0,max(RCRAviolations$Count+(.2*max(RCRAviolations$Count)))))+
-  scale_x_discrete(breaks=c(2004,2008,2012, 2016, 2020))+
-  geom_text(aes(label=Count, family="Georgia", fontface="bold"), position = position_dodge(0.9), vjust = -0.1, size=3)+
-  theme_meg()+
-  theme(axis.text.x=element_text(size=10),
-        axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5))
-
-fineRCRAgraph <- ggplot(RCRAenforcement, mapping=aes(x=factor(Year), y=Amountinthousands, fill=President, group=1))+
-  geom_bar(stat="identity", alpha=.6)+
-  scale_fill_manual(values=c("#450d54", "#22908d", "#e56d13"))+
-  labs(y=" Fines($1000s)", x="Year", title="RCRA Fines\n", subtitle = "Potentially incomplete data", caption="Values adjusted for inflation. Note, the y-axis reports values in\n1000's. A value of $2000 represents $2,000,000 (2 million dollars).")+
-  scale_y_continuous(expand=c(0,0), limits=c(0,max(RCRAenforcement$Amountinthousands+(.2*max(RCRAenforcement$Amountinthousands)))))+
-  scale_x_discrete(breaks=c(2004,2008,2012, 2016,2020))+
-  theme_meg()+
-  theme(axis.text.x=element_text(size=10),
-        axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5), plot.caption = element_text(size=8))
-
-
-(iRCRAgraph | vRCRAgraph) / (eRCRAgraph | fineRCRAgraph)
-
-
-image_loc <- paste("CD_images/",params$cd_state,"_rep.jpeg",sep="")
+image_loc <- paste("CD_images/",cd_state,"_rep.jpeg",sep="")
 ```	
 These figures show patterns of RCRA inspections, violations, enforcement actions and fines in this district since 2001 based on available EPA data (see page 10). The bars are colored by president. Figure transparency illustrates data reliability: the more transparent, the more uncertain the data. Data on RCRA violations is particularly unreliable as violations are not necessarily directly measured. Inspection, enforcement, and fine data can be unreliable because state reporting to ECHO may be incomplete.For access to the Jupyter Notebooks which pull data from ECHO at the state and congressional district level, click [here](https://colab.research.google.com/github/edgi-govdata-archiving/ECHO-Cross-Program/blob/master/AllPrograms.ipynb).
 
