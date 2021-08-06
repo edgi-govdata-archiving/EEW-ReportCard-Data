@@ -8,6 +8,7 @@ params:
   cd_state: "AL01"
   full_name: "Alabama's 1st District"
   state: "AL"
+  district: "01"
 ---
 
 ```{r setup, include=FALSE}
@@ -565,9 +566,8 @@ if ( nrows_caa > 0 ) {
   theme(axis.text.y=element_text(size=14, face = "bold", color="black"), axis.title.x = element_text(size=16), axis.text.x=element_text(size=16,face = "bold"), plot.title=element_text(size=18))+
   coord_flip()
   }
+  CAAfacilities
 }
-
-CAAfacilities
 
 ```
 <p style="text-align: right;"><font size="3">**ECHO reports for facilities:**</font></p>
@@ -629,9 +629,8 @@ if ( nrows_rcra > 0 ) {
   theme(axis.text.y=element_text(size=14, face = "bold", color="black"), axis.title.x = element_text(size=16), axis.text.x=element_text(size=16,face = "bold"), plot.title=element_text(size=18))+
   coord_flip()
   }
+  RCRAfacilities
 }
-
-RCRAfacilities
 
 ```
 <p style="text-align: right;"><font size="3">**ECHO reports for facilities:**</font></p>
@@ -694,9 +693,8 @@ if ( nrows_cwa > 0 ) {
   theme(axis.text.y=element_text(size=14, face = "bold", color="black"), axis.title.x = element_text(size=16), axis.text.x=element_text(size=16,face = "bold"), plot.title=element_text(size=18))+
   coord_flip()
   }
+  CWAfacilities
 }
-
-CWAfacilities
 
 ```
 <p style="text-align: right;"><font size="3">**ECHO reports for facilities:**</font></p>

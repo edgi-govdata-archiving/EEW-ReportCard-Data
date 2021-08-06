@@ -98,7 +98,7 @@ def main( argv ):
         else:
             url = "https://raw.githubusercontent.com/unitedstates/districts/gh-pages/cds/2012/{}-{}/shape.geojson".format( state, str(cd))       
             # f_map.fit_bounds( [[bounds.minx,bounds.miny],[bounds.maxx,bounds.maxy]] )
-            filename = '{}{}_map'.format( state, str(cd) )
+            filename = '{}{}_map'.format( state, str(cd).zfill(2) )
         map_boundary = geopandas.read_file( url )
         if ( cd is None ):
             map_boundary = map_boundary[ map_boundary['STUSPS'] == state ]

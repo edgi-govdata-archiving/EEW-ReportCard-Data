@@ -141,7 +141,6 @@ class Region:
                     fetch = cursor.fetchone()
                     if fetch:
                         active += fetch[0] if fetch[0] else 0
-                        print( 'State={}, adding {} facilities'.format( state, fetch[0]))
                     sql = 'select sum(count) from violations where'
                     sql += ' program=\'CWA\' and region_id={} and year={}'
                     sql = sql.format( region_id[0], year )
@@ -149,8 +148,6 @@ class Region:
                     fetch = cursor.fetchone()
                     if fetch:
                         violations += fetch[0] if fetch[0] else 0
-                        print( 'State={}, adding {} violations, region={}'.format( state, fetch[0], region_id))
-                print( 'State={}, facilities={}, violations={}'.format( state, active, violations ))
                 per_1000 = 0 if active == 0 else 1000. * violations / active
                 results[ key ] = ( per_1000, 'Congressional District' ) 
             else:
@@ -164,8 +161,6 @@ class Region:
                 active = 0
                 if fetch:
                     active = fetch[0]
-                else:
-                    print( 'No active facilities in region_id={}, {}-{}'.format( region_id, state, cd ))
                 sql = 'select count from violations where'
                 sql += ' program=\'CWA\' and region_id={} and year={}'
                 sql = sql.format( region_id, year )
@@ -174,8 +169,6 @@ class Region:
                 violations = 0
                 if fetch:
                     violations = fetch[0]
-                else:
-                    print( 'No violations in region_id={}, {}-{}'.format( region_id, state, cd ))
                 per_1000 = 0 if active == 0 else 1000. * violations / active
                 results[ key ] = ( per_1000, 'Congressional District' ) 
         # Repeat this for all states
