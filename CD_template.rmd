@@ -139,7 +139,11 @@ theme_meg <- function () {
           axis.text.x=element_text(face = "bold", size = 14), axis.text.y=element_text(face = "bold", size = 8))
 }
 
-map_src <- paste('CD_maps/',params$state,CD,'_map.png',sep='')
+if ( CD == '00' ) {
+  map_src <- paste('CD_maps/',params$state,'_map.png',sep='')
+} else {
+  map_src <- paste('CD_maps/',params$state,CD,'_map.png',sep='')
+}
 ```
 
   <div class="title"><span style="padding-left: 150px">
