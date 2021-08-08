@@ -43,7 +43,13 @@ loadfonts()
 CD <-  substr(params$cd_state,3,4)  
 #^need to fix this in names dataframe 
 
-
+# States with a single congressional district: The leg_info.db 
+# has the district as "00", per 'https://theunitedstates.io/congress-legislators/legislators-current.json'.
+# The regions.db has the district as 1, per EPA's ECHO_EXPORTER.
+# So if the CD variable is "00", we will use a Region_CD variable
+# when getting the region data.
+Region_CD <- CD
+if ( Region_CD == "00" ) Region_CD <- "01"
 
 output_loc <- paste('Output/',params$cd_state,"/",sep="")
 dir.create(output_loc)
@@ -89,7 +95,7 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 ```{r echo=FALSE, include=FALSE}
 virtualenv_python('edgienv')
 u <- import( 'Region' )
-region <- u$Region(type='Congressional District', value=CD, state=params$state, programs=c('CAA', 'CWA', 'RCRA'))
+region <- u$Region(type='Congressional District', value=Region_CD, state=params$state, programs=c('CAA', 'CWA', 'RCRA'))
 USAinspectionsper1000_All <- region$get_per_1000( 'inspections', 'USA', 2020 )
 inspectionsper1000_state <- region$get_per_1000( 'inspections', 'State', 2020 )
 inspectionsper1000_cd <- region$get_per_1000( 'inspections', 'CD', 2020 )
