@@ -3,7 +3,7 @@ from Region import Region
 import pandas as pd
 
 programs = ['CAA', 'CWA', 'RCRA']
-region = Region( type='Congressional District', value='34', state='TX',
+region = Region( type='Congressional District', value='05', state='AZ',
                 programs=programs )
 
 inflation = region.get_inflation( 2019 )
@@ -30,7 +30,7 @@ print( 'CWA active facilities: {}'.format( region.get_active_facilities('CWA')))
 print( 'RCRA active facilities: {}'.format( region.get_active_facilities('RCRA')))
 print( 'GHG active facilities: {}'.format( region.get_active_facilities('GHG')))
 
-'''
+
 CAArecurring = region.get_recurring_violations( 'CAA' )
 print( CAArecurring )
 CWArecurring = region.get_recurring_violations( 'CWA' )
@@ -65,7 +65,6 @@ CWAinspections = region.get_events( 'inspections', 'CWA', 2020 )
 print( CWAinspections )
 RCRAinspections = region.get_events( 'inspections', 'RCRA', 2020 )
 print( RCRAinspections )
-'''
 
 print( 'Per 1000 - inspections')
 inspectionsper1000_state = region.get_per_1000( 'inspections', 'State', 2020 )

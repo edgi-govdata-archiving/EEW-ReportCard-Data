@@ -236,12 +236,14 @@ class Region:
             cursor.execute( sql )
             cd_fac_viol = cursor.fetchone()
 
-            data.append(
-                { 'CD': '{}{}'.format( self.state, self.value ),
-                    'Facilities': cd_fac_viol[0],
-                    'Percent': 100. * cd_fac_viol[0] / cd_fac_viol[1] 
-                    if cd_fac_viol[1] > 0 else -1 }
-            )
+            if ( cd_fac_viol is not None ):
+                data.append(
+                    { 'CD': '{}{}'.format( self.state, self.value ),
+                        'Facilities': cd_fac_viol[0],
+                    '    Percent': 100. * cd_fac_viol[0] / cd_fac_viol[1] 
+                        if cd_fac_viol[1] > 0 else -1 
+                    }
+                )
 
         df = pd.DataFrame( data )
         return df
