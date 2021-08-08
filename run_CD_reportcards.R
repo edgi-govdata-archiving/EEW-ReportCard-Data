@@ -2,6 +2,20 @@ library(pagedown)
 library(here)
 library(purrr)
 library(dplyr)
+library(optparse)
+
+option_list = list(
+  make_option(c("-s", "--states"), type="character", default=NULL,
+              help="Regular Expression of states", metavar="character")
+);
+
+opt_parser = OptionParser(option_list=option_list);
+opt = parse_args(opt_parser);
+
+if (is.null(opt$states)){
+  print_help(opt_parser)
+  stop("A regular expression identifying states to be selected must be supplied.n", call.=FALSE)
+}
 
 load("names.rda")
 names <- cd2
@@ -49,8 +63,7 @@ render_report <- function(region,
 # render_report(cd_state = selected$cd_state, full_name = selected$full_name, state = selected$state)
 
 #use these two if you want to run multiple reports
-# params_list <- as.list(param_table %>% filter(param_table$state %in% c('AZ')))
-params_list <- as.list(param_table %>% filter(param_table$region == "CD" & param_table$state %in% c('AZ')))
+params_list <- as.list(param_table %>% filter(param_table$region == "CD" & grepl(opt$states,param_table$state)))
 
 pmap(params_list, render_report)
 
