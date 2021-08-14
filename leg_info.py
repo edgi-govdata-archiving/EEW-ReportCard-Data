@@ -34,7 +34,6 @@ wiki_base = "https://en.wikipedia.org/wiki/"
 image_url = "https://govtrack.us/static/legislator-photos/{}-200px.jpeg"
 
 for leg in obj:
-    # pdb.set_trace()
     id = leg['id']
     bioguide_id = id['bioguide']
     govtrack_id = id['govtrack']
@@ -102,10 +101,11 @@ for leg in obj:
              wikipedia_url ))
     conn.commit()
 
+    # pdb.set_trace()
     if image_file != '':
         try:
-            image_url = image_url.format( govtrack_id )
-            wget.download( image_url, 'CD_images/{}'.format( 
+            this_image_url = image_url.format( govtrack_id )
+            wget.download( this_image_url, 'CD_images/{}'.format( 
                                 image_file ))
         except urllib.error.HTTPError:
             print( "Photo for {} not available.".format( cd_state ))
