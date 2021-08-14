@@ -41,6 +41,7 @@ loadfonts()
 #full_name = (selected$full_name)
 #state <- (selected$State)
 CD <-  substr(params$cd_state,3,4)  
+target_year <- '2020'
 #^need to fix this in names dataframe 
 
 # States with a single congressional district: The leg_info.db 
@@ -96,29 +97,30 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 virtualenv_python('edgienv')
 u <- import( 'Region' )
 region <- u$Region(type='Congressional District', value=Region_CD, state=params$state, programs=c('CAA', 'CWA', 'RCRA'))
-USAinspectionsper1000_All <- region$get_per_1000( 'inspections', 'USA', 2020 )
-inspectionsper1000_state <- region$get_per_1000( 'inspections', 'State', 2020 )
-inspectionsper1000_cd <- region$get_per_1000( 'inspections', 'CD', 2020 )
-USAviolationsper1000_All <- region$get_per_1000( 'violations', 'USA', 2020 )
-violationsper1000_state <- region$get_per_1000( 'violations', 'State', 2020 )
-violationsper1000_cd <- region$get_per_1000( 'violations', 'CD', 2020 )
-inflation <- region$get_inflation( 2020 )
-CWAper1000 <- region$get_cwa_per_1000( 2020 )
-violations <- region$get_events( 'violations', 'All', 2020 )
-CAAviolations <- region$get_events( 'violations', 'CAA', 2020 )
-CWAviolations <- region$get_events( 'violations', 'CWA', 2020 )
-RCRAviolations <- region$get_events( 'violations', 'RCRA', 2020 )
-enforcement <- region$get_events( 'enforcements', 'All', 2020 )
-CAAenforcement_clean <- region$get_events( 'enforcements', 'CAA', 2020 )
-CWAenforcement_clean <- region$get_events( 'enforcements', 'CWA', 2020 )
-RCRAenforcement_clean <- region$get_events( 'enforcements', 'RCRA', 2020 )
+target_year_int <- strtoi( target_year )
+USAinspectionsper1000_All <- region$get_per_1000( 'inspections', 'USA', target_year_int )
+inspectionsper1000_state <- region$get_per_1000( 'inspections', 'State', target_year_int )
+inspectionsper1000_cd <- region$get_per_1000( 'inspections', 'CD', target_year_int )
+USAviolationsper1000_All <- region$get_per_1000( 'violations', 'USA', target_year_int )
+violationsper1000_state <- region$get_per_1000( 'violations', 'State', target_year_int )
+violationsper1000_cd <- region$get_per_1000( 'violations', 'CD', target_year_int )
+inflation <- region$get_inflation( target_year_int )
+CWAper1000 <- region$get_cwa_per_1000( target_year_int )
+violations <- region$get_events( 'violations', 'All', target_year_int )
+CAAviolations <- region$get_events( 'violations', 'CAA', target_year_int )
+CWAviolations <- region$get_events( 'violations', 'CWA', target_year_int )
+RCRAviolations <- region$get_events( 'violations', 'RCRA', target_year_int )
+enforcement <- region$get_events( 'enforcements', 'All', target_year_int )
+CAAenforcement_clean <- region$get_events( 'enforcements', 'CAA', target_year_int )
+CWAenforcement_clean <- region$get_events( 'enforcements', 'CWA', target_year_int )
+RCRAenforcement_clean <- region$get_events( 'enforcements', 'RCRA', target_year_int )
 CAArecurring <- region$get_recurring_violations( 'CAA' )
 CWArecurring <- region$get_recurring_violations( 'CWA' )
 RCRArecurring <- region$get_recurring_violations( 'RCRA' )
-inspections <- region$get_events( 'inspections', 'All', 2020 )
-CAAinspections <- region$get_events( 'inspections', 'CAA', 2020 )
-CWAinspections <- region$get_events( 'inspections', 'CWA', 2020 )
-RCRAinspections <- region$get_events( 'inspections', 'RCRA', 2020 )
+inspections <- region$get_events( 'inspections', 'All', target_year_int )
+CAAinspections <- region$get_events( 'inspections', 'CAA', target_year_int )
+CWAinspections <- region$get_events( 'inspections', 'CWA', target_year_int )
+RCRAinspections <- region$get_events( 'inspections', 'RCRA', target_year_int )
 CAAbadactors <- region$get_non_compliants( 'CAA' )
 CWAbadactors <- region$get_non_compliants( 'CWA' )
 RCRAbadactors <- region$get_non_compliants( 'RCRA' )
@@ -269,7 +271,7 @@ dotplot <-ggplot(CWAper100, aes(x=Region, y=Per100, fill=Highlight))+
   geom_hline(yintercept=100, linetype="dashed", color="#e56d13")+
   geom_hline(yintercept=0, linetype="dashed", color="#569b5e")+
   scale_fill_manual(values=c("#ffffff","#e56d13"))+
-  labs(title="CWA Violations per 100 Facilities in 2019", x="CD/State", y="")+
+  labs(title=paste("CWA Violations per 100 Facilities in",target_year," "), x="CD/State", y="")+
   geom_text(aes(label="100 violations per\n100 facilities*", family="Georgia"),
             x=2.35, y=180, color="#e56d13", size=3)+
   geom_text(aes(label="0 violations", family="Georgia"),
@@ -289,7 +291,7 @@ dotplot_loc <- paste(output_loc,"dotplot_",params$cd_state,".png",sep="")
 <br />
 <br />
 
-<h3>In `r params$cd_state`, there were <span style="color:#569b5e">`r cd_state_dot[1,5]`</span> Clean Water Act violations per 100 regulated facilities in 2019.</h3>
+<h3>In `r params$cd_state`, there were <span style="color:#569b5e">`r cd_state_dot[1,5]`</span> Clean Water Act violations per 100 regulated facilities in `r target_year`.</h3>
 
 \pagebreak
 
@@ -317,7 +319,7 @@ CWArecurring[3] <-round(CWArecurring[3],0)
 
 ```{r echo=FALSE}
 ##getting %difference effluent violations
-enforcement <- region$get_events( 'enforcements', 'All', 2020 )
+enforcement <- region$get_events( 'enforcements', 'All', target_year_int )
 
 ##So, we're going to do the first 3 years of Obama and Trump so average
 #[9:11,2] Obama
@@ -485,7 +487,7 @@ inspect1000bar <- ggplot(inspectionsper1000, aes(fill=Region, y=Inspectionsper10
   labs(y="Inspections per 1000 Facilities\n", x="")+
   scale_alpha_manual(values=c(.6,1,.6), guide='none')+
   geom_text(aes(label=Inspectionsper1000, family="Georgia"), position = position_dodge(0.9), vjust = -0.1, size=4)+
-  ggtitle("Inspections per 1000 Facilities in 2019")+
+  ggtitle(paste("Inspections per 1000 Facilities in",target_year," "))+
   scale_y_continuous(expand=c(0,0),limits=c(0,1200))+geom_hline(yintercept=1000, linetype="dashed", color="black")+geom_text(aes(label="Average of 1 inspection per facility",family="Georgia"),x=2,y=1050,color="black",size=4)+
   theme_meg()
   
@@ -509,7 +511,7 @@ violations1000bar <- ggplot(violationsper1000, aes(fill=Region, y=violationsper1
   scale_alpha_manual(values=c(.3,1,.3), guide='none')+
   labs(y="Violations per 1000 Facilities", x="")+
   geom_text(aes(label=violationsper1000, family="Georgia"), position = position_dodge(0.9), vjust = -0.1, size=4)+
-  ggtitle("Violations per 1000 Facilities in 2019")+
+  ggtitle(paste("Violations per 1000 Facilities in",target_year," "))+
   scale_y_continuous(expand=c(0,0),limits=c(0,max(violationsper1000$violationsper1000+(.2*max(violationsper1000$violationsper1000)))))+
   theme_meg()+
   theme(legend.position = c(0.8, 0.5))
@@ -521,7 +523,7 @@ inspect1000bar / violations1000bar
 ```
 <br />
 
-These two charts show how inspections and violations in this district compare to the national and state averages per 1000 facilities in 2019. We use data from 2019 as it was the most recent full year and the ECHO database only reports *currently* active facilities. To enable comparison across locations with a differing number of active facilities, we standardize the comparison to a value per 1000 facilities, proportionally adjusting the data if there are more or less than 1000 facilities in a district or state. 
+These two charts show how inspections and violations in this district compare to the national and state averages per 1000 facilities in `r target_year`. We use data from `r target_year` as it was the most recent full year and the ECHO database only reports *currently* active facilities. To enable comparison across locations with a differing number of active facilities, we standardize the comparison to a value per 1000 facilities, proportionally adjusting the data if there are more or less than 1000 facilities in a district or state. 
 
 For access to the Jupyter Notebooks which pull data from ECHO at the state and congressional district level, click [here](https://colab.research.google.com/github/edgi-govdata-archiving/ECHO-Cross-Program/blob/master/AllPrograms.ipynb). For national data, click [here](https://colab.research.google.com/github/edgi-govdata-archiving/ECHO-Cross-Program/blob/master/ECHO_National.ipynb).
 The reliability of data in figures throughout this report is indicated by the figure subtitle and degree of transparency. Figure transparency illustrates data reliability: the more transparent, the more uncertain the data. See the data limitations page (Page 10) to view the transparency-coding table
@@ -946,7 +948,7 @@ no_enforcement <- ""
 if ( hasCWAenforcement ) {
   (iCWAgraph | vCWAgraph) / (eCWAgraph | fineCWAgraph)
 } else {
-  no_enforcement <- "<h3>(There is no enforcement or fine data for CWA in this district.)</h3>"
+  no_enforcement <- "<h3><i>[There is no enforcement or fine data for CWA in this district.]</i></h3>"
   (iCWAgraph | vCWAgraph)
 }
 
@@ -1113,7 +1115,7 @@ for ( committee in committees ) {
   }
 }
 
-pdf_url <- paste("https://github.com/edgi-govdata-archiving/CD-report/blob/master/reportcards/",params$cd_state,"_2020.pdf",sep="")
+pdf_url <- paste("https://github.com/edgi-govdata-archiving/CD-report/blob/master/reportcards/",params$cd_state,"_",target_year,".pdf",sep="")
 
 ```
 
@@ -1128,7 +1130,7 @@ The data in this report is from EPA’s publicly-available [ECHO database](https
 
 * There is serious under-recording and under-reporting of CAA violations at the state level. Most CAA violations -- [perhaps 85% or more](http://eelp.law.harvard.edu/wp-content/uploads/Cynthia-Giles-Part-2-FINAL.pdf) -- do not make it into ECHO. Violation data is therefore inaccurate and misleading: <span style="color:#569b5e">states which report the fewest violations may be states whose recording and reporting of violations is actually the poorest.</span>
 * Although there is no specific information about the quality of data on RCRA violations, it is likely that this program, like the CAA, has serious reporting problems. Therefore, RCRA violations data should also be considered inaccurate and potentially misleading. The key difference between these and the CWA is that the CWA entails mandatory electronic self-reporting.
-* ECHO does not record how many regulated facilities there were for programs in previous years. Therefore, we cannot calculate the number of inspections, enforcement actions, and violations per regulated facility before 2019.
+* ECHO does not record how many regulated facilities there were for programs in previous years. Therefore, we cannot calculate the number of inspections, enforcement actions, and violations per regulated facility before `target_year`.
 
 ### Data reliability coding
 In this report, we have divided data issues into three categories, using transparencies in graphs as well as subtitles to indicate data reliability and completeness. See the table below: 
@@ -1136,7 +1138,7 @@ In this report, we have divided data issues into three categories, using transpa
 <a ><img src="logosandimages/datareliabilitytable.png" style="float: center; width: 100%" ></a>
 
 ### Notes on 2020 data
-We do not include data from 2020 because we are only part way through the year. It is important to note, as well, that data from 2020 will be strongly influenced by the EPA’s decision to suspend, from March through August, pollution monitoring requirements for industries that claim to have been impacted by COVID-19. EDGI’s report on this policy [“More Permission to Pollute”](https://envirodatagov.org/more-permission-to-pollute-the-decline-of-epa-enforcement-and-industry-compliance-during-covid/) found that, despite relatively few facilities claiming the COVID exemption, a much larger proportion of facilities are still failing to report environmental data. 
+We do not include data from `r target_year` because we are only part way through the year. It is important to note, as well, that data from `r target_year` will be strongly influenced by the EPA’s decision to suspend, from March through August, pollution monitoring requirements for industries that claim to have been impacted by COVID-19. EDGI’s report on this policy [“More Permission to Pollute”](https://envirodatagov.org/more-permission-to-pollute-the-decline-of-epa-enforcement-and-industry-compliance-during-covid/) found that, despite relatively few facilities claiming the COVID exemption, a much larger proportion of facilities are still failing to report environmental data. 
 
 \pagebreak
 
@@ -1159,7 +1161,7 @@ We describe rates to be “Better” if violation rates decreased or enforcement
 
 <br />
 
-The dot plot shows the number of Clean Water Act violations in this state or district compared to all others in this Senate or House committee in 2019. We use Clean Water Act data as it is the most reliable and use 2019 as we have the most confidence about data per 1000 facilities in that year. We provide this metric as some districts’ rates of violations and enforcement may not have changed because their performance is consistently poor or good.
+The dot plot shows the number of Clean Water Act violations in this state or district compared to all others in this Senate or House committee in `r target_year`. We use Clean Water Act data as it is the most reliable and use `r target_year` as we have the most confidence about data per 1000 facilities in that year. We provide this metric as some districts’ rates of violations and enforcement may not have changed because their performance is consistently poor or good.
 
 ## Page 3: Highlights from this District
 
@@ -1198,7 +1200,7 @@ To examine facilities with consistent records of noncompliance, we provide infor
 # About the Authors and Links to Data 
 
 ### About EEW 
-Environmental Enforcement Watch (EEW) is a collaborative project across working groups of the Environmental Data and Governance Initiative (EDGI). The EEW project builds on EDGI’s 2019 [Sheep in the Closet Report](https://envirodatagov.org/publication/a-sheep-in-the-closet-the-erosion-of-enforcement-at-the-epa/) that documents large declines in EPA enforcement of environmental laws. This project uses data from EPA’s [ECHO database](https://echo.epa.gov/), revealing how useful ECHO could be for communities to track pollution and EPA responses in their areas. However, it also reveals the inaccessibility of ECHO for non-specialists, and major omissions, errors, and confusions present in the data itself (see page 10). EEW aims to highlight gaps and inadequacies in the enforcement of environmental laws and to help investigate whether EPA is fulfilling its congressionally-mandated duty to enforce environmental laws. EEW’s data analysis is conducted using open source and publicly available data using Jupyter Notebooks developed by EDGI members. 
+Environmental Enforcement Watch (EEW) is a collaborative project across working groups of the Environmental Data and Governance Initiative (EDGI). The EEW project builds on EDGI’s `r target_year` [Sheep in the Closet Report](https://envirodatagov.org/publication/a-sheep-in-the-closet-the-erosion-of-enforcement-at-the-epa/) that documents large declines in EPA enforcement of environmental laws. This project uses data from EPA’s [ECHO database](https://echo.epa.gov/), revealing how useful ECHO could be for communities to track pollution and EPA responses in their areas. However, it also reveals the inaccessibility of ECHO for non-specialists, and major omissions, errors, and confusions present in the data itself (see page 10). EEW aims to highlight gaps and inadequacies in the enforcement of environmental laws and to help investigate whether EPA is fulfilling its congressionally-mandated duty to enforce environmental laws. EEW’s data analysis is conducted using open source and publicly available data using Jupyter Notebooks developed by EDGI members. 
 
 <h3><span style="color:#569b5e">A full list of EEW members, including their roles in this project, can be found [here](https://www.environmentalenforcementwatch.org/about/).</span></h3> 
 
@@ -1217,7 +1219,7 @@ This EEW project aims to make EPA data more directly accessible to the public an
 <div class="text-box-info">
 <h3>About EDGI</h3>
 <font size="2">EDGI is an international network of over 175 members from more than 80 different academic institutions and non-profits, comprised foremost by grassroots volunteer efforts. Since 2016, EDGI has served as a preeminent watchdog group for federal environmental data, generating international effort to duplicate and monitor repositories of public data that are vital to environmental health research and knowledge.
-EDGI’s work has been widely acknowledged, leading to EDGI testifying before Congress on declines in EPA enforcement, and hundreds of mentions in leading national and international media such as _The New York Times_,_The Washington Post_, Vice News, and CNN. For more about our work, read our [2019 Annual Report](https://envirodatagov.org/publication/edgi-annual-report-2019/) and [2020 Annual Report](https://envirodatagov.org/publication/edgi-annual-report-2020/). For more on EDGI see [our website](https://envirodatagov.org/).</font>
+EDGI’s work has been widely acknowledged, leading to EDGI testifying before Congress on declines in EPA enforcement, and hundreds of mentions in leading national and international media such as _The New York Times_,_The Washington Post_, Vice News, and CNN. For more about our work, read our [`r target_year` Annual Report](https://envirodatagov.org/publication/edgi-annual-report-`r target_year`/) and [`r target_year` Annual Report](https://envirodatagov.org/publication/edgi-annual-report-`r target_year`/). For more on EDGI see [our website](https://envirodatagov.org/).</font>
 </div>
 <a href="https://www.environmentalenforcementwatch.org/"><img src="logosandimages/eew_logo.png" style="float: left; width: 9%; margin-left: 30%"></a>
 <a href="https://envirodatagov.org/"><img src="logosandimages/edgi_logo.png" style="float: right; width: 15%; margin-right: 30%" ></a>

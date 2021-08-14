@@ -318,19 +318,19 @@ class Region:
             sql = sql.format( self.region_id )
         return pd.read_sql_query( sql, conn )
 
-    def get_active_facilities( self, program ):
+    def get_active_facilities( self, program, table='active_facilities' ):
         conn = sqlite3.connect("region.db")
         cursor = conn.cursor()
 
         if ( self.value is None ):
             # Sum active facilities over all regions in the state
-            sql = 'select sum(count) from active_facilities where region_id in ('
+            sql = 'select sum(count) from {} where region_id in ('
             sql += ' select rowid from regions where state=\'{}\') and program=\'{}\''
-            sql = sql.format( self.state, program )
+            sql = sql.format( table, self.state, program )
         else:
-            sql = 'select count from active_facilities where region_id={}'
+            sql = 'select count from {} where region_id={}'
             sql += ' and program=\'{}\''
-            sql = sql.format( self.region_id, program )
+            sql = sql.format( table, self.region_id, program )
         cursor.execute( sql )
         fetch = cursor.fetchone()
         return fetch[0] if fetch else 0

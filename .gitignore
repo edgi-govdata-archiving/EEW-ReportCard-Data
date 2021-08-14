@@ -7,3 +7,6 @@
 region.db-*
 leg_info.db-*
 Output/*
+CD_images/*
+CD_maps/*
+State_maps/*
