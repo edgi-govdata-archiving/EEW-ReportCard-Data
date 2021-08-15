@@ -16,6 +16,8 @@ def main(argv):
     parser.add_argument("-c", "--cds_file", required=True, help="The CDs to work with")
     my_args = parser.parse_args()
 
+    found_errors = False
+
     cds_filename = my_args.cds_file
     state_cds = []
     with open(cds_filename, "r") as read_obj:
@@ -51,6 +53,9 @@ def main(argv):
                     'active_facilities_previous' )
             if abs( current - previous ) / previous > threshold:
                 print( problem_text.format( state, cd, program, current ))
+                found_errors = True
+
+    sys.exit(found_errors)
 
 def usage():
     print("Usage:  check_AllPrograms.py -c cds_todo.csv")

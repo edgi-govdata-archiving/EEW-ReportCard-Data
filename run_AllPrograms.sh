@@ -18,22 +18,21 @@ echo 'Cleaning out the affected tables' >> AllPrograms.log
 sqlite3 region.db < clean_regions.sql
 
 echo 'Running the AllPrograms.py commands to populate region.db' >> AllPrograms.log
-date >> AllPrograms.log
-python3 AllPrograms.py -c state_cd-1.csv -f 2020 >> AllPrograms.log 2>> AllPrograms.error
-date >> AllPrograms.log
-python3 AllPrograms.py -c state_cd-2.csv -f 2020 >> AllPrograms.log 2>> AllPrograms.error
-date >> AllPrograms.log
-python3 AllPrograms.py -c state_cd-3.csv -f 2020 >> AllPrograms.log 2>> AllPrograms.error
-date >> AllPrograms.log
-python3 AllPrograms.py -c state_cd-4.csv -f 2020 >> AllPrograms.log 2>> AllPrograms.error
-date >> AllPrograms.log
-python3 AllPrograms.py -c state_cd-5.csv -f 2020 >> AllPrograms.log 2>> AllPrograms.error
-date >> AllPrograms.log
-python3 AllPrograms.py -c state_cd-6.csv -f 2020 >> AllPrograms.log 2>> AllPrograms.error
-date >> AllPrograms.log
-python3 AllPrograms.py -c state_cd-7.csv -f 2020 >> AllPrograms.log 2>> AllPrograms.error
-date >> AllPrograms.log
-python3 AllPrograms.py -c state_cd-8.csv -f 2020 >> AllPrograms.log 2>> AllPrograms.error
-date >> AllPrograms.log
-python3 AllPrograms.py -c state_cd-9.csv -f 2020 >> AllPrograms.log 2>> AllPrograms.error
-date >> AllPrograms.log
+
+for file in `ls state_cd-*.csv`
+do
+    date >> AllPrograms.log
+    python3 AllPrograms.py -c $file -f 2020 >> AllPrograms.log 2>> AllPrograms.error
+    if python3 check_AllPrograms.py -c $file; then 
+        echo "Error on $file, retrying" >> AllPrograms.error; 
+        date >> AllPrograms.log
+        python3 AllPrograms.py -c $file -f 2020 >> AllPrograms.log 2>> AllPrograms.error
+        if python3 check_AllPrograms.py -c $file; then 
+            echo "Error on $file, failure" >> AllPrograms.error; 
+	fi
+    else 
+        echo "$file found no errors" >> AllPrograms.log; 
+    fi
+done
+
+
