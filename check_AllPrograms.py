@@ -5,6 +5,7 @@ import pdb
 import sys, argparse
 import sqlite3
 from Region import Region
+from csv import reader
 
 def main(argv):
 
@@ -51,10 +52,11 @@ def main(argv):
             current = region.get_active_facilities( program )
             previous = region.get_active_facilities( program, 
                     'active_facilities_previous' )
-            if abs( current - previous ) / previous > threshold:
-                print( problem_text.format( state, cd, program, current ))
-                found_errors = True
-
+            if previous != 0:
+                if abs( current - previous ) / previous > threshold:
+                    print( problem_text.format( state, cd, program, current ))
+                    found_errors = True
+    print ( "Found errors? {}".format(found_errors))
     sys.exit(found_errors)
 
 def usage():
