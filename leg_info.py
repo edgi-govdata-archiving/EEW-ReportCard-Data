@@ -30,6 +30,7 @@ obj = json.loads( legs )
 
 govtrack_base = "https://govtrack.us/congress/members/"
 wiki_base = "https://en.wikipedia.org/wiki/"
+opensecrets_base = "https://www.opensecrets.org/members-of-congress/summary?cid="
 
 image_url = "https://govtrack.us/static/legislator-photos/{}-200px.jpeg"
 
@@ -37,6 +38,11 @@ for leg in obj:
     id = leg['id']
     bioguide_id = id['bioguide']
     govtrack_id = id['govtrack']
+    opensecrets_id = ''
+    try:
+        opensecrets_id = id['opensecrets']
+    except KeyError:
+        pass
     first_name = leg['name']['first']
     last_name = leg['name']['last']
     full_name = ''
@@ -50,6 +56,11 @@ for leg in obj:
     except KeyError: 
         print( 'No wikipedia: {}'.format( full_name ))
         pass
+    opensecrets_url = ''
+    if opensecrets_id:
+        opensecrets_url = '{}{}'.format( opensecrets_base, opensecrets_id )
+    else:
+        print( 'No opensecrets: {}'.format( full_name ))
     terms = leg['terms']
     start_date = datetime.date.today()
     party = ''
@@ -93,12 +104,12 @@ for leg in obj:
         cd_state = state + str( district ).zfill(2)
     cursor.execute( 
         'insert into legislators ( cd_state, name, party, govtrack_id, ' \
-           'bioguide_id, sen_class, since_date, since_year, ' \
-           'official_url, govtrack_url, wikipedia_url ) ' \
-           'values ( ?,?,?,?,?,?,?,?,?,?,? )',
-           ( cd_state, full_name, party, govtrack_id, bioguide_id,
+           'opensecrets_id, bioguide_id, sen_class, since_date, since_year, ' \
+           'official_url, govtrack_url, opensecrets_url, wikipedia_url ) ' \
+           'values ( ?,?,?,?,?,?,?,?,?,?,?,?,? )',
+           ( cd_state, full_name, party, govtrack_id, opensecrets_id, bioguide_id,
              sen_class, since_date, since_year, official_url, govtrack_url,
-             wikipedia_url ))
+             opensecrets_url, wikipedia_url ))
     conn.commit()
 
     # pdb.set_trace()
