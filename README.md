@@ -7,6 +7,10 @@ This repository contains code and scripts for gathering data from the Stonybrook
 * [Python](https://www.python.org/) and [SQLite](https://sqlite.org/index.html) are required.
 * The [ECHO_modules repository](https://github.com/edgi-govdata-archiving/ECHO_modules) must be checked out into the home directory of this project. Currently we are using the watershed-geo branch of ECHO_modules. (From within the EEW-ReportCard-Data home directory, clone ECHO_modules and checkout the watershed-geo branch.)
 * The latest leg_info.db SQLite database of legislator information, from the [EEW-Report-Making](https://github.com/edgi-govdata-archiving/EEW-Report-Making) repository, needs to be placed into the home directory of this project. (From within the EEW-ReportCard-Data home directory, clone EEW-Report-Making.)
+* Install R packages. In R Studio, open the EEW-ReportCard-Data R project. Install packages by entering in the console:
+  * install.packages("pagedown")
+  * install.packages("Purr")
+* Also in R Studio, Tools > Install Packages
 
 # Overall Process
 This diagram shows the overall process of getting the data for the report cards.  It looks complicated, but many of the steps
