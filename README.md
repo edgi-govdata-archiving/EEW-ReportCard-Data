@@ -4,9 +4,9 @@
 This repository contains code and scripts for gathering data from the Stonybrook University ECHO database and other web sources, filtering it to make it available for the generation of R Markdown report cards.
 
 # Developer setup
-* Python and SQLite are required.
-* The ECHO_modules repository, must be checked out into the home directory of this project. Currently we are using the watershed-geo branch of ECHO_modules.
-* The latest leg_info.db SQLite database of legislator information, from the EEW-Report-Making repository, needs to be placed into the home directory of this project.
+* [Python](https://www.python.org/) and [SQLite](https://sqlite.org/index.html) are required.
+* The [ECHO_modules repository](https://github.com/edgi-govdata-archiving/ECHO_modules) must be checked out into the home directory of this project. Currently we are using the watershed-geo branch of ECHO_modules. (From within the EEW-ReportCard-Data home directory, clone ECHO_modules and checkout the watershed-geo branch.)
+* The latest leg_info.db SQLite database of legislator information, from the [EEW-Report-Making](https://github.com/edgi-govdata-archiving/EEW-Report-Making) repository, needs to be placed into the home directory of this project. (From within the EEW-ReportCard-Data home directory, clone EEW-Report-Making.)
 
 # Overall Process
 This diagram shows the overall process of getting the data for the report cards.  It looks complicated, but many of the steps
@@ -86,10 +86,6 @@ CAA_active_facilities <- region$get_active_facilities('CAA')
 CWA_active_facilities <- region$get_active_facilities('CWA')
 RCRA_active_facilities <- region$get_active_facilities('RCRA')
 ```
-
-
-
-
 
 ---
 
