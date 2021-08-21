@@ -38,6 +38,10 @@ render_report <- function(region = selected$region,
     envir = new.env(),clean = TRUE, output_dir = ("Output"), output_file = out_file,
   ))
 
+  htmls <- dir(path="Output",  pattern=".html")
+  invisible(file.remove(file.path("Output", htmls))) #delete only the html files
+  #remove the invisible() command on the line above if you would like to see in the console files are removed
+
  # invisible(TRUE)
 }
 
