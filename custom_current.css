@@ -202,10 +202,182 @@ margin-right: 15px;
 .bottom-left {
   position: absolute;
   background-color: #3c5b8c;
-  top: 693px;
+  top: 694px;
   left: 550px;
   font-family: Ubuntu Condensed;
   font-size: .8em;
   color: white;
+}
+
+/* --- Circle-map1 --- */
+.circle-map1 {
+    position: absolute;
+    width: 75px;
+    height: 75px;
+    background-color: rgb(234, 149, 92);
+    background-color: rgba(229, 109, 19, .8);
+    border: 1px solid #000000;
+    border-radius: 50%;
+    left: 200px;
+    top: 525px;
+    -webkit-shape-outside: circle();
+    shape-outside: circle() margin-box;
+    margin-left: 5px;
+    margin-right: 5px;
+    margin-top: 1px;
+    margin-bottom: 10px;
+    shape-inside: circle();
+    font-family: Ubuntu Condensed;
+    font-size: 1.7em;
+    text-align: center;
+    vertical-align: middle;
+    line-height: 3;
+    color: black;
+}
+
+/* --- Circle-map2 --- */
+.circle-map2 {
+    position: absolute;
+    width: 75px;
+    height: 75px;
+    background-color: rgb(34, 144, 141);
+    background-color: rgba(34, 144, 141, .8);
+    border: 1px solid #000000;
+    border-radius: 50%;
+    left: 315px;
+    top: 525px;
+    -webkit-shape-outside: circle();
+    shape-outside: circle() margin-box;
+    margin-left: 5px;
+    margin-right: 5px;
+    margin-top: 1px;
+    margin-bottom: 10px;
+    shape-inside: circle();
+    font-family: Ubuntu Condensed;
+    font-size: 1.7em;
+    text-align: center;
+    vertical-align: middle;
+    line-height: 3;
+    color: black;
+}
+
+/* --- Circle-map3 --- */
+.circle-map3 {
+    position: absolute;
+    width: 75px;
+    height: 75px;
+    background-color: rgb(86, 155, 94);
+    background-color: rgba(86, 155, 94, .8);
+    border: 1px solid #000000;
+    border-radius: 50%;
+    left: 430px;
+    top: 525px;
+    -webkit-shape-outside: circle();
+    shape-outside: circle() margin-box;
+    margin-left: 5px;
+    margin-right: 5px;
+    margin-top: 1px;
+    margin-bottom: 10px;
+    shape-inside: circle();
+    font-family: Ubuntu Condensed;
+    font-size: 1.7em;
+    text-align: center;
+    vertical-align: middle;
+    line-height: 3;
+    color: black;
+}
+
+/* --- Vertical Rectangle on map --- */
+.rectangle {
+  position: absolute;
+  height: 180px;
+  width: 75px;
+  top: 500px;
+  left: 700px;
+  background-color: rgba(59, 138, 248, .6);
+  border: 1px solid #3b8af8;
+  font-family: Ubuntu Condensed;
+  font-size: 1em;
+  text-align: center;
+  color: black;
+}
+
+
+/* --- Circle CAA --- */
+.circle-caa {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    background-color: rgb(234, 149, 92);
+    background-color: rgba(229, 109, 19, .8);
+    border: 1px solid #000000;
+    border-radius: 50%;
+    left: 712.5px;
+    top: 532px;
+    -webkit-shape-outside: circle();
+    shape-outside: circle() margin-box;
+    margin-left: 5px;
+    margin-right: 5px;
+    margin-top: 1px;
+    margin-bottom: 10px;
+    shape-inside: circle();
+    font-family: Ubuntu Condensed;
+    font-size: 1em;
+    text-align: center;
+    vertical-align: middle;
+    line-height: 2.8;
+    color: black;
+}
+
+/* --- Circle CWA --- */
+.circle-cwa {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    background-color: rgb(34, 144, 141);
+    background-color: rgba(34, 144, 141, .8);
+    border: 1px solid #000000;
+    border-radius: 50%;
+    left: 712.5px;
+    top: 577px;
+    -webkit-shape-outside: circle();
+    shape-outside: circle() margin-box;
+    margin-left: 5px;
+    margin-right: 5px;
+    margin-top: 1px;
+    margin-bottom: 10px;
+    shape-inside: circle();
+    font-family: Ubuntu Condensed;
+    font-size: 1em;
+    text-align: center;
+    vertical-align: middle;
+    line-height: 2.8;
+    color: black;
+}
+
+/* --- Circle RCRA --- */
+.circle-rcra {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    background-color: rgb(86, 155, 94);
+    background-color: rgba(86, 155, 94, .8);
+    border: 1px solid #000000;
+    border-radius: 50%;
+    left: 712.5px;
+    top: 622px;
+    -webkit-shape-outside: circle();
+    shape-outside: circle() margin-box;
+    margin-left: 5px;
+    margin-right: 5px;
+    margin-top: 1px;
+    margin-bottom: 10px;
+    shape-inside: circle();
+    font-family: Ubuntu Condensed;
+    font-size: 1em;
+    text-align: center;
+    vertical-align: middle;
+    line-height: 2.8;
+    color: black;
 }
 
