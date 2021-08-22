@@ -131,36 +131,6 @@ margin-left: 20px;
 margin-right: 20px;
 }
 
-/* logobox */
-
-.logo-box {
-background-color: #c9d4ee;
-border-style: solid;
-border-width: 0px;
-border-color: white;
-margin-left: 15px;
-margin-right: 15px;
-}
-
-
-/* --- Circle --- */
-.circle {
-    width: 250px;
-    height: 250px;
-    background-color: #5D7E78;
-    border-color: #80918E;
-    border-width: 4px;
-    border-radius: 50%;
-    float: right;
-    -webkit-shape-outside: circle();
-    shape-outside: circle() margin-box;
-    margin-left: 20px;
-    margin-right: 40px;
-    margin-top: 1px;
-    margin-bottom: 90px;
-    shape-inside: circle();
-}
-
 /* --- Center alignment ---*/
 .aligncenter {
     text-align: center;
@@ -175,38 +145,51 @@ margin-right: 15px;
   color: white;
 }
 
-
-/* Top left text */
-.top-left {
-  position: absolute;
-  top: 8px;
-  left: 16px;
-  font-family: Ubuntu Condensed;
-  text-transform: uppercase;
-  font-size: 3.5em;
-  color: #466A63;
-}
-
-/* Middle left text */
-.middle-left {
-  position: absolute;
-  top: 70px;
-  left: 16px;
-  font-family: Ubuntu Condensed;
-  text-transform: uppercase;
-  font-size: 2.5em;
-  color: black;
-}
-
 /* bottom left text */
 .bottom-left {
   position: absolute;
   background-color: #3c5b8c;
-  top: 694px;
+  top: 695px;
   left: 550px;
   font-family: Ubuntu Condensed;
   font-size: .8em;
   color: white;
+}
+
+/* facility comment */
+.facility1 {
+  position: absolute;
+  background-color: rgb(0,0,0);
+  background-color: rgba(0,0,0,0);
+  top: 575px;
+  left: 222px;
+  font-family: Ubuntu Condensed;
+  font-size: 1em;
+  color: black;
+}
+
+/* facility comment */
+.facility2 {
+  position: absolute;
+  background-color: rgb(0,0,0);
+  background-color: rgba(0,0,0,0);
+  top: 575px;
+  left: 337px;
+  font-family: Ubuntu Condensed;
+  font-size: 1em;
+  color: black;
+}
+
+/* facility comment */
+.facility3 {
+  position: absolute;
+  background-color: rgb(0,0,0);
+  background-color: rgba(0,0,0,0);
+  top: 575px;
+  left: 452px;
+  font-family: Ubuntu Condensed;
+  font-size: 1em;
+  color: black;
 }
 
 /* --- Circle-map1 --- */
