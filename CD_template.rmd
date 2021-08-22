@@ -148,10 +148,9 @@ if ( CD == '00' ) {
 }
 ```
 
-  <div class="title"><span style="padding-left: 150px">
- Congressional Report Card
- </span></div>
- <hr style="height:3px;border-width:0; margin-left:15px; margin-right:15px;color: #b9b9b9;background-color: #b9b9b9; margin-top: 0em; margin-bottom: 0em">
+  <div class="title"><span style="padding-left: 100px">
+Congressional Report Card</span></div>
+ <hr style="height:3px;border-width:0; margin-left:15px; margin-right:15px;color: #b9b9b9;background-color: #b9b9b9; margin-top: .5em; margin-bottom: 0em">
 ##### `r params$full_name`; seat held by `r leg_info$name` since `r leg_info$since_year` 
  <div class="container">
   <img src="`r map_src`" alt="Snow" style="width:100%;">
@@ -193,7 +192,8 @@ A regulated facility in this report is a facility that reports air or water emis
 
 \pagebreak
 
-<hr style="height:3px;border-width:0;color: #C1E0D7;background-color: #C1E0D7; margin-top: 2em">
+<br />
+<hr style="height:3px;border-width:0;margin-left:15px; margin-right:15px;color: #C1E0D7;background-color: #C1E0D7; margin-top: 0em; margin-bottom: 0em">
 <h4>Report Generated on `r format(Sys.time(), '%B %d, %Y')`<span style="padding-left:400px">Page 2</span></h4>
 
 # Key Changes in this District under the Trump Administration
@@ -305,13 +305,19 @@ dotplot_loc <- paste(output_loc,"dotplot_",params$cd_state,".png",sep="")
 
 \pagebreak
 
-<hr style="height:3px;border-width:0;color: #C1E0D7;background-color: #C1E0D7; margin-top: 2em">
+<br />
+<hr style="height:3px;border-width:0;margin-left:15px; margin-right:15px;color: #C1E0D7;background-color: #C1E0D7; margin-top: 0em; margin-bottom: 0em">
 <h4>Report Generated on `r format(Sys.time(), '%B %d, %Y')`<span style="padding-left:400px">Page 3</span></h4>
 ```{r echo=FALSE}
 
 #CWA
 ##first let's fix up the data
 #ok so We'll put the % in the title for the state, and try to figure out the same for the state/CD
+#will need to change this to make compatible for CD and State one template
+CWArecurring2 <- CWArecurring[-is.na(CWArecurring$CD), ] 
+CWArecurring2[5] <-round(CWArecurring2[5],1)
+
+##until we fix the dataframe that is called from region.db, the above two lines make the under the clean water act statement
 CWArecurring <- CWArecurring %>%
   select(CD,Facilities, Percent)
 names(CWArecurring)[1] <- "Region"
@@ -428,15 +434,15 @@ enforcement$Amountinthousands <-round(enforcement$Amountinthousands,2)
 
 #add presidental years
 enforcement$President <- as.character("Bush")
-enforcement[9:16,4] <- as.character("Obama") # SH 
-enforcement[17:20,4] <- as.character("Trump")  # SH
+enforcement[9:16,8] <- as.character("Obama") # SH 
+enforcement[17:20,8] <- as.character("Trump")  # SH
 
 #plot change in enforcement
 enforcementactiongraph <- ggplot(enforcement, mapping=aes(x=factor(Year),y=Count, fill=President, group=1))+
   geom_bar(stat="identity", show.legend = FALSE, alpha=.6)+
   scale_fill_manual(values=c("#450d54", "#22908d", "#e56d13"))+
   labs(y="# Actions", x="Year", title="Enforcement Actions-CAA,CWA,RCRA\n", subtitle = "Potentially incomplete data")+
-  scale_y_continuous(expand=c(0,0), limits=c(0,max(effluentviolations$Violations+(.2*max(effluentviolations$Violations)))))+
+  scale_y_continuous(expand=c(0,0), limits=c(0,max(effluentviolations$Count+(.2*max(effluentviolations$Count)))))+
   scale_x_discrete(breaks=c(2004,2008,2012,2016,2020))+
   geom_text(aes(label=Count, family="Georgia", fontface="bold"), position = position_dodge(0.9), vjust = -0.1, size=3)+
   theme_meg()+
@@ -462,7 +468,7 @@ enforcementfinegraph <- enforcement %>% ggplot()+
 
 <br />
 
-* <h3>Under the Clean Water Act, the law whose regulation is best documented by available EPA data, <span style="color:#569b5e">`r CWArecurring[2,2]` facilities, representing `r CWArecurring[2,3]`% of all regulated facilities in `r params$cd_state`,</span> were in violation for <span style="color:#569b5e">at least 9 months of the last 3 years.</span></h3>
+* <h3>Under the Clean Water Act, the law whose regulation is best documented by available EPA data, <span style="color:#569b5e">`r CWArecurring2[1,2]` facilities, representing `r CWArecurring2[1,5]`% of all regulated facilities in `r params$cd_state`,</span> were in violation for <span style="color:#569b5e">at least 9 months of the last 3 years.</span></h3>
 ```{r echo=FALSE, out.width= "95%", out.extra='style="float:center; padding:0px"'}
 effluentgraph/inspectiongraph/enforcementactiongraph/enforcementfinegraph
 ```
@@ -471,7 +477,8 @@ The reliability of data in figures throughout this report is indicated by the fi
 
 \pagebreak
 
-<hr style="height:3px;border-width:0;color: #C1E0D7;background-color: #C1E0D7; margin-top: 2em">
+<br />
+<hr style="height:3px;border-width:0;margin-left:15px; margin-right:15px;color: #C1E0D7;background-color: #C1E0D7; margin-top: 0em; margin-bottom: 0em">
 <h4>Report Generated on `r format(Sys.time(), '%B %d, %Y')`<span style="padding-left:400px">Page 4</span></h4>
 
 # This District in Comparison
@@ -540,7 +547,8 @@ The reliability of data in figures throughout this report is indicated by the fi
 
 \pagebreak
 
-<hr style="height:3px;border-width:0;color: #C1E0D7;background-color: #C1E0D7; margin-top: 2em">
+<br />
+<hr style="height:3px;border-width:0;margin-left:15px; margin-right:15px;color: #C1E0D7;background-color: #C1E0D7; margin-top: 0em; margin-bottom: 0em">
 <h4>Report Generated on `r format(Sys.time(), '%B %d, %Y')`<span style="padding-left:400px">Page 5</span></h4> 
 
 <h1><span style="margin-bottom:0px; padding-bottom:0px">Recent Non-Compliance in this District</span></h1>
@@ -738,7 +746,8 @@ if ( nrows_df > 0 ) {
 
 \pagebreak
 
-<hr style="height:3px;border-width:0;color: #C1E0D7;background-color: #C1E0D7; margin-top: 2em">
+<br />
+<hr style="height:3px;border-width:0;margin-left:15px; margin-right:15px;color: #C1E0D7;background-color: #C1E0D7; margin-top: 0em; margin-bottom: 0em">
 <h4>Report Generated on `r format(Sys.time(), '%B %d, %Y')`<span style="padding-left:400px">Page 6</span></h4>
 
 # Clean Air Act
@@ -749,7 +758,7 @@ The [Clean Air Act (CAA)](https://www.epa.gov/laws-regulations/summary-clean-air
 [More info on CAA](https://docs.google.com/presentation/d/1MzRQf3QeJqmYMSttdk0ghrXeOmOZgOV_MTynl-ri6Ik/edit?usp=sharing)
 
 </div>
-<h2>There are `r region$get_active_facilities('CAA')` facilities currently reporting under the CAA in this district</h2>
+<h2>There are `r region$get_active_facilities('CAA')` facilities currently reporting under the CAA in this district.</h2>
 ```{r, fig.height = 5, fig.width = 8, fig.align = "center"}
 
 hasCAAviolations <- FALSE
@@ -847,7 +856,8 @@ These figures show patterns of CAA inspections, violations, enforcement actions 
 
 \pagebreak
 
-<hr style="height:3px;border-width:0;color: #C1E0D7;background-color: #C1E0D7; margin-top: 2em">
+<br />
+<hr style="height:3px;border-width:0;margin-left:15px; margin-right:15px;color: #C1E0D7;background-color: #C1E0D7; margin-top: 0em; margin-bottom: 0em">
 <h4>Report Generated on `r format(Sys.time(), '%B %d, %Y')`<span style="padding-left:400px">Page 7</span></h4> 
 
 # Clean Water Act 
@@ -856,7 +866,7 @@ These figures show patterns of CAA inspections, violations, enforcement actions 
 The [Clean Water Act (CWA)](https://www.epa.gov/laws-regulations/summary-clean-water-act) establishes quality standards for surface waters. In this report, we focus on CWA’s National Pollutant Discharge Elimination System (NPDES) which permits facilities to discharge certain kinds and amounts of pollutants. Unlike the CAA, under the CWA effluent (waste emissions) is directly measured and routinely reported electronically to ECHO. CWA violations are automatically triggered if data is not submitted and if contaminant levels in effluent exceed the permitted amount. Such CWA violations can lead to inspections. [More info on CWA](https://docs.google.com/presentation/d/1g6ZN3B5jvs3F1VAigiUtNNezjXdJnzuELfo9Deo9Y2w/edit?usp=sharing)
 </div>
 <h2>There are `r region$get_active_facilities('CWA') ` facilities currently reporting under the 
-CWA in this district</h2> 
+CWA in this district.</h2> 
 ```{r, fig.height = 5, fig.width = 8, fig.align = "center"}
 
 hasCWAviolations <- FALSE
@@ -972,7 +982,8 @@ For access to the Jupyter Notebook which pulls data from ECHO at the state and c
 
 \pagebreak
 
-<hr style="height:3px;border-width:0;color: #C1E0D7;background-color: #C1E0D7; margin-top: 2em">
+<br />
+<hr style="height:3px;border-width:0;margin-left:15px; margin-right:15px;color: #C1E0D7;background-color: #C1E0D7; margin-top: 0em; margin-bottom: 0em">
 <h4>Report Generated on `r format(Sys.time(), '%B %d, %Y')`<span style="padding-left:400px">Page 8</span></h4>
 
 # Resource Conservation and Recovery Act 
@@ -983,7 +994,7 @@ For access to the Jupyter Notebook which pulls data from ECHO at the state and c
 The [Resource Conservation and Recovery Act (RCRA)](https://www.epa.gov/laws-regulations/summary-resource-conservation-and-recovery-act) gives EPA the authority to control hazardous waste from "cradle-to-grave", regulating the generation, transportation, treatment, storage, and disposal of hazardous waste. Facilities self-report under RCRA, like the CAA, and violations are most often found after an inspection. If RCRA violations have decreased, make sure to check whether inspections have also decreased as recent cuts in inspections are likely related to drops in RCRA violations. [More info on RCRA](https://docs.google.com/presentation/d/1lV9b_vkcfCbTz8uss1XjXLHy2svpi2tmizb6et1Wfkc/edit?usp=sharing)
 </div>
 <h2>There are `r region$get_active_facilities('RCRA')` facilities currently reporting under
-RCRA in this district</h2>
+RCRA in this district.</h2>
 ```{r, fig.height = 5, fig.width = 8, fig.align = "center"}
 
 hasRCRAviolations <- FALSE
@@ -1087,7 +1098,8 @@ These figures show patterns of RCRA inspections, violations, enforcement actions
 
 \pagebreak
 
-<hr style="height:3px;border-width:0;color: #C1E0D7;background-color: #C1E0D7; margin-top: 2em">
+<br />
+<hr style="height:3px;border-width:0;margin-left:15px; margin-right:15px;color: #C1E0D7;background-color: #C1E0D7; margin-top: 0em; margin-bottom: 0em">
 <h4>Report Generated on `r format(Sys.time(), '%B %d, %Y')`<span style="padding-left:400px">Page 9</span></h4>
 
 # Legislator Information 
@@ -1132,7 +1144,8 @@ pdf_url <- paste("https://github.com/edgi-govdata-archiving/CD-report/blob/maste
 
 \pagebreak
 
-<hr style="height:3px;border-width:0;color: #C1E0D7;background-color: #C1E0D7; margin-top: 2em">
+<br />
+<hr style="height:3px;border-width:0;margin-left:15px; margin-right:15px;color: #C1E0D7;background-color: #C1E0D7; margin-top: 0em; margin-bottom: 0em">
 <h4>Report Generated on `r format(Sys.time(), '%B %d, %Y')`<span style="padding-left:400px">Page 10</span></h4> 
 
 # About the EPA Data Analyzed in this Report Card and its Limitations  
@@ -1152,7 +1165,8 @@ We do not include data from `r target_year` because we are only part way through
 
 \pagebreak
 
-<hr style="height:3px;border-width:0;color: #C1E0D7;background-color: #C1E0D7; margin-top: 2em">
+<br />
+<hr style="height:3px;border-width:0;margin-left:15px; margin-right:15px;color: #C1E0D7;background-color: #C1E0D7; margin-top: 0em; margin-bottom: 0em">
 <h4>Report Generated on `r format(Sys.time(), '%B %d, %Y')`<span style="padding-left:400px">Page 11</span></h4>
 
 # How and why EEW developed the metrics in this report
@@ -1187,7 +1201,8 @@ To highlight the problem of chronic and routine violations of major environmenta
 
 \pagebreak
 
-<hr style="height:3px;border-width:0;color: #C1E0D7;background-color: #C1E0D7; margin-top: 2em">
+<br />
+<hr style="height:3px;border-width:0;margin-left:15px; margin-right:15px;color: #C1E0D7;background-color: #C1E0D7; margin-top: 0em; margin-bottom: 0em">
 <h4>Report Generated on `r format(Sys.time(), '%B %d, %Y')`<span style="padding-left:400px">Page 12</span></h4>
 
 # How and why EEW developed the metrics in this report (continued)
@@ -1204,7 +1219,8 @@ To examine facilities with consistent records of noncompliance, we provide infor
 
 \pagebreak
 
-<hr style="height:3px;border-width:0;color: #C1E0D7;background-color: #C1E0D7; margin-top: 2em">
+<br />
+<hr style="height:3px;border-width:0;margin-left:15px; margin-right:15px;color: #C1E0D7;background-color: #C1E0D7; margin-top: 0em; margin-bottom: 0em">
 <h4>Report Generated on `r format(Sys.time(), '%B %d, %Y')`<span style="padding-left:400px">Page 13</span></h4>
 
 # About the Authors and Links to Data 
