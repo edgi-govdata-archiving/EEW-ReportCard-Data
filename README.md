@@ -67,7 +67,6 @@ violationsper1000_state <- region$get_per_1000( 'violations', 'State', 2020 )
 violationsper1000_cd <- region$get_per_1000( 'violations', 'CD', 2020 )
 inflation <- region$get_inflation( 2020 )
 CWAper1000 <- region$get_cwa_per_1000( 2020 )
-active_facilities <- region$get_active_facilities()
 violations <- region$get_events( 'violations', 'All', 2020 )
 CAAviolations <- region$get_events( 'violations', 'CAA', 2020 )
 CWAviolations <- region$get_events( 'violations', 'CWA', 2020 )
@@ -83,6 +82,9 @@ inspections <- region$get_events( 'inspections', 'All', 2020 )
 CAAinspections <- region$get_events( 'inspections', 'CAA', 2020 )
 CWAinspections <- region$get_events( 'inspections', 'CWA', 2020 )
 RCRAinspections <- region$get_events( 'inspections', 'RCRA', 2020 )
+CAA_active_facilities <- region$get_active_facilities('CAA')
+CWA_active_facilities <- region$get_active_facilities('CWA')
+RCRA_active_facilities <- region$get_active_facilities('RCRA')
 ```
 
 
