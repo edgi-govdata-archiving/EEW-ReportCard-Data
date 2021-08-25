@@ -1,6 +1,7 @@
 #!/bin/bash
 
-cd /home/steve/EEW-ReportCard-Data/
+source ~/.profile
+cd ${EEW_HOME}
 
 CURRENTDATE=`date +"%Y-%m-%d"`
 SAVENAME=region.db-${CURRENTDATE}
