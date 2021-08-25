@@ -87,7 +87,39 @@ CWA_active_facilities <- region$get_active_facilities('CWA')
 RCRA_active_facilities <- region$get_active_facilities('RCRA')
 ```
 
+# Automated running of tasks in the Digital Ocean droplet, using crontab
+The Linux cron utility is used to run several of our processes on an automated schedule. The commands to be run are managed with the 'crontab -e' command.
+```
+# m h  dom mon dow   command
+0 19 15 * * /home/edgi/EEW-ReportCard-Data/backup_active_facilities.sh
+0 19 16 * * /home/edgi/EEW-ReportCard-Data/run_AllPrograms.sh
+0 23 16 * * /home/edgi/EEW-ReportCard-Data/run_leg_info.sh
+0 5 20 * * /home/edgi/EEW-ReportCard-Data/run_reportcards.sh
+0 5 20 * * /home/edgi/EEW-ReportCard-Data/send_to_eew_web.sh
+```
+## Environment needed by crontab
+The account's .profile is not read when commands are run by cron.  Our EEW_HOME environment variable, set in .profile, must be explicitly called in the bash shell scripts.
 
+## backup_active_facilities.sh
+This script copies the current active_facilities table in region.db into active_facilities_previous.  This is used later to test success for run_AllPrograms.sh, by comparing all entries in active_facilities with their previous values.  We can expect that the number of facilities for a program and region might change some between the times we run AllPrograms to get data from ECHO and the SBU database, but a large difference likely signals a problem with one of the batches of CDs processed by AllPrograms, in which case that batch will be processed again.  (A second failure will just result in an error logged.)
+
+## run_AllPrograms.sh
+This script retrieves the current data for all regions (CDs) from the SBU ECHO database.  The AllPrograms.py program is used.  Because of the large number of congressional districts that must be processed, they are grouped into 9 CSV files.  (These are the 9 state_cd-x.csv files.) Each CSV file is given to AllPrograms.py.  The program populates the SQLite region.db database.
+
+
+## run_leg_info.sh
+This script runs the leg_info.py program to gather legislator information into the leg_info.db SQLite database.
+
+## run_reportcards.sh
+This script calls the run_CD_reportcards.R script which uses CD_template.Rmd and State_template.Rmd markdown templates to generate report cards for every region.  CDs are batched into three groups according to their state names.  Generated HTML and PDF report cards are written to the Output directory.
+```
+Rscript run_CD_reportcards.R -s '^[A-I]'
+Rscript run_CD_reportcards.R -s '^[J-R]'
+Rscript run_CD_reportcards.R -s '^[S-Z]'
+```
+
+## send_to_eew_web.sh
+This script uses FTP to send all of the report cards found in the Output directory to the EEW hosted web server.
 
 
 
