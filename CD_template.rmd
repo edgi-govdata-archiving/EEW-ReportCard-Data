@@ -201,11 +201,13 @@ A regulated facility in this report is a facility that reports air or water emis
 ```{r echo=FALSE}
 
 ##getting %difference CWA violations
-names(CWAviolations)[2] <- "Count"
-names(CWAviolations)[1] <- "Year"  # SH
-CWAviolations$President <- as.character("Bush")
-CWAviolations[9:16,3] <- as.character("Obama")
-CWAviolations[17:20,3] <- as.character("Trump") # SH
+CWAviolations <- CWAviolations %>%
+  mutate(
+    President = case_when(
+      Year < 2009 ~ "Bush",
+      Year < 2017 & Year > 2008 ~ "Obama",
+      Year > 2016 ~ "Trump"
+    ))
 
 vCWAchange <- data.frame("BushObamaAverage" =mean(CWAviolations[1:16,2]),
                              "Trump Average" =mean(CWAviolations[17:20,2])) # SH
@@ -221,13 +223,15 @@ vCWAchange$Positive <- abs(vCWAchange$PercentDifference)
 vCWAchange$Value <- ifelse(vCWAchange$PercentDifference>=0, "increase", "decrease")
 
 #enforcement % difference
-names(enforcement)[1] <- "Year"
 enforcement$Amount <- round(enforcement$Amount,2)
 #add presidental years
-enforcement$President <- as.character("Bush")
-enforcement[9:16,4] <- as.character("Obama")
-enforcement[17:19,4] <- as.character("Trump")
-
+enforcement <- enforcement %>%
+  mutate(
+    President = case_when(
+      Year < 2009 ~ "Bush",
+      Year < 2017 & Year > 2008 ~ "Obama",
+      Year > 2016 ~ "Trump"
+    ))
 actionchange <- data.frame("BushObamaAverage" =mean(enforcement[1:16,3]),
                              "Trump Average" =mean(enforcement[17:19,3]))
 
@@ -335,8 +339,6 @@ CWArecurring[3] <-round(CWArecurring[3],0)
 
 ```{r echo=FALSE}
 ##getting %difference effluent violations
-enforcement <- region$get_events( 'enforcements', 'All', target_year_int )
-
 ##So, we're going to do the first 3 years of Obama and Trump so average
 #[9:11,2] Obama
 # [17:19,2] Trump
@@ -348,12 +350,7 @@ effluentchange$PercentDifference <- as.numeric(100*(effluentchange[1,2]-effluent
 effluentchange[,1:3] <-round(effluentchange[,1:3],2)
 
 #then simple plot
-#first add in the Presidential Years
-effluentviolations$President <- as.character("Bush")
-effluentviolations[9:16,3] <- as.character("Obama")
-effluentviolations[17:20,3] <- as.character("Trump") # SH
 
-# SH - Changed y=Violations to y=Count
 effluentgraph <- ggplot(effluentviolations, mapping=aes(x=factor(Year),
   y=Count, fill=President, group=1))+
   geom_bar(stat="identity")+
@@ -371,8 +368,6 @@ effluentgraph <- ggplot(effluentviolations, mapping=aes(x=factor(Year),
 ##So, we're going to do the first 3 years of Obama and Trump so average
 #[9:11,2] Obama
 # [17:19,2] Trump
-names(inspections)[1] <- "Year"
-inspections <- inspections[-c(20),]
 inspectionchange <- data.frame("Obama Average" =mean(inspections[9:11,2]),
                              "Trump Average" =mean(inspections[17:19,2]))
 inspectionchange$PercentDifference <- as.numeric(100*(inspectionchange[1,2]-inspectionchange[1,1])/
@@ -383,12 +378,16 @@ inspectionchange[,1:3] <-round(inspectionchange[,1:3],0)
 inspectionchange$Change <- ifelse(inspectionchange$PercentDifference>=0, "increase", "decrease")
 inspectionchange$Positive <- abs(inspectionchange$PercentDifference)
 
-#then simple plot
 #first add in the Presidential Years
-inspections$President <- as.character("Bush")
-inspections[9:16,3] <- as.character("Obama")
-inspections[17:20,3] <- as.character("Trump") # SH
+inspections <- inspections %>%
+  mutate(
+    President = case_when(
+      Year < 2009 ~ "Bush",
+      Year < 2017 & Year > 2008 ~ "Obama",
+      Year > 2016 ~ "Trump"
+    ))
 
+#then simple plot
 inspectiongraph <- ggplot(inspections, mapping=aes(x=factor(Year),
                                                         y=Count, fill=President, group=1))+
   geom_bar(stat="identity", show.legend = FALSE, alpha=.6)+
@@ -405,8 +404,6 @@ inspectiongraph <- ggplot(inspections, mapping=aes(x=factor(Year),
 ##So, we're going to do the first 3 years of Obama and Trump so average
 #[9:11,2] Obama
 # [17:19,2] Trump
-names(enforcement)[1] <- "Year"
-enforcement$Amount <- round(enforcement$Amount,0)
 enforcementchange <- data.frame("Obama Average Count" =mean(enforcement[9:11,3]),
                                "Trump Average Count" =mean(enforcement[17:20,3]),
                                "Obama Average Fine" =mean(enforcement[9:11,2]),
@@ -431,11 +428,6 @@ enforcement$inflationadjust <- as.numeric(enforcement$Amount*enforcement$base)
 ##make a new amount column /1000
 enforcement$Amountinthousands <- ((enforcement$inflationadjust)/1000)
 enforcement$Amountinthousands <-round(enforcement$Amountinthousands,2)
-
-#add presidental years
-enforcement$President <- as.character("Bush")
-enforcement[9:16,8] <- as.character("Obama") # SH 
-enforcement[17:20,8] <- as.character("Trump")  # SH
 
 #plot change in enforcement
 enforcementactiongraph <- ggplot(enforcement, mapping=aes(x=factor(Year),y=Count, fill=President, group=1))+
@@ -542,7 +534,7 @@ inspect1000bar / violations1000bar
 
 These two charts show how inspections and violations in this district compare to the national and state averages per 1000 facilities in `r target_year`. We use data from `r target_year` as it was the most recent full year and the ECHO database only reports *currently* active facilities. To enable comparison across locations with a differing number of active facilities, we standardize the comparison to a value per 1000 facilities, proportionally adjusting the data if there are more or less than 1000 facilities in a district or state. 
 
-For access to the Jupyter Notebooks which pull data from ECHO at the state and congressional district level, click [here](https://colab.research.google.com/github/edgi-govdata-archiving/ECHO-Cross-Program/blob/master/AllPrograms.ipynb). For national data, click [here](https://colab.research.google.com/github/edgi-govdata-archiving/ECHO-Cross-Program/blob/master/ECHO_National.ipynb).
+For access to the Jupyter Notebooks which pull data from ECHO at the state and congressional district level, click [here](https://colab.research.google.com/github/edgi-govdata-archiving/ECHO-Cross-Program/blob/main/AllPrograms.ipynb). For national data, click [here](https://colab.research.google.com/github/edgi-govdata-archiving/ECHO-Cross-Program/blob/main/ECHO_National.ipynb).
 The reliability of data in figures throughout this report is indicated by the figure subtitle and degree of transparency. Figure transparency illustrates data reliability: the more transparent, the more uncertain the data. See the data limitations page (Page 10) to view the transparency-coding table
 
 \pagebreak
@@ -767,11 +759,13 @@ if ( nrows_df > 0 ) {
   hasCAAviolations <- TRUE
 
   #clean up data
-  names(CAAviolations)[1] <- "Year"
-  CAAviolations <- CAAviolations[-c(20),]
-  CAAviolations$President <- as.character("Bush")
-  CAAviolations[9:16,3] <- as.character("Obama")
-  CAAviolations[17:20,3] <- as.character("Trump") # SH
+   CAAviolations <- CAAviolations %>%
+  mutate(
+    President = case_when(
+      Year < 2009 ~ "Bush",
+      Year < 2017 & Year > 2008 ~ "Obama",
+      Year > 2016 ~ "Trump"
+    ))
   
   vCAAgraph <- ggplot(CAAviolations, mapping=aes(x=factor(Year), y=Count, fill=President, group=1))+
     geom_bar(stat="identity", show.legend = FALSE, alpha=.3)+
@@ -789,9 +783,13 @@ nrows_df <- nrow( CAAinspections )
 if ( nrows_df > 0 ) {
   hasCAAinspections <- TRUE
   #clean up data
-  CAAinspections$President <- as.character("Bush")
-  CAAinspections[9:16,3] <- as.character("Obama")
-  CAAinspections[17:20,3] <- as.character("Trump") # SH
+   CAAinspections <- CAAinspections %>%
+  mutate(
+    President = case_when(
+      Year < 2009 ~ "Bush",
+      Year < 2017 & Year > 2008 ~ "Obama",
+      Year > 2016 ~ "Trump"
+    ))
   
   iCAAgraph <- ggplot(CAAinspections, mapping=aes(x=factor(Year), y=Count, fill=President, group=1))+
     geom_bar(stat="identity", show.legend = FALSE, alpha=.6)+
@@ -811,9 +809,13 @@ if ( nrows_df > 0 ) {
   hasCAAenforcement <- TRUE
   #clean up data
   CAAenforcement <- CAAenforcement_clean
-  CAAenforcement$President <- as.character("Bush")
-  CAAenforcement[9:16,4] <- as.character("Obama")
-  CAAenforcement[17:20,4] <- as.character("Trump") # SH
+  CAAenforcement <- CAAenforcement %>%
+  mutate(
+    President = case_when(
+      Year < 2009 ~ "Bush",
+      Year < 2017 & Year > 2008 ~ "Obama",
+      Year > 2016 ~ "Trump"
+    ))
   
   #adjust for inflation
   names(inflation)[names(inflation) == 'Year'] <- 'year' # SH
