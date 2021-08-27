@@ -4,6 +4,7 @@ import pandas as pd
 import sys, argparse
 import folium
 from folium.plugins import FastMarkerCluster
+import urllib
 import geopandas
 from csv import reader
 import time
@@ -61,7 +62,7 @@ def mapper(df, no_text=False, map_radius=1, map_opacity=.1):
 
 
 def usage():
-    print( 'Usage: RegionMap.py -c maps_todo.csv' )
+    print( 'Usage: RegionMaps.py -c maps_todo.csv' )
     exit
 
 
@@ -98,8 +99,12 @@ def main( argv ):
         else:
             url = "https://raw.githubusercontent.com/unitedstates/districts/gh-pages/cds/2012/{}-{}/shape.geojson".format( state, str(cd))       
             # f_map.fit_bounds( [[bounds.minx,bounds.miny],[bounds.maxx,bounds.maxy]] )
-            filename = '{}{}_map'.format( state, str(cd).zfill(2) )
-        map_boundary = geopandas.read_file( url )
+            filename = '{}{}_map'.format( state, str(cd) )
+        try: 
+            map_boundary = geopandas.read_file( url )
+        except ( urllib.request.HTTPError, urllib.request.URLError ):
+            print( 'No map for district: {}{}'.format( state, str(cd) ))
+            continue
         if ( cd is None ):
             map_boundary = map_boundary[ map_boundary['STUSPS'] == state ]
         bounds = map_boundary.bounds
