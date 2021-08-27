@@ -1,6 +1,6 @@
 #!/bin/sh
 
-source ~/.profile
+source .profile
 cd ${EEW_HOME}
 
 Rscript run_CD_reportcards.R -s '^[A-I]'
