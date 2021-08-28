@@ -142,7 +142,7 @@ theme_meg <- function () {
 }
 
 if ( CD == '00' ) {
-  map_src <- paste('CD_maps/',params$state,'_map.png',sep='')
+  map_src <- paste('State_maps/',params$state,'_map.png',sep='')
 } else {
   map_src <- paste('CD_maps/',params$state,CD,'_map.png',sep='')
 }
@@ -421,8 +421,7 @@ enforcementchange$FineChange <- ifelse(enforcementchange$PercentDifferenceFine>=
 enforcementchange$PositiveFine <- abs(enforcementchange$PercentDifferenceFine)
 
 #adjust for inflation
-# SH - inflation <- inflation[-c(20:107),]
-enforcement <- cbind(enforcement, inflation) #SH
+enforcement <- merge(enforcement, inflation, by.x='Year', by.y='index', all.x=TRUE)
 enforcement$inflationadjust <- as.numeric(enforcement$Amount*enforcement$base)
 
 ##make a new amount column /1000
@@ -777,6 +776,8 @@ if ( nrows_df > 0 ) {
     theme(axis.text.x=element_text(size=10),
           axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5))
 }
+```
+```{r, fig.height = 5, fig.width = 8, fig.align = "center"}
 
 hasCAAinspections <- FALSE
 nrows_df <- nrow( CAAinspections )
@@ -802,6 +803,8 @@ if ( nrows_df > 0 ) {
     theme(axis.text.x=element_text(size=10),
           axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5))
 }
+```
+```{r, fig.height = 5, fig.width = 8, fig.align = "center"}
 
 hasCAAenforcement <- FALSE
 nrows_df <- nrow( CAAenforcement_clean )
@@ -818,8 +821,7 @@ if ( nrows_df > 0 ) {
     ))
   
   #adjust for inflation
-  names(inflation)[names(inflation) == 'Year'] <- 'year' # SH
-  CAAenforcement <- cbind(CAAenforcement, inflation)
+  CAAenforcement <- merge(CAAenforcement, inflation, by.x='Year', by.y='index', all.x=TRUE)
   CAAenforcement$inflationadjust <- as.numeric(CAAenforcement$Amount*CAAenforcement$base)
   
   ##make a new amount column /1000
@@ -836,7 +838,7 @@ if ( nrows_df > 0 ) {
     theme_meg()+
     theme(axis.text.x=element_text(size=10),
           axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5))
-  
+
   fineCAAgraph <- ggplot(CAAenforcement, mapping=aes(x=factor(Year), y=Amountinthousands, fill=President, group=1))+
     geom_bar(stat="identity", alpha=.6)+
     scale_fill_manual(values=c("#450d54", "#22908d", "#e56d13"))+
@@ -931,8 +933,7 @@ if ( nrows_df > 0 ) {
   CWAenforcement[17:20,4] <- as.character("Trump")
   
   #adjust for inflation
-  names(inflation)[names(inflation) == 'Year'] <- 'year' # SH
-  CWAenforcement <- cbind(CWAenforcement, inflation)
+  CWAenforcement <- merge(CWAenforcement, inflation, by.x='Year', by.y='index', all.x=TRUE)
   CWAenforcement$inflationadjust <- as.numeric(CWAenforcement$Amount*CWAenforcement$base)
   
   ##make a new amount column /1000
@@ -1055,8 +1056,7 @@ if ( nrows_df > 0 ) {
   RCRAenforcement[17:20,4] <- as.character("Trump")
   
   #adjust for inflation
-  names(inflation)[names(inflation) == 'Year'] <- 'year' # SH
-  RCRAenforcement <- cbind(RCRAenforcement, inflation)
+  RCRAenforcement <- merge(RCRAenforcement, inflation, by.x='Year', by.y='index', all.x=TRUE)
   RCRAenforcement$inflationadjust <- as.numeric(RCRAenforcement$Amount*RCRAenforcement$base)
   
   ##make a new amount column /1000
