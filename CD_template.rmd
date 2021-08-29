@@ -5,10 +5,10 @@ output:
     number_sections: false
     css: ["custom_current.css"]
 params: 
-  cd_state: "AL01"
-  full_name: "Alabama's 1st District"
-  state: "AL"
-  district: "01"
+  cd_state: "CA12"
+  full_name: "California's 12th District"
+  state: "CA"
+  district: "12"
 ---
 
 ```{r setup, include=FALSE}
@@ -70,20 +70,24 @@ committee_membership = dbGetQuery( conn,
                         "select * from committee_members where bioguide_id = ?",
                         params=c(legislator$bioguide_id))
 committees <- list()
-for ( row in 1:nrow( committee_membership )) {
-  committee_id <- committee_membership[ row, "committee_id" ]
-  subcommittee_id <- committee_membership[ row, "subcommittee_id" ]
-  if ( nchar( subcommittee_id ) == 0 ) {
-    committee <- dbGetQuery( conn,
-                        "select * from committees where committee_id = ?",
-                        params=c(committee_id))
-    committees[[committee_id]] <- list( committee=committee )
-  } else {
-    subcommittee <- dbGetQuery( conn,
-    "select *,? as rank from sub_committees where committee_id=? and subcommittee_id=?",
-            params=c(committee_membership[row,"rank"],committee_id,subcommittee_id))
-    committees[[committee_id]] <- list.append( committees[[committee_id]], 
-                                               subcommittee )
+if ( nrow( committee_membership ) > 0 ) {
+  for ( row in 1:nrow( committee_membership )) {
+    committee_id <- committee_membership[ row, "committee_id" ]
+    subcommittee_id <- committee_membership[ row, "subcommittee_id" ]
+    if ( is.null( subcommittee_id ))
+      next;
+    if ( nchar( subcommittee_id ) == 0 ) {
+      committee <- dbGetQuery( conn,
+                          "select * from committees where committee_id = ?",
+                          params=c(committee_id))
+      committees[[committee_id]] <- list( committee=committee )
+    } else {
+      subcommittee <- dbGetQuery( conn,
+      "select *,? as rank from sub_committees where committee_id=? and subcommittee_id=?",
+              params=c(committee_membership[row,"rank"],committee_id,subcommittee_id))
+      committees[[committee_id]] <- list.append( committees[[committee_id]], 
+                                                 subcommittee )
+    }
   }
 }
 dbDisconnect( conn )
@@ -1092,6 +1096,9 @@ if ( hasRCRAenforcement ) {
 }
 
 image_loc <- paste("CD_images/",cd_state,"_rep.jpeg",sep="")
+if ( ! file.exists( image_loc )) {
+  image_loc <- "CD_images/no_photo.jpeg"
+}
 ```	
 These figures show patterns of RCRA inspections, violations, enforcement actions and fines in this district since 2001 based on available EPA data (see page 10). The bars are colored by president. Figure transparency illustrates data reliability: the more transparent, the more uncertain the data. Data on RCRA violations is particularly unreliable as violations are not necessarily directly measured. Inspection, enforcement, and fine data can be unreliable because state reporting to ECHO may be incomplete.For access to the Jupyter Notebooks which pull data from ECHO at the state and congressional district level, click [here](https://colab.research.google.com/github/edgi-govdata-archiving/ECHO-Cross-Program/blob/master/AllPrograms.ipynb).
 
