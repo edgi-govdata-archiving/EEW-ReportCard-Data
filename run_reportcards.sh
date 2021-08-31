@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 source .profile
 cd ${EEW_HOME}

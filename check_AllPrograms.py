@@ -29,8 +29,6 @@ def main(argv):
         cd = int(cd)
         state_cds.append((state, cd))
 
-    sql_current = 'select * from active_facilities where region_id={}'
-    sql_prev = 'select * from active_facilities_previous where region_id={}'
     conn = sqlite3.connect( "region.db" )
     cursor = conn.cursor()
 
@@ -39,7 +37,7 @@ def main(argv):
 
     threshold = 0.4
 
-    problem_text = '{} - {} - {} - {} '
+    problem_text = '{} - {} - {} - previous={} - current={} '
 
     programs = ('CWA','CAA','RCRA')
     for state, cd in state_cds:
@@ -52,9 +50,12 @@ def main(argv):
             current = region.get_active_facilities( program )
             previous = region.get_active_facilities( program, 
                     'active_facilities_previous' )
+            if previous < 30:
+                continue
             if previous != 0:
                 if abs( current - previous ) / previous > threshold:
-                    print( problem_text.format( state, cd, program, current ))
+                    pdb.set_trace()
+                    print( problem_text.format( state, cd, program, previous, current ))
                     found_errors = True
     print ( "Found errors? {}".format(found_errors))
     sys.exit(found_errors)
