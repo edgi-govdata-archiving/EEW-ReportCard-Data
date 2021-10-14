@@ -5,9 +5,9 @@ output:
     number_sections: false
     css: ["custom_current.css"]
 params: 
-  cd_state: "CA12"
-  full_name: "California's 12th District"
-  state: "CA"
+  cd_state: "NY12"
+  full_name: "New York's 12th District"
+  state: "NY"
   district: "12"
 ---
 
@@ -330,8 +330,8 @@ CWArecurring <- CWArecurring %>%
   select(CD,Facilities, Percent)
 names(CWArecurring)[1] <- "Region"
 CWArecurring[1,1] <- as.character("Rest of State")
-CWArecurring[2,1] <- as.character(paste(state,CD))
-CWArecurring[2,4] <- as.character(paste(state,CD))
+CWArecurring[2,1] <- as.character(paste(params$state,CD))
+CWArecurring[2,4] <- as.character(paste(params$state,CD))
 CWArecurring$RecurringViolators <- (as.numeric(CWArecurring[1,2]-CWArecurring[2,2]))
 CWArecurring[2,5] <- as.numeric(CWArecurring[2,2])
 CWArecurring$Proportional <- (as.numeric((100/(CWArecurring[1,2]))*CWArecurring[1,5]))
@@ -532,12 +532,13 @@ violations1000bar <- ggplot(violationsper1000, aes(fill=Region, y=violationsper1
 ```
 ```{r echo=FALSE, out.width= "95%", out.extra='style="float:center; padding:0px"'}
 inspect1000bar / violations1000bar
+knitr::opts_chunk$set(fig.width = 10,fig.height = 6)
 ```
 <br />
 
 These two charts show how inspections and violations in this district compare to the national and state averages per 1000 facilities in `r target_year`. We use data from `r target_year` as it was the most recent full year and the ECHO database only reports *currently* active facilities. To enable comparison across locations with a differing number of active facilities, we standardize the comparison to a value per 1000 facilities, proportionally adjusting the data if there are more or less than 1000 facilities in a district or state. 
 
-For access to the Jupyter Notebooks which pull data from ECHO at the state and congressional district level, click [here](https://colab.research.google.com/github/edgi-govdata-archiving/ECHO-Cross-Program/blob/main/AllPrograms.ipynb). For national data, click [here](https://colab.research.google.com/github/edgi-govdata-archiving/ECHO-Cross-Program/blob/main/ECHO_National.ipynb).
+For access to the software which pulls data from ECHO, see the Github repository [here](https://github.com/edgi-govdata-archiving/EEW-ReportCard-Data).
 The reliability of data in figures throughout this report is indicated by the figure subtitle and degree of transparency. Figure transparency illustrates data reliability: the more transparent, the more uncertain the data. See the data limitations page (Page 10) to view the transparency-coding table
 
 \pagebreak
@@ -551,9 +552,10 @@ The reliability of data in figures throughout this report is indicated by the fi
 
 ```{r echo=FALSE, out.extra='style="float: left; width: 50%; height: 30%; margin-right: 5%"'}
 #call in data and clean up 
+
 nrows_df <- nrow( CAAbadactors )
 if ( nrows_df > 0 ) {
-  CAAbadactors <- CAAbadactors[-c(11:100),] # SH
+  CAAbadactors <- CAAbadactors[-c(9:100),] # SH
   CAAbadactors$Facility <- CAAbadactors$fac_name # SH
   CAAbadactors$Facility <- strtrim(CAAbadactors$Facility, 30)
   
@@ -571,10 +573,10 @@ if ( nrows_df > 0 ) {
       geom_col(width = 0.1)+
       scale_fill_viridis(discrete = TRUE, option="B")+
       labs(y="Quarters in Violation", x="", title="CAA Violators")+
-      scale_y_continuous(expand=c(0,0))+
+      scale_y_continuous(expand=c(0,0), breaks=c(0,3,6,9,12), limits=c(0,13))+
       # scale_x_discrete(expand=c(0,0))+
       theme_meg()+
-  theme(axis.text.y=element_text(size=14, face = "bold", color="black"), axis.title.x = element_text(size=16), axis.text.x=element_text(size=16,face = "bold"), plot.title=element_text(size=18))+
+  theme(axis.text.y=element_text(size=14, face = "bold", color="black"), axis.title.x = element_text(size=14), axis.text.x=element_text(size=14,face = "bold"), plot.title=element_text(size=16))+
   coord_flip()
    
   } else {
@@ -584,28 +586,27 @@ if ( nrows_df > 0 ) {
       geom_bar(stat="identity", show.legend = FALSE, width=bar_width)+
       scale_fill_viridis(discrete = TRUE, option="B")+
       labs(y="Quarters in Violation", x="", title="CAA Violators")+
-      scale_y_continuous(expand=c(0,0), limits=c(0,12))+
+      scale_y_continuous(expand=c(0,0), breaks=c(0,3,6,9,12), limits=c(0,13))+
       scale_x_discrete(expand=c(0,0))+
       theme_meg()+
-  theme(axis.text.y=element_text(size=14, face = "bold", color="black"), axis.title.x = element_text(size=16), axis.text.x=element_text(size=16,face = "bold"), plot.title=element_text(size=18))+
+  theme(axis.text.y=element_text(size=14, face = "bold", color="black"), axis.title.x = element_text(size=14), axis.text.x=element_text(size=14,face = "bold"), plot.title=element_text(size=16))+
   coord_flip()
   }
   CAAfacilities
 }
 
 ```
+<br />
 <p style="text-align: right;"><font size="3">**ECHO reports for facilities:**</font></p>
 
-<p style="text-align: right;">[`r na.omit(CAAbadactors[1,7]) `](`r na.omit(CAAbadactors[1,4]) `)</p>
-<p style="text-align: right;">[`r na.omit(CAAbadactors[2,7]) `](`r na.omit(CAAbadactors[2,4]) `)</p>
-<p style="text-align: right;">[`r na.omit(CAAbadactors[3,7]) `](`r na.omit(CAAbadactors[3,4]) `)</p>
-<p style="text-align: right;">[`r na.omit(CAAbadactors[4,7]) `](`r na.omit(CAAbadactors[4,4]) `)</p>
-<p style="text-align: right;">[`r na.omit(CAAbadactors[5,7]) `](`r na.omit(CAAbadactors[5,4]) `)</p>
-<p style="text-align: right;">[`r na.omit(CAAbadactors[6,7]) `](`r na.omit(CAAbadactors[6,4]) `)</p>
-<p style="text-align: right;">[`r na.omit(CAAbadactors[7,7]) `](`r na.omit(CAAbadactors[7,4]) `)</p>
-<p style="text-align: right;">[`r na.omit(CAAbadactors[8,7]) `](`r na.omit(CAAbadactors[8,4]) `)</p>
-<p style="text-align: right;">[`r na.omit(CAAbadactors[9,7]) `](`r na.omit(CAAbadactors[9,4]) `)</p>
-<p style="text-align: right;">[`r na.omit(CAAbadactors[10,7]) `](`r na.omit(CAAbadactors[10,4]) `)</p>
+<p style="text-align: right;">[`r na.omit(CAAbadactors[1,7]) `](`r na.omit(CAAbadactors[1,4]) `)<br /></p>
+<p style="text-align: right;">[`r na.omit(CAAbadactors[2,7]) `](`r na.omit(CAAbadactors[2,4]) `)<br /></p>
+<p style="text-align: right;">[`r na.omit(CAAbadactors[3,7]) `](`r na.omit(CAAbadactors[3,4]) `)<br /></p>
+<p style="text-align: right;">[`r na.omit(CAAbadactors[4,7]) `](`r na.omit(CAAbadactors[4,4]) `)<br /></p>
+<p style="text-align: right;">[`r na.omit(CAAbadactors[5,7]) `](`r na.omit(CAAbadactors[5,4]) `)<br /></p>
+<p style="text-align: right;">[`r na.omit(CAAbadactors[6,7]) `](`r na.omit(CAAbadactors[6,4]) `)<br /></p>
+<p style="text-align: right;">[`r na.omit(CAAbadactors[7,7]) `](`r na.omit(CAAbadactors[7,4]) `)<br /></p>
+<p style="text-align: right;">[`r na.omit(CAAbadactors[8,7]) `](`r na.omit(CAAbadactors[8,4]) `)<br /></p>
 
 <br />
 <br />
@@ -616,7 +617,7 @@ if ( nrows_df > 0 ) {
 #call in data and clean up 
 nrows_df <- nrow( RCRAbadactors )
 if ( nrows_df > 0 ) {
-  RCRAbadactors <- RCRAbadactors[-c(11:100),] # SH - 
+  RCRAbadactors <- RCRAbadactors[-c(9:100),] # SH - 
   RCRAbadactors$Facility <- RCRAbadactors$fac_name # SH - 
   RCRAbadactors$Facility <- strtrim(RCRAbadactors$Facility, 30)
   
@@ -634,10 +635,10 @@ if ( nrows_df > 0 ) {
       geom_col(width = 0.1)+
       scale_fill_viridis(discrete = TRUE, option="B")+
       labs(y="Quarters in Violation", x="", title="RCRA Violators")+
-      scale_y_continuous(expand=c(0,0))+
+      scale_y_continuous(expand=c(0,0), breaks=c(0,3,6,9,12), limits=c(0,13))+
       # scale_x_discrete(expand=c(0,0))+
       theme_meg()+
-  theme(axis.text.y=element_text(size=14, face = "bold", color="black"), axis.title.x = element_text(size=16), axis.text.x=element_text(size=16,face = "bold"), plot.title=element_text(size=18))+
+  theme(axis.text.y=element_text(size=14, face = "bold", color="black"), axis.title.x = element_text(size=14), axis.text.x=element_text(size=14,face = "bold"), plot.title=element_text(size=16))+
   coord_flip()
    
   } else {
@@ -647,10 +648,10 @@ if ( nrows_df > 0 ) {
       geom_bar(stat="identity", show.legend = FALSE, width=bar_width)+
       scale_fill_viridis(discrete = TRUE, option="B")+
       labs(y="Quarters in Violation", x="", title="RCRA Violators")+
-      scale_y_continuous(expand=c(0,0), limits=c(0,12))+
+      scale_y_continuous(expand=c(0,0), breaks=c(0,3,6,9,12), limits=c(0,13))+
       scale_x_discrete(expand=c(0,0))+
        theme_meg()+
-  theme(axis.text.y=element_text(size=14, face = "bold", color="black"), axis.title.x = element_text(size=16), axis.text.x=element_text(size=16,face = "bold"), plot.title=element_text(size=18))+
+  theme(axis.text.y=element_text(size=14, face = "bold", color="black"), axis.title.x = element_text(size=14), axis.text.x=element_text(size=14,face = "bold"), plot.title=element_text(size=16))+
   coord_flip()
   }
   RCRAfacilities
@@ -659,28 +660,27 @@ if ( nrows_df > 0 ) {
 ```
 <p style="text-align: right;"><font size="3">**ECHO reports for facilities:**</font></p>
 
-<p style="text-align: right;">[`r na.omit(RCRAbadactors[1,7]) `](`r na.omit(RCRAbadactors[1,4]) `)</p>
-<p style="text-align: right;">[`r na.omit(RCRAbadactors[2,7]) `](`r na.omit(RCRAbadactors[2,4]) `)</p>
-<p style="text-align: right;">[`r na.omit(RCRAbadactors[3,7]) `](`r na.omit(RCRAbadactors[3,4]) `)</p>
-<p style="text-align: right;">[`r na.omit(RCRAbadactors[4,7]) `](`r na.omit(RCRAbadactors[4,4]) `)</p>
-<p style="text-align: right;">[`r na.omit(RCRAbadactors[5,7]) `](`r na.omit(RCRAbadactors[5,4]) `)</p>
-<p style="text-align: right;">[`r na.omit(RCRAbadactors[6,7]) `](`r na.omit(RCRAbadactors[6,4]) `)</p>
-<p style="text-align: right;">[`r na.omit(RCRAbadactors[7,7]) `](`r na.omit(RCRAbadactors[7,4]) `)</p>
-<p style="text-align: right;">[`r na.omit(RCRAbadactors[8,7]) `](`r na.omit(RCRAbadactors[8,4]) `)</p>
-<p style="text-align: right;">[`r na.omit(RCRAbadactors[9,7]) `](`r na.omit(RCRAbadactors[9,4]) `)</p>
-<p style="text-align: right;">[`r na.omit(RCRAbadactors[10,7]) `](`r na.omit(RCRAbadactors[10,4]) `)</p>
+<p style="text-align: right;">[`r na.omit(RCRAbadactors[1,7]) `](`r na.omit(RCRAbadactors[1,4]) `)<br /></p>
+<p style="text-align: right;">[`r na.omit(RCRAbadactors[2,7]) `](`r na.omit(RCRAbadactors[2,4]) `)<br /></p>
+<p style="text-align: right;">[`r na.omit(RCRAbadactors[3,7]) `](`r na.omit(RCRAbadactors[3,4]) `)<br /></p>
+<p style="text-align: right;">[`r na.omit(RCRAbadactors[4,7]) `](`r na.omit(RCRAbadactors[4,4]) `)<br /></p>
+<p style="text-align: right;">[`r na.omit(RCRAbadactors[5,7]) `](`r na.omit(RCRAbadactors[5,4]) `)<br /></p>
+<p style="text-align: right;">[`r na.omit(RCRAbadactors[6,7]) `](`r na.omit(RCRAbadactors[6,4]) `)<br /></p>
+<p style="text-align: right;">[`r na.omit(RCRAbadactors[7,7]) `](`r na.omit(RCRAbadactors[7,4]) `)<br /></p>
+<p style="text-align: right;">[`r na.omit(RCRAbadactors[8,7]) `](`r na.omit(RCRAbadactors[8,4]) `)<br /></p>
 
 <br />
 <br />
 <br />
 <br />
-
+<br />
+<br />
 
 ```{r echo=FALSE, out.extra='style="float: left; width: 50%; height: 30%; margin-right: 5%; margin-top:1.5%"'}
 #call in data and clean up 
 nrows_df <- nrow( CWAbadactors )
 if ( nrows_df > 0 ) {
-  CWAbadactors <- CWAbadactors[-c(11:100),] # SH - 
+  CWAbadactors <- CWAbadactors[-c(9:100),] # SH - 
   CWAbadactors$Facility <- CWAbadactors$fac_name # SH - 
   CWAbadactors$Facility <- strtrim(CWAbadactors$Facility, 30)
   
@@ -698,10 +698,10 @@ if ( nrows_df > 0 ) {
       geom_col(width = 0.1)+
       scale_fill_viridis(discrete = TRUE, option="B")+
       labs(y="Quarters in Violation", x="", title="CWA Violators")+
-      scale_y_continuous(expand=c(0,0), breaks=c(0,3,6,9,13), limits=c(0,13))+
+      scale_y_continuous(expand=c(0,0), breaks=c(0,3,6,9,13), limits=c(0,14))+
       # scale_x_discrete(expand=c(0,0))+
     theme_meg()+
-  theme(axis.text.y=element_text(size=14, face = "bold", color="black"), axis.title.x = element_text(size=16), axis.text.x=element_text(size=16,face = "bold"), plot.title=element_text(size=18))+
+  theme(axis.text.y=element_text(size=14, face = "bold", color="black"), axis.title.x = element_text(size=14), axis.text.x=element_text(size=14,face = "bold"), plot.title=element_text(size=16))+
   coord_flip()
    
   } else {
@@ -711,10 +711,10 @@ if ( nrows_df > 0 ) {
       geom_bar(stat="identity", show.legend = FALSE, width=bar_width)+
       scale_fill_viridis(discrete = TRUE, option="B")+
       labs(y="Quarters in Violation", x="", title="CWA Violators")+
-      scale_y_continuous(expand=c(0,0), breaks=c(0,3,6,9,13), limits=c(0,13))+
+      scale_y_continuous(expand=c(0,0), breaks=c(0,3,6,9,13), limits=c(0,14))+
       scale_x_discrete(expand=c(0,0))+
       theme_meg()+
-  theme(axis.text.y=element_text(size=14, face = "bold", color="black"), axis.title.x = element_text(size=16), axis.text.x=element_text(size=16,face = "bold"), plot.title=element_text(size=18))+
+  theme(axis.text.y=element_text(size=14, face = "bold", color="black"), axis.title.x = element_text(size=14), axis.text.x=element_text(size=14,face = "bold"), plot.title=element_text(size=16))+
   coord_flip()
   }
   CWAfacilities
@@ -723,16 +723,14 @@ if ( nrows_df > 0 ) {
 ```
 <p style="text-align: right;"><font size="3">**ECHO reports for facilities:**</font></p>
 
-<p style="text-align: right;">[`r na.omit(CWAbadactors[1,7]) `](`r na.omit(CWAbadactors[1,4]) `)</p>
-<p style="text-align: right;">[`r na.omit(CWAbadactors[2,7]) `](`r na.omit(CWAbadactors[2,4]) `)</p>
-<p style="text-align: right;">[`r na.omit(CWAbadactors[3,7]) `](`r na.omit(CWAbadactors[3,4]) `)</p>
-<p style="text-align: right;">[`r na.omit(CWAbadactors[4,7]) `](`r na.omit(CWAbadactors[4,4]) `)</p>
-<p style="text-align: right;">[`r na.omit(CWAbadactors[5,7]) `](`r na.omit(CWAbadactors[5,4]) `)</p>
-<p style="text-align: right;">[`r na.omit(CWAbadactors[6,7]) `](`r na.omit(CWAbadactors[6,4]) `)</p>
-<p style="text-align: right;">[`r na.omit(CWAbadactors[7,7]) `](`r na.omit(CWAbadactors[7,4]) `)</p>
-<p style="text-align: right;">[`r na.omit(CWAbadactors[8,7]) `](`r na.omit(CWAbadactors[8,4]) `)</p>
-<p style="text-align: right;">[`r na.omit(CWAbadactors[9,7]) `](`r na.omit(CWAbadactors[9,4]) `)</p>
-<p style="text-align: right;">[`r na.omit(CWAbadactors[10,7]) `](`r na.omit(CWAbadactors[10,4]) `)</p>
+<p style="text-align: right;">[`r na.omit(CWAbadactors[1,7]) `](`r na.omit(CWAbadactors[1,4]) `)<br /></p>
+<p style="text-align: right;">[`r na.omit(CWAbadactors[2,7]) `](`r na.omit(CWAbadactors[2,4]) `)<br /></p>
+<p style="text-align: right;">[`r na.omit(CWAbadactors[3,7]) `](`r na.omit(CWAbadactors[3,4]) `)<br /></p>
+<p style="text-align: right;">[`r na.omit(CWAbadactors[4,7]) `](`r na.omit(CWAbadactors[4,4]) `)<br /></p>
+<p style="text-align: right;">[`r na.omit(CWAbadactors[5,7]) `](`r na.omit(CWAbadactors[5,4]) `)<br /></p>
+<p style="text-align: right;">[`r na.omit(CWAbadactors[6,7]) `](`r na.omit(CWAbadactors[6,4]) `)<br /></p>
+<p style="text-align: right;">[`r na.omit(CWAbadactors[7,7]) `](`r na.omit(CWAbadactors[7,4]) `)<br /></p>
+<p style="text-align: right;">[`r na.omit(CWAbadactors[8,7]) `](`r na.omit(CWAbadactors[8,4]) `)<br /></p>
 
 <br />
 <br />
@@ -1095,7 +1093,7 @@ if ( hasRCRAenforcement ) {
   (iRCRAgraph | vRCRAgraph)
 }
 
-image_loc <- paste("CD_images/",cd_state,"_rep.jpeg",sep="")
+image_loc <- paste("CD_images/",params$cd_state,"_rep.jpeg",sep="")
 if ( ! file.exists( image_loc )) {
   image_loc <- "CD_images/no_photo.jpeg"
 }
