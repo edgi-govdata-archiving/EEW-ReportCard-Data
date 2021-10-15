@@ -1,0 +1,33 @@
+CREATE TABLE committees (
+committee_type char(10) not null,
+name char(80) not null,
+url char(80),
+committee_id char(10) not null,
+jurisdiction text
+, include boolean not null default 0);
+CREATE TABLE sub_committees (
+committee_id char(10) not null,
+subcommittee_id char(5) not null,
+name char(80) not null
+);
+CREATE TABLE legislators (
+cd_state char(5),
+name char(80),
+party char(12),
+govtrack_id char(12),
+bioguide_id char(12),
+sen_class char(3),
+since_date char(20),
+since_year char(4),
+official_url char(80),
+govtrack_url char(80),
+wikipedia_url char(80),
+twitter char(80),
+facebook char(80)
+, opensecrets_url char(80), opensecrets_id char(12));
+CREATE TABLE committee_members (
+name char(80),
+bioguide_id char(10),
+committee_id char(10),
+subcommittee_id char(5)
+, rank char(3), start char(20));
