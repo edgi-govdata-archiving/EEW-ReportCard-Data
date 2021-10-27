@@ -9,6 +9,7 @@ params:
   full_name: "New York's 12th District"
   state: "NY"
   district: "12"
+  target_year: "2020"
 ---
 
 ```{r setup, include=FALSE}
@@ -31,18 +32,8 @@ library(ggrepel)
 library(stringr)
 loadfonts()
 
-#load("names.rda")
-#names <- cd2
-#rm(cd2)
-
-#filter the names dataframe to the region you want to make a report for
-#selected <- names %>% filter(names$Identity == "AL01")
-#cd_state = (selected$Identity)
-#full_name = (selected$full_name)
-#state <- (selected$State)
 CD <-  substr(params$cd_state,3,4)  
-target_year <- '2020'
-#^need to fix this in names dataframe 
+target_year <- params$target_year
 
 # States with a single congressional district: The leg_info.db 
 # has the district as "00", per 'https://theunitedstates.io/congress-legislators/legislators-current.json'.
@@ -64,6 +55,7 @@ leg_info <- list( name=legislator$name, party=legislator$party,
                   official_url=legislator$official_url,
                   govtrack_url=legislator$govtrack_url,
                   wikipedia_url=legislator$wikipedia_url, 
+                  opensecrets_url=legislator$opensecrets_url, 
                   twitter=legislator$twitter,
                   facebook=legislator$facebook )
 committee_membership = dbGetQuery( conn,
@@ -73,13 +65,15 @@ committees <- list()
 if ( nrow( committee_membership ) > 0 ) {
   for ( row in 1:nrow( committee_membership )) {
     committee_id <- committee_membership[ row, "committee_id" ]
+    committee <- dbGetQuery( conn,
+                          "select * from committees where committee_id = ?",
+                          params=c(committee_id))
+    if ( committee$include == 0 ) 
+      next;
     subcommittee_id <- committee_membership[ row, "subcommittee_id" ]
     if ( is.null( subcommittee_id ))
       next;
     if ( nchar( subcommittee_id ) == 0 ) {
-      committee <- dbGetQuery( conn,
-                          "select * from committees where committee_id = ?",
-                          params=c(committee_id))
       committees[[committee_id]] <- list( committee=committee )
     } else {
       subcommittee <- dbGetQuery( conn,
@@ -91,8 +85,6 @@ if ( nrow( committee_membership ) > 0 ) {
   }
 }
 dbDisconnect( conn )
-
-# system2('git', args='clone https://github.com/edgi-govdata-archiving/ECHO_modules.git -b watershed-geo')
 
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 ```
@@ -152,7 +144,7 @@ if ( CD == '00' ) {
 }
 ```
 
-  <div class="title"><span style="padding-left: 100px">
+<div class="title"><span style="padding-left: 100px">
 Congressional Report Card</span></div>
  <hr style="height:3px;border-width:0; margin-left:15px; margin-right:15px;color: #b9b9b9;background-color: #b9b9b9; margin-top: .5em; margin-bottom: 0em">
 ##### `r params$full_name`; seat held by `r leg_info$name` since `r leg_info$since_year` 
@@ -275,6 +267,7 @@ CWAper1000$Per100 <- as.numeric(CWAper1000$Num.per.1000/10)
 #make a dataframe that is per 100
 
 CWAper100 <- CWAper1000[CWAper1000$Num.per.1000 < 12000.,]
+outliers <- CWAper1000[CWAper1000$Num.per.1000 >= 12000.,]
 #removing NY9 and WA5 and MI7, AK, and IA2 and extra CA9
 # CWAper100 <- CWAper100[-c(38,52,29,15,54,8),]
 # CWAper100 <- CWAper100[CWAper100$Num.per.100 < 1200.,]
@@ -301,6 +294,37 @@ dotplot <-ggplot(CWAper100, aes(x=Region, y=Per100, fill=Highlight))+
 ggsave(paste("dotplot_",params$cd_state,".png",sep=""), dotplot, path=here(output_loc), scale = 2, width=8, height=5, units=c("cm"))
 
 dotplot_loc <- paste(output_loc,"dotplot_",params$cd_state,".png",sep="")
+cd_outliers <- ''
+state_outliers <- ''
+state_start <- FALSE
+cd_start <- FALSE
+for ( row in 1:nrow( outliers )) {
+  state_cd <- outliers[ row, "CD.State" ]
+  per_100 <- outliers[ row, "Per100" ]
+  region_type <- outliers[ row, "Region" ]
+  if (region_type == 'States' ) {
+    if ( state_start ) {
+      state_outliers <- paste( state_outliers, ',' )
+    }
+    state_start <- TRUE
+    state_outliers <- paste( state_outliers, state_cd, '(', per_100, ')' )
+  } else {
+    if ( cd_start ) {
+      cd_outliers <- paste( cd_outliers, ',' )
+    }
+    cd_start <- TRUE
+    if ( substr( state_cd, 3, 3 ) == '0' ) {
+      state_cd <- substr( state_cd, 1, 4 )
+    }
+    cd_outliers <- paste( cd_outliers, state_cd, '(', per_100, ')' )
+  }
+}
+if ( nchar( trimws( cd_outliers ) < 2 )) {
+  cd_outliers_txt <- paste( 'Congressional Districts: ', cd_outliers )
+}
+if ( nchar( trimws( state_outliers ) < 2 )) {
+  state_outliers_txt <- paste( 'States: ', state_outliers )
+}
 ```
  
 <a ><img src="`r dotplot_loc`" style="float: left; width: 100%; height: 60%; margin-right: 5%" ></a>
@@ -311,6 +335,11 @@ dotplot_loc <- paste(output_loc,"dotplot_",params$cd_state,".png",sep="")
 
 <h3>In `r params$cd_state`, there were <span style="color:#569b5e">`r cd_state_dot[1,5]`</span> Clean Water Act violations per 100 regulated facilities in `r target_year`.</h3>
 
+<h2> Outliers (not shown):  Districts and states with more than 1200 violations per 100 installations.</h2>
+
+* <h3> `r cd_outliers_txt` </h3>
+
+* <h3> `r state_outliers_txt` </h3>
 \pagebreak
 
 <br />
@@ -1120,13 +1149,15 @@ These figures show patterns of RCRA inspections, violations, enforcement actions
 
 ### [Govtrack web page](`r leg_info$govtrack_url`)
 
+### [OpenSecrets web page](`r leg_info$opensecrets_url`)
+
 <br />
 <br />
 <br />
 <br />
 <br />
 
-### This member of Congress serves on the following committees: 
+### This member of Congress serves on the following committees relevant to this report: 
 
 ```{r, results='asis'}
 for ( committee in committees ) {
