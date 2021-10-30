@@ -3,7 +3,7 @@ from Region import Region
 import pandas as pd
 
 programs = ['CAA', 'CWA', 'RCRA']
-region = Region( type='Congressional District', state='TX',
+region = Region( type='State', state='NY',
                 programs=programs )
 
 inflation = region.get_inflation( 2019 )
@@ -16,6 +16,9 @@ print( "USA inspections" )
 print(df)
 df = region.get_per_1000( 'violations', 'USA', 2020 )
 print( "USA violations" )
+print(df)
+df = region.get_per_1000( 'violations', 'State', 2020 )
+print( "State violations" )
 print(df)
 
 cwa_per_1000 = region.get_cwa_per_1000( 2020 )
@@ -36,22 +39,32 @@ print( RCRArecurring )
 
 violations = region.get_events( 'violations', 'All', 2020 )
 print( "Violations" )
+print( "  All programs" )
 print( violations )
 CAAviolations = region.get_events( 'violations', 'CAA', 2020 )
+print( "  CAA" )
 print( CAAviolations )
 CWAviolations = region.get_events( 'violations', 'CWA', 2020 )
+print( "  CWA" )
 print( CWAviolations )
 RCRAviolations = region.get_events( 'violations', 'RCRA', 2020 )
+print( "  RCRA" )
 print( RCRAviolations )
+
 enforcement = region.get_events( 'enforcements', 'All', 2020 )
 print( "Enforcements" )
+print( "  All Programs" )
 print( enforcement )
 CAAenforcement = region.get_events( 'enforcements', 'CAA', 2020 )
+print( "  CAA" )
 print( CAAenforcement )
 CWAenforcement = region.get_events( 'enforcements', 'CWA', 2020 )
+print( "  CWA" )
 print( CWAenforcement )
 RCRAenforcement = region.get_events( 'enforcements', 'RCRA', 2020 )
+print( "  RCRA" )
 print( RCRAenforcement )
+
 inspections = region.get_events( 'inspections', 'All', 2020 )
 print( "Inspections" )
 print( inspections )

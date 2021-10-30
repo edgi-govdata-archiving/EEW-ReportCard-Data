@@ -20,6 +20,8 @@ class Region:
         the congressional district, the watershed name
     state : str
         The two letter state abbreviation
+    programs : str
+        The EPA programs
     db_conn : SQLite connection
         The connection to the local SQLite database holding
         the region's data
@@ -282,7 +284,7 @@ class Region:
             sql = 'select year Year, sum(amount) Amount, sum(count) Count '
             sql += ' from enforcements'
         elif ( type == 'violations' ):
-            sql = 'select year Year, count as Count from violations'
+            sql = 'select year Year, sum(count) as Count from violations'
         else:
             return None
         if ( self.value is None ):
