@@ -31,18 +31,16 @@ param_table <- names %>%
   ) %>% select(region,cd_state,state,district,target_year,full_name)
 
 render_report <- function(region,
-                          cd_state,
                           full_name,
                           state,
                           district,
                           target_year) {
 
-  template <- "CD_template.rmd"
+  template <- "State_template.rmd"
 
-  out_file <- paste0(cd_state, "_2021")
+  out_file <- paste0(state, "_2021")
 
-  parameters <- list(cd_state = cd_state,
-                     full_name=full_name,
+  parameters <- list(full_name=full_name,
                      state=state,
                      district=district,
                      target_year=target_year)
@@ -60,13 +58,8 @@ render_report <- function(region,
  # invisible(TRUE)
 }
 
-#use this function if you just want to run one report
-# render_report()
-
-# render_report(cd_state = selected$cd_state, full_name = selected$full_name, state = selected$state)
-
 #use these two if you want to run multiple reports
-params_list <- as.list(param_table %>% filter(param_table$region == "CD" & grepl(opt$states,param_table$state)))
+params_list <- as.list(param_table %>% filter(param_table$region == "State" & grepl(opt$states,param_table$state)))
 
 pmap(params_list, render_report)
 

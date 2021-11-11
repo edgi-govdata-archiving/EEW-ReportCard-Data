@@ -160,7 +160,7 @@ Congressional Report Card</span></div>
   <div class="circle-caa">CAA</div>
   <div class="circle-cwa">CWA</div>
   <div class="circle-rcra">RCRA</div>
-  <div class="bottom-left">Map shows congressional district or state with number of regulated facilities per program.</div>
+  <div class="bottom-left">Map shows `r param$full_name` with number of regulated facilities per program.</div>
   </div>
 <a href="https://www.environmentalenforcementwatch.org/"><img src="logosandimages/eew_logo.png" style="float: left; width: 9%; margin-left: 30%"></a>
 <a href="https://envirodatagov.org/"><img src="logosandimages/edgi_logo.png" style="float: right; width: 15%; margin-right: 30%" ></a>
@@ -861,9 +861,8 @@ if ( nrows_df > 0 ) {
     geom_bar(stat="identity", show.legend = FALSE, alpha=.6)+
     scale_fill_manual(values=c("#450d54", "#22908d", "#e56d13"))+
     labs(y=" # Actions", x="Year", title="CAA Enforcement Actions\n", subtitle ="Potentially incomplete data")+
-    scale_y_continuous(expand=c(0,0), limits=c(0,max(CAAviolations$Count+(.2*max(CAAviolations$Count)))))+
+    scale_y_continuous(expand=c(0,0), limits=c(0,max(CAAenforcement$Count+(.2*max(CAAenforcement$Count)))))+
     scale_x_discrete(breaks=c(2004,2008,2012, 2016, 2020))+
-    geom_text(aes(label=Count, family="Georgia", fontface="bold"), position = position_dodge(0.9), vjust = -0.1, size=3)+
     theme_meg()+
     theme(axis.text.x=element_text(size=10),
           axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5))
@@ -974,9 +973,8 @@ if ( nrows_df > 0 ) {
     scale_fill_manual(values=c("#450d54", "#22908d", "#e56d13"))+
     labs(y=" # Actions", x="Year", title="CWA Enforcement Actions\n", subtitle="Potentially incomplete data")+
     #ggtitle("CWA Enforcement Actions")+
-    scale_y_continuous(expand=c(0,0), limits=c(0,max(CWAviolations$Count+(.2*max(CWAviolations$Count)))))+
+    scale_y_continuous(expand=c(0,0), limits=c(0,max(CWAenforcement$Count+(.2*max(CWAenforcement$Count)))))+
     scale_x_discrete(breaks=c(2004,2008,2012, 2016, 2020))+
-    geom_text(aes(label=Count, family="Georgia", fontface="bold"), position = position_dodge(0.9), vjust = -0.1, size=3)+
     theme_meg()+
     theme(axis.text.x=element_text(size=10),
           axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5))
@@ -1096,9 +1094,8 @@ if ( nrows_df > 0 ) {
     geom_bar(stat="identity", show.legend = FALSE, alpha=.6)+
     scale_fill_manual(values=c("#450d54", "#22908d", "#e56d13"))+
     labs(y=" # Actions", x="Year", title="RCRA Enforcement Actions\n", subtitle = "Potentially incomplete data")+
-    scale_y_continuous(expand=c(0,0), limits=c(0,max(RCRAviolations$Count+(.2*max(RCRAviolations$Count)))))+
+    scale_y_continuous(expand=c(0,0), limits=c(0,max(RCRAenforcement$Count+(.2*max(RCRAenforcement$Count)))))+
     scale_x_discrete(breaks=c(2004,2008,2012, 2016, 2020))+
-    geom_text(aes(label=Count, family="Georgia", fontface="bold"), position = position_dodge(0.9), vjust = -0.1, size=3)+
     theme_meg()+
     theme(axis.text.x=element_text(size=10),
           axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5))
