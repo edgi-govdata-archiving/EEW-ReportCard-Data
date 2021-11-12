@@ -24,26 +24,19 @@ rm(cd2)
 param_table <- names %>%
   rename(
     region = Region,
-    cd_state = Identity,
-    state = State,
-    district = District,
-    target_year = Target_year
-  ) %>% select(region,cd_state,state,district,target_year,full_name)
+    state = State
+  ) %>% select(region,state,full_name)
 
 render_report <- function(region,
                           full_name,
-                          state,
-                          district,
-                          target_year) {
+                          state) {
 
   template <- "State_template.rmd"
 
   out_file <- paste0(state, "_2021")
 
   parameters <- list(full_name=full_name,
-                     state=state,
-                     district=district,
-                     target_year=target_year)
+                     state=state)
 
   tryCatch ({
     message( full_name )
@@ -59,7 +52,7 @@ render_report <- function(region,
 }
 
 #use these two if you want to run multiple reports
-params_list <- as.list(param_table %>% filter(param_table$region == "State" & grepl(opt$states,param_table$state)))
+params_list <- as.list(param_table %>% filter(param_table$region == "state" & grepl(opt$states,param_table$state)))
 
 pmap(params_list, render_report)
 

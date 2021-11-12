@@ -9,7 +9,6 @@ output:
 params: 
   full_name: "Iowa"
   state: "IA"
-  target_year: "2020"
 ---
 \SetWatermarkText{DRAFT}
 
@@ -34,9 +33,9 @@ library(ggrepel)
 library(stringr)
 loadfonts()
 
+target_year <- '2020'
 state <- params$state
 full_name <- params$full_name
-target_year <- params$target_year
 output_loc <- paste('Output/',state,"/",sep="")
 dir.create(output_loc)
 

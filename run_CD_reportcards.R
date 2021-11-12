@@ -26,16 +26,14 @@ param_table <- names %>%
     region = Region,
     cd_state = Identity,
     state = State,
-    district = District,
-    target_year = Target_year
-  ) %>% select(region,cd_state,state,district,target_year,full_name)
+    district = District
+  ) %>% select(region,cd_state,state,district,full_name)
 
 render_report <- function(region,
                           cd_state,
                           full_name,
                           state,
-                          district,
-                          target_year) {
+                          district) {
 
   template <- "CD_template.rmd"
 
@@ -44,8 +42,7 @@ render_report <- function(region,
   parameters <- list(cd_state = cd_state,
                      full_name=full_name,
                      state=state,
-                     district=district,
-                     target_year=target_year)
+                     district=district)
 
   tryCatch ({
     message( full_name )

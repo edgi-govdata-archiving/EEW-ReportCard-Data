@@ -9,7 +9,6 @@ params:
   full_name: "New York's 12th District"
   state: "NY"
   district: "12"
-  target_year: "2020"
 ---
 
 ```{r setup, include=FALSE}
@@ -33,7 +32,7 @@ library(stringr)
 loadfonts()
 
 CD <-  substr(params$cd_state,3,4)  
-target_year <- params$target_year
+target_year <- '2020'
 
 # States with a single congressional district: The leg_info.db 
 # has the district as "00", per 'https://theunitedstates.io/congress-legislators/legislators-current.json'.
