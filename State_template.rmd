@@ -16,7 +16,6 @@ params:
 library(reticulate)
 library(RSQLite)
 library(rlist)
-library(gdata)
 library(tidyverse)
 library(patchwork)
 library(here)
@@ -279,10 +278,10 @@ for ( row in 1:nrow( outliers )) {
     cd_outliers <- paste( cd_outliers, state_cd, '(', per_100, ')' )
   }
 }
-if ( nchar( trim( cd_outliers ) < 2 )) {
+if ( nchar( trimws( cd_outliers ) < 2 )) {
   cd_outliers_txt <- paste( 'Congressional Districts: ', cd_outliers )
 }
-if ( nchar( trim( state_outliers ) < 2 )) {
+if ( nchar( trimws( state_outliers ) < 2 )) {
   state_outliers_txt <- paste( 'States: ', state_outliers )
 }
 
