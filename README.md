@@ -112,8 +112,11 @@ This script retrieves the current data for all regions (CDs) from the SBU ECHO d
 This script runs the leg_info.py program to gather legislator information into the leg_info.db SQLite database.
 
 ## run_reportcards.sh
-This script calls the run_CD_reportcards.R script which uses CD_template.Rmd and State_template.Rmd markdown templates to generate report cards for every region.  CDs are batched into three groups according to their state names.  Generated HTML and PDF report cards are written to the Output directory.
+This script calls the _run_state_reportcards.R_ and _run_CD_reportcards.R_ scripts which use _State_template.rmd_ and _CD_template.rmd_  markdown templates to generate report cards for every region.  States and CDs are each batched into three groups according to their state names.  Generated HTML and PDF report cards are written to the Output directory.
 ```
+Rscript run_state_reportcards.R -s '^[A-I]'
+Rscript run_state_reportcards.R -s '^[J-R]'
+Rscript run_state_reportcards.R -s '^[S-Z]'
 Rscript run_CD_reportcards.R -s '^[A-I]'
 Rscript run_CD_reportcards.R -s '^[J-R]'
 Rscript run_CD_reportcards.R -s '^[S-Z]'
