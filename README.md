@@ -31,9 +31,10 @@ _run_AllPrograms.sh_ first backs up the current _region.db_ database, appending 
 A log file, _AllPrograms.log_, can be viewed to determine if there was any problem encountered in running the _AllPrograms.py_ on any of the _state_cd-X.csv_ files.
 
 The _AllPrograms.py_ program writes into tables in the local _region.db_ SQLite database. The schema for this database is in _region_db.schema_.
-* TBD - The goal is to make the monthly run of the run_AllPrograms.sh an automated cron job.
-* TBD - The clean_regions.sql needs to be run prior to getting new monthly data with run_AllPrograms.sh.  It might be incorporated into the run_AllPrograms.sh script.
-* TBD - We should also archive the regions.db before cleaning it.  
+* The region.db local SQLite database is backed up.
+* _AllPrograms.py_ is run.  It uses _AllPrograms_util.py_ and _AllPrograms_db.py_ to collect the needed data from the SBU database and populate region.db.
+*  _state_cd-*.csv_ files contain the CDs to be run in each batch by _AllPrograms.py_.
+*  Standard output and standard error messages are collected in log files.
 
 ## Local region.db SQLite database
 
