@@ -31,9 +31,10 @@ _run_AllPrograms.sh_ first backs up the current _region.db_ database, appending 
 A log file, _AllPrograms.log_, can be viewed to determine if there was any problem encountered in running the _AllPrograms.py_ on any of the _state_cd-X.csv_ files.
 
 The _AllPrograms.py_ program writes into tables in the local _region.db_ SQLite database. The schema for this database is in _region_db.schema_.
-* TBD - The goal is to make the monthly run of the run_AllPrograms.sh an automated cron job.
-* TBD - The clean_regions.sql needs to be run prior to getting new monthly data with run_AllPrograms.sh.  It might be incorporated into the run_AllPrograms.sh script.
-* TBD - We should also archive the regions.db before cleaning it.  
+* The region.db local SQLite database is backed up.
+* _AllPrograms.py_ is run.  It uses _AllPrograms_util.py_ and _AllPrograms_db.py_ to collect the needed data from the SBU database and populate region.db.
+*  _state_cd-*.csv_ files contain the CDs to be run in each batch by _AllPrograms.py_.
+*  Standard output and standard error messages are collected in log files.
 
 ## Local region.db SQLite database
 
@@ -111,8 +112,11 @@ This script retrieves the current data for all regions (CDs) from the SBU ECHO d
 This script runs the leg_info.py program to gather legislator information into the leg_info.db SQLite database.
 
 ## run_reportcards.sh
-This script calls the run_CD_reportcards.R script which uses CD_template.Rmd and State_template.Rmd markdown templates to generate report cards for every region.  CDs are batched into three groups according to their state names.  Generated HTML and PDF report cards are written to the Output directory.
+This script calls the _run_state_reportcards.R_ and _run_CD_reportcards.R_ scripts which use _State_template.rmd_ and _CD_template.rmd_  markdown templates to generate report cards for every region.  States and CDs are each batched into three groups according to their state names.  Generated HTML and PDF report cards are written to the Output directory.
 ```
+Rscript run_state_reportcards.R -s '^[A-I]'
+Rscript run_state_reportcards.R -s '^[J-R]'
+Rscript run_state_reportcards.R -s '^[S-Z]'
 Rscript run_CD_reportcards.R -s '^[A-I]'
 Rscript run_CD_reportcards.R -s '^[J-R]'
 Rscript run_CD_reportcards.R -s '^[S-Z]'
