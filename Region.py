@@ -4,7 +4,6 @@ import pandas as pd
 import sqlite3
 from AllPrograms_db import get_region_rowid, write_single_cd_states
 
-
 class Region:
     '''
     This class represents the data associated with a particular
@@ -28,7 +27,7 @@ class Region:
     data_sets : list
         The DataSet objects for the region 
     '''
-
+    
     def __init__(self, type, value=None, state=None, programs=None):
 
         self.type = type  # Region type
@@ -51,6 +50,13 @@ class Region:
         count real,
         unique(region_id,program,type,year));
     '''
+
+    def get_cds( self ):
+        conn = sqlite3.connect("region.db")
+        sql = 'select state, cd from real_cds order by state, cd'
+        df = pd.read_sql_query( sql,conn )
+        return df
+
     def get_per_1000( self, type, region, year ):
         # type is 'inspections' or 'violations'
         # region is 'USA', 'State', 'CD'
