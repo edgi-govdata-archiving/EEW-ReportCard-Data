@@ -90,7 +90,7 @@ RCRA_active_facilities <- region$get_active_facilities('RCRA')
 ## Local leg_info.db SQLite database for legislator information
 
 This database is a collection of information on legislators collected from a few web resources. Images, committee information and other data is retrieved from these sources:
-* the @unitedstates project https://theunitedstates.io/congress-legislators/legislators-current.json
+* the @unitedstates project https://theunitedstates.io/congress-legislators/
 * Govtrack https://www.govtrack.us/congress/members/
 * Wikipedia https://en.wikipedia.org/wiki/
 * Open Secrets https://www.opensecrets.org/members-of-congress/
