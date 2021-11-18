@@ -38,7 +38,7 @@ The _AllPrograms.py_ program writes into tables in the local _region.db_ SQLite 
 
 ## Local region.db SQLite database
 
-The schema of this small, local database is in _region_db.schema_.  The tables in the database are:
+The schema of this small, local database is in _region_db.schema_.  The database collects summarized data from the SBU ECHO database organized by regions. (Currently the Congressional Districts are the only regions supported.) The tables in the database are:
 * regions - This identifies all of the regions (congressional districts) for which data exists. All other tables link via the regions table's rowid index.
 * active_facilities - the count of facilities for each program--CAA, CWA, RCRA, GHG
 * per_fac - counts of violations, etc. (type) by program (CAA, etc.) by year, per facility
@@ -87,6 +87,19 @@ CAA_active_facilities <- region$get_active_facilities('CAA')
 CWA_active_facilities <- region$get_active_facilities('CWA')
 RCRA_active_facilities <- region$get_active_facilities('RCRA')
 ```
+## Local leg_info.db SQLite database for legislator information
+
+This database is a collection of information on legislators collected from a few web resources. Images, committee information and other data is retrieved from these sources:
+* the @unitedstates project https://theunitedstates.io/congress-legislators/legislators-current.json
+* Govtrack https://www.govtrack.us/congress/members/
+* Wikipedia https://en.wikipedia.org/wiki/
+* Open Secrets https://www.opensecrets.org/members-of-congress/
+
+The leg_info database contains the following tables:
+* legislators - This identifies each legislator with links to their official URL and online data sources such as Govtrack, Wikipedia, Open Secrets and others.
+* committees - This is a collection of all Senate and House of Representative committees.
+* sub_committees - These are the subcommittees, linked to their committees.
+* committee_members - This links legislators to the committees and subcommittees they serve on.
 
 # Automated running of tasks in the Digital Ocean droplet, using crontab
 The Linux cron utility is used to run several of our processes on an automated schedule. The commands to be run are managed with the 'crontab -e' command.
