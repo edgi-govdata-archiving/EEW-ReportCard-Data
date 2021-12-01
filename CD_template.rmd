@@ -33,6 +33,7 @@ loadfonts()
 
 CD <-  substr(params$cd_state,3,4)  
 target_year <- '2020'
+full_name <- params$full_name
 
 # States with a single congressional district: The leg_info.db 
 # has the district as "00", per 'https://theunitedstates.io/congress-legislators/legislators-current.json'.
@@ -146,7 +147,7 @@ if ( CD == '00' ) {
 <div class="title"><span style="padding-left: 100px">
 Congressional Report Card</span></div>
  <hr style="height:3px;border-width:0; margin-left:15px; margin-right:15px;color: #b9b9b9;background-color: #b9b9b9; margin-top: .5em; margin-bottom: 0em">
-##### `r params$full_name`; seat held by `r leg_info$name` since `r leg_info$since_year` 
+##### `r full_name`; seat held by `r leg_info$name` since `r leg_info$since_year` 
  <div class="container">
   <img src="`r map_src`" alt="Snow" style="width:100%;">
   <div class="circle-map1">`r region$get_active_facilities('CAA')`</div>
@@ -159,7 +160,7 @@ Congressional Report Card</span></div>
   <div class="circle-caa">CAA</div>
   <div class="circle-cwa">CWA</div>
   <div class="circle-rcra">RCRA</div>
-  <div class="bottom-left">Map shows `r param$full_name` with number of regulated facilities per program.</div>
+  <div class="bottom-left">Map shows `r full_name` with number of regulated facilities per program.</div>
   </div>
 <a href="https://www.environmentalenforcementwatch.org/"><img src="logosandimages/eew_logo.png" style="float: left; width: 9%; margin-left: 30%"></a>
 <a href="https://envirodatagov.org/"><img src="logosandimages/edgi_logo.png" style="float: right; width: 15%; margin-right: 30%" ></a>
@@ -483,7 +484,7 @@ enforcementfinegraph <- enforcement %>% ggplot()+
           element_text(lineheight = .1, size=10))
 
 ```
-# Highlights for  `r params$full_name`
+# Highlights for  `r full_name`
 
 * <h3>Comparing the first 3 years of the Obama administration to the first 3 years of the Trump administration, there has been a <span style="color:#569b5e">`r inspectionchange[1,5]`% `r inspectionchange[1,4]` in inspections,  `r enforcementchange[1,10]`%  `r enforcementchange[1,9]` in fines</span>, and a <span style="color:#569b5e">`r enforcementchange[1,8]`% `r enforcementchange[1,7]` in enforcement actions.</span></h3>
 
