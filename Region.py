@@ -2,7 +2,7 @@ import pdb
 import os
 import pandas as pd
 import sqlite3
-from AllPrograms_db import get_region_rowid, write_single_cd_states
+from AllPrograms_util import get_region_rowid
 
 class Region:
     '''
