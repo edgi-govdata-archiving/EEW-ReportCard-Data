@@ -1,8 +1,7 @@
 import pandas as pd
 from Region import Region
-from ECHO_modules.geographies import states
 
-def create_df( region_type, data_type, y_field, program, region_selected ):
+def create_df( region_type, data_type, y_field, program, states, region_selected ):
     usa_region = Region( type='Nation' )
     usa_num_facs = usa_region.get_active_facilities( program )
     usa_events = usa_region.get_events( data_type, program, 2021 )
