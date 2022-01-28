@@ -121,54 +121,112 @@ RCRAinspections <- region$get_events( 'inspections', 'RCRA', target_year_int )
 CAAbadactors <- region$get_non_compliants( 'CAA' )
 CWAbadactors <- region$get_non_compliants( 'CWA' )
 RCRAbadactors <- region$get_non_compliants( 'RCRA' )
+
+this_state <- params$state
 ```
 
 ```{python echo=FALSE}
-import pandas as pd
-from Region import Region
-# from ECHO_modules.geographies import states
+from create_df import create_df
 
-program = 'CWA'
-region_type = 'Congressional District'
-states = ['IL',]
-usa_region = Region(type='Nation')
-usa_num_facs = usa_region.get_active_facilities( program )
-usa_events = usa_region.get_events( 'inspections', program, 2021 )
-usa_events['USA'] = usa_events['Count']/usa_num_facs
-state_events_dict = {}
-for state in states:
-    state_region = Region( type='State', state=state, 
-                programs=[program,] )
-    state_num_facs = state_region.get_active_facilities( program )
-    state_events = state_region.get_events( 'inspections', program, 2021 )
-    state_events[ state ] = state_events['Count']/state_num_facs
-    state_events_dict[ state ] = state_events
-local_region = Region( type='inspections', state=states[0], value='06',
-                     programs=[program,])
-local_num_facs = local_region.get_active_facilities( program )
-local_events = local_region.get_events( 'inspections', program, 2021 )
-local_events[ '06' ] = local_events['Count']/local_num_facs
-df_events = usa_events.drop( 'Count', 1 )
-for state_name,state_events in state_events_dict.items():
-    df_events = df_events.merge( state_events[['Year',state_name]] )
-if ( region_type != 'State' ):
-    df_events = df_events.merge( local_events[['Year','06']])
+cwa_insp_years = create_df(region_type='Congressional District',data_type='inspections',
+               y_field='Count',program='CWA',states=[r.this_state,],region_selected=r.Region_CD)
+cwa_viol_years = create_df(region_type='Congressional District',data_type='violations',
+               y_field='Count',program='CWA',states=[r.this_state,],region_selected=r.Region_CD)
+cwa_enf_count_years = create_df(region_type='Congressional District',data_type='enforcements',
+               y_field='Count',program='CWA',states=[r.this_state,],region_selected=r.Region_CD)
+cwa_enf_count_years = cwa_enf_count_years.drop('Amount',1)
+cwa_enf_dollar_years = create_df(region_type='Congressional District',data_type='enforcements',
+               y_field='Amount',program='CWA',states=[r.this_state,],region_selected=r.Region_CD)
+cwa_enf_dollar_years = cwa_enf_dollar_years.drop('Count',1)
+cwa_enf_dollar_years['USA'] = cwa_enf_dollar_years['USA']/1000.
+cwa_enf_dollar_years[r.this_state] = cwa_enf_dollar_years[r.this_state]/1000.
+cwa_enf_dollar_years[r.Region_CD] = cwa_enf_dollar_years[r.Region_CD]/1000.
     
 ```
 
 ```{r echo=FALSE, include=FALSE}
-df_graph <- melt(py$df_events, id=c("Year"))
+cwa_insp_years <- melt(py$cwa_insp_years, id=c("Year"))
+cwa_viol_years <- melt(py$cwa_viol_years, id=c("Year"))
+cwa_enf_count_years <- melt(py$cwa_enf_count_years, id=c("Year"))
+cwa_enf_dollar_years <- melt(py$cwa_enf_dollar_years, id=c("Year"))
 ```
 
 ```{r echo=FALSE, include=FALSE}
-graph1 <- ggplot(df_graph, aes(x = Year, y = value, color = variable)) +
-  geom_line()
+# Color selection
+cols <- c("#D43F3A", "#EEA236", "#5CB85C", "#46B8DA")
+
+graph1 <- ggplot(cwa_insp_years, aes(x = Year, y = value, color = variable)) +
+  geom_line() +
+  scale_color_manual(values = cols) +
+  guides(color = guide_legend(title = "Regions")) + 
+  labs(y="# Inspections", x="Year", title="CWA - Inspections Per Facility")
+graph2 <- ggplot(cwa_viol_years, aes(x = Year, y = value, color = variable)) +
+  geom_line() +
+  scale_color_manual(values = cols) +
+  guides(color = guide_legend(title = "Regions")) + 
+  labs(y="# Violations", x="Year", title="CWA - Violations Per Facility")
+graph3 <- ggplot(cwa_enf_count_years, aes(x = Year, y = value, color = variable)) +
+  geom_line() +
+  scale_color_manual(values = cols) +
+  guides(color = guide_legend(title = "Regions")) + 
+  labs(y="# Enforcements", x="Year", title="CWA - Enforcement Actions Per Facility")
+graph4 <- ggplot(cwa_enf_dollar_years, aes(x = Year, y = value, color = variable)) +
+  geom_line() +
+  scale_color_manual(values = cols) +
+  guides(color = guide_legend(title = "Regions")) + 
+  labs(y="Fines ($1000)", x="Year", title="CWA - Enforcement Fines Per Facility")
 
 ```
 
-```{r echo=FALSE, include=FALSE}
-show(graph1)
+```{r echo=FALSE}
+
+##getting %difference CWA violations
+CWAviolations <- CWAviolations %>%
+  mutate(
+    President = case_when(
+      Year < 2009 ~ "Bush",
+      Year < 2017 & Year > 2008 ~ "Obama",
+      Year > 2016 ~ "Trump"
+    ))
+
+vCWAchange <- data.frame("BushObamaAverage" =mean(CWAviolations[1:16,2]),
+                             "Trump Average" =mean(CWAviolations[17:20,2])) # SH
+
+vCWAchange$PercentDifference <- as.numeric(100*(vCWAchange[1,2]-vCWAchange[1,1])/
+                                                 vCWAchange[1,1])
+vCWAchange$PercentDifference <-round(vCWAchange$PercentDifference,0)
+
+vCWAchange$Extra <- ifelse((vCWAchange$PercentDifference>=100)|(vCWAchange$PercentDifference<=-100), "much", "")
+vCWAchange$Change <- ifelse(vCWAchange$PercentDifference<0, "better", "worse")
+
+vCWAchange$Positive <- abs(vCWAchange$PercentDifference)
+vCWAchange$Value <- ifelse(vCWAchange$PercentDifference>=0, "increase", "decrease")
+
+#enforcement % difference
+enforcement$Amount <- round(enforcement$Amount,2)
+#add presidental years
+enforcement <- enforcement %>%
+  mutate(
+    President = case_when(
+      Year < 2009 ~ "Bush",
+      Year < 2017 & Year > 2008 ~ "Obama",
+      Year > 2016 ~ "Trump"
+    ))
+actionchange <- data.frame("BushObamaAverage" =mean(enforcement[1:16,3]),
+                             "Trump Average" =mean(enforcement[17:19,3]))
+
+actionchange$PercentDifference <- as.numeric(100*(actionchange[1,2]-actionchange[1,1])/
+                                                 actionchange[1,1])
+
+actionchange$PercentDifference <-round(actionchange$PercentDifference,0)
+
+actionchange$Extra <- ifelse((actionchange$PercentDifference>=100)|(actionchange$PercentDifference<=-100), "much", "")
+actionchange$Change <- ifelse(actionchange$PercentDifference<0, "worse", "better")
+
+actionchange$Positive <- abs(actionchange$PercentDifference)
+actionchange$Value <- ifelse(actionchange$PercentDifference>=0, "increase", "decrease")
 ```
+
 
 ```{r readData, echo=FALSE}
 names(USAinspectionsper1000_All)[1] <- "Program"
@@ -239,58 +297,24 @@ A regulated facility in this report is a facility that reports air or water emis
 <hr style="height:3px;border-width:0;margin-left:15px; margin-right:15px;color: #C1E0D7;background-color: #C1E0D7; margin-top: 0em; margin-bottom: 0em">
 <h4>Report Generated on `r format(Sys.time(), '%B %d, %Y')`<span style="padding-left:400px">Page 2</span></h4>
 
-# Key Changes in this District under the Trump Administration
+# Clean Water Act - Inspections, Violations, Enforcements Since 2000
 
-```{r echo=FALSE}
 
-##getting %difference CWA violations
-CWAviolations <- CWAviolations %>%
-  mutate(
-    President = case_when(
-      Year < 2009 ~ "Bush",
-      Year < 2017 & Year > 2008 ~ "Obama",
-      Year > 2016 ~ "Trump"
-    ))
+<h3>These graphs show the changes in numbers of inspections, violations and enforcement actions
+per facility for the U.S., the state of `r params$state`, and congressional district `r Region_CD`,
+under the Clean Water Act (CWA)*. </h3>
 
-vCWAchange <- data.frame("BushObamaAverage" =mean(CWAviolations[1:16,2]),
-                             "Trump Average" =mean(CWAviolations[17:20,2])) # SH
 
-vCWAchange$PercentDifference <- as.numeric(100*(vCWAchange[1,2]-vCWAchange[1,1])/
-                                                 vCWAchange[1,1])
-vCWAchange$PercentDifference <-round(vCWAchange$PercentDifference,0)
+*(The current number of active
+facilities is used for the calculations for all graphs, as the historical data for facility counts
+was not available. The graphs therefore give trends rather than faithful statistics.)
 
-vCWAchange$Extra <- ifelse((vCWAchange$PercentDifference>=100)|(vCWAchange$PercentDifference<=-100), "much", "")
-vCWAchange$Change <- ifelse(vCWAchange$PercentDifference<0, "better", "worse")
+<br />
 
-vCWAchange$Positive <- abs(vCWAchange$PercentDifference)
-vCWAchange$Value <- ifelse(vCWAchange$PercentDifference>=0, "increase", "decrease")
-
-#enforcement % difference
-enforcement$Amount <- round(enforcement$Amount,2)
-#add presidental years
-enforcement <- enforcement %>%
-  mutate(
-    President = case_when(
-      Year < 2009 ~ "Bush",
-      Year < 2017 & Year > 2008 ~ "Obama",
-      Year > 2016 ~ "Trump"
-    ))
-actionchange <- data.frame("BushObamaAverage" =mean(enforcement[1:16,3]),
-                             "Trump Average" =mean(enforcement[17:19,3]))
-
-actionchange$PercentDifference <- as.numeric(100*(actionchange[1,2]-actionchange[1,1])/
-                                                 actionchange[1,1])
-
-actionchange$PercentDifference <-round(actionchange$PercentDifference,0)
-
-actionchange$Extra <- ifelse((actionchange$PercentDifference>=100)|(actionchange$PercentDifference<=-100), "much", "")
-actionchange$Change <- ifelse(actionchange$PercentDifference<0, "worse", "better")
-
-actionchange$Positive <- abs(actionchange$PercentDifference)
-actionchange$Value <- ifelse(actionchange$PercentDifference>=0, "increase", "decrease")
-
+```{r, fig.height = 5, fig.width = 8, fig.align = "center"}
+(graph1 | graph2) / (graph3 | graph4)
 ```
-
+ 
 <h3>Clean Water Act Violations*: <span style="color:#569b5e">`r vCWAchange[1,4]` `r vCWAchange[1,5]`</span> than the average over the previous 16 years, representing a <span style="color:#569b5e">`r vCWAchange[1,6]`% `r vCWAchange[1,7]`</span> in violations</h3>
 
 <br />
@@ -299,12 +323,6 @@ actionchange$Value <- ifelse(actionchange$PercentDifference>=0, "increase", "dec
 
 *see data limitations page for metric calculations
 
-<br />
-
-```{r, fig.height = 7, fig.width = 5, fig.align = "left"}
-graph1
-```
- 
 
 \pagebreak
 
