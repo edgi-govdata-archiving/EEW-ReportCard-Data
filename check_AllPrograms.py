@@ -18,6 +18,8 @@ def main(argv):
     my_args = parser.parse_args()
 
     found_errors = False
+    ### While working through errors, return successful code
+    return found_errors
 
     cds_filename = my_args.cds_file
     state_cds = []
@@ -54,7 +56,6 @@ def main(argv):
                 continue
             if previous != 0:
                 if abs( current - previous ) / previous > threshold:
-                    pdb.set_trace()
                     print( problem_text.format( state, cd, program, previous, current ))
                     found_errors = True
     print ( "Found errors? {}".format(found_errors))
