@@ -2,7 +2,7 @@ import pdb
 import os
 import pandas as pd
 import sqlite3
-from AllPrograms_db import get_region_rowid, write_single_cd_states
+from AllPrograms_util import get_region_rowid
 
 class Region:
     '''
@@ -12,7 +12,7 @@ class Region:
     Attributes
     ----------
     type : str
-        One of the supported region types--'State', 
+        One of the supported region types--'Nation', 'State', 
         'Congressional District', 'Watershed', 'Zip Code'
     value : str
         The actual identifier of the region--e.g. the number of
@@ -106,7 +106,6 @@ class Region:
         sql += ' group by program'
         df_insp = pd.read_sql_query( sql, conn )
 
-        # df_merged = pd.merge( df_fac, df_insp )
         df_joined = df_fac.join( 
             df_insp.set_index(['program']),
             lsuffix='x',
@@ -218,17 +217,25 @@ class Region:
         cursor = conn.cursor()
 
         sql = 'select sum(count) from active_facilities where '
-        sql += ' program=\'{}\' and region_id in ( select rowid from regions'
-        sql += ' where state=\'{}\' )'
-        sql = sql.format( program, self.state )
+        if ( self.state is None ):
+            sql += ' program=\'{}\''
+            sql = sql.format( program )
+        else:
+            sql += ' program=\'{}\' and region_id in ( select rowid from regions'
+            sql += ' where state=\'{}\' )'
+            sql = sql.format( program, self.state )
         cursor.execute( sql )
         fetched = cursor.fetchone()
         state_facilities = fetched[0]
         
         sql = 'select sum(violations) from recurring_violations where '
-        sql += ' program=\'{}\' and region_id in ( select rowid from regions'
-        sql += ' where state=\'{}\' )'
-        sql = sql.format( program, self.state )
+        if ( self.state is None ):
+            sql += ' program=\'{}\''
+            sql = sql.format( program )
+        else:
+            sql += ' program=\'{}\' and region_id in ( select rowid from regions'
+            sql += ' where state=\'{}\' )'
+            sql = sql.format( program, self.state )
         cursor.execute( sql )
         fetched = cursor.fetchone()
         state_violators = fetched[0]
@@ -294,13 +301,18 @@ class Region:
         else:
             return None
         if ( self.value is None ):
-            sql += ' where region_id in ( select rowid from regions where '
-            sql += ' state=\'{}\')' 
-            sql = sql.format( self.state )
+            # If state is None, get the count
+            # for all regions in the USA
+            if ( self.state is None ):
+                sql += ' where '
+            else:
+                sql += ' where region_id in ( select rowid from regions where '
+                sql += ' state=\'{}\') and ' 
+                sql = sql.format( self.state )
         else:
-            sql += ' where region_id={}'
+            sql += ' where region_id={} and '
             sql = sql.format( self.region_id )
-        sql += ' and year <= {} '
+        sql += ' year <= {} '
         if ( program != 'All' ):
             sql += ' and program=\'{}\''
         sql += ' group by year'
@@ -318,9 +330,10 @@ class Region:
         sql += ' and noncomp_count > 0'
         sql = sql.format( program )
         if ( self.value is None ):
-            # Look at the entire state
-            sql += ' and region_id in (select rowid from regions where state=\'{}\')'
-            sql = sql.format( self.state )
+            if ( self.state is not None ):
+                # Look at the entire state
+                sql += ' and region_id in (select rowid from regions where state=\'{}\')'
+                sql = sql.format( self.state )
         else:
             sql += ' and region_id={}'
             sql = sql.format( self.region_id )
@@ -331,10 +344,15 @@ class Region:
         cursor = conn.cursor()
 
         if ( self.value is None ):
-            # Sum active facilities over all regions in the state
-            sql = 'select sum(count) from {} where region_id in ('
-            sql += ' select rowid from regions where state=\'{}\') and program=\'{}\''
-            sql = sql.format( table, self.state, program )
+            if ( self.state is None ):
+                # Sum active facilities over all regions in the country
+                sql = 'select sum(count) from {} where program=\'{}\''
+                sql = sql.format( table, program )
+            else:
+                # Sum active facilities over all regions in the state
+                sql = 'select sum(count) from {} where region_id in ('
+                sql += ' select rowid from regions where state=\'{}\') and program=\'{}\''
+                sql = sql.format( table, self.state, program )
         else:
             sql = 'select count from {} where region_id={}'
             sql += ' and program=\'{}\''

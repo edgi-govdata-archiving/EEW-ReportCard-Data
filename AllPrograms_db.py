@@ -5,28 +5,6 @@ import AllPrograms_util
 from ECHO_modules.get_data import get_echo_data
 
 
-def get_region_rowid(cursor, state, cd):
-    sel_sql = "select rowid from regions where region_type='{}' and state='{}'"
-    sel_cd_sql = sel_sql + " and region = '{}'"
-    sel_state_sql = sel_sql + " and region = ''"
-    ins_sql = "insert into regions (region_type,state,region) values ('{}','{}','{}')"
-    type = "CD"
-    if cd is not None:
-        sql = sel_cd_sql.format("CD", state, str(cd).zfill(2))
-    else:
-        type = "State"
-        sql = sel_state_sql.format("State", state)
-    cursor.execute(sql)
-    result = cursor.fetchone()
-    if result is not None:
-        return result[0]
-    else:
-        cd_str = "" if cd is None else str(cd).zfill(2)
-        sql = ins_sql.format(type, state, cd_str)
-        cursor.execute(sql)
-        return cursor.lastrowid
-
-
 def write_active_facs(active_facs, state, cd=None):
     ins_sql = (
         "insert into active_facilities (region_id,program,count) values ({},'{}',{})"
@@ -36,7 +14,7 @@ def write_active_facs(active_facs, state, cd=None):
     conn = sqlite3.connect("region.db")
     cursor = conn.cursor()
 
-    rowid = get_region_rowid(cursor, state, cd)
+    rowid = AllPrograms_util.get_region_rowid(cursor, state, cd)
     for program, value in active_facs.items():
         sql = ins_sql.format(rowid, program, value, value)
         cursor.execute(sql)
@@ -53,7 +31,7 @@ def write_recurring_violations(state, cd, viol_list):
     conn = sqlite3.connect("region.db")
     cursor = conn.cursor()
 
-    rowid = get_region_rowid(cursor, state, cd)
+    rowid = AllPrograms_util.get_region_rowid(cursor, state, cd)
     # pdb.set_trace()
     if viol_list is not None:
         for row in viol_list:
@@ -73,7 +51,7 @@ def write_violations(program, ds, ds_type):
 
     state = ds_type[2]
     cd = ds_type[1]
-    rowid = get_region_rowid(cursor, state, cd)
+    rowid = AllPrograms_util.get_region_rowid(cursor, state, cd)
     df_pgm = AllPrograms_util.get_events(ds, ds_type)
     if df_pgm is not None:
         # idx will be the year
@@ -95,7 +73,7 @@ def write_CWA_violations(df, ds_type):
 
     state = ds_type[2]
     cd = ds_type[1]
-    rowid = get_region_rowid(cursor, state, cd)
+    rowid = AllPrograms_util.get_region_rowid(cursor, state, cd)
     if df is not None:
         # idx will be the year
         for idx, row in df.iterrows():
@@ -115,7 +93,7 @@ def write_inspections(program, ds, ds_type):
 
     state = ds_type[2]
     cd = ds_type[1]
-    rowid = get_region_rowid(cursor, state, cd)
+    rowid = AllPrograms_util.get_region_rowid(cursor, state, cd)
     df_pgm = AllPrograms_util.get_inspections(ds, ds_type)
     # pdb.set_trace()
     if df_pgm is not None:
@@ -141,7 +119,7 @@ def write_total_inspections(program, df_pgm, ds_type):
 
     state = ds_type[2]
     cd = ds_type[1]
-    rowid = get_region_rowid(cursor, state, cd)
+    rowid = AllPrograms_util.get_region_rowid(cursor, state, cd)
     # pdb.set_trace()
     if df_pgm is not None:
         # idx will be the year
@@ -161,7 +139,7 @@ def write_enforcements(program, ds, ds_type):
 
     state = ds_type[2]
     cd = ds_type[1]
-    rowid = get_region_rowid(cursor, state, cd)
+    rowid = AllPrograms_util.get_region_rowid(cursor, state, cd)
     df_pgm = AllPrograms_util.get_enforcements(ds, ds_type)
     # pdb.set_trace()
     if df_pgm is not None:
@@ -193,7 +171,7 @@ def write_total_enforcements(program, df_pgm, ds_type):
 
     state = ds_type[2]
     cd = ds_type[1]
-    rowid = get_region_rowid(cursor, state, cd)
+    rowid = AllPrograms_util.get_region_rowid(cursor, state, cd)
     # pdb.set_trace()
     if df_pgm is not None:
         # idx will be the year
@@ -221,7 +199,7 @@ def write_per_fac(program, ds_type, event, year, count):
 
     state = ds_type[2]
     cd = ds_type[1]
-    rowid = get_region_rowid(cursor, state, cd)
+    rowid = AllPrograms_util.get_region_rowid(cursor, state, cd)
     # pdb.set_trace()
     sql = ins_sql.format(rowid, program, event, year, count, count)
     cursor.execute(sql)
@@ -238,7 +216,7 @@ def write_enf_per_fac(program, ds, ds_type, num_fac, year):
 
     state = ds_type[2]
     cd = ds_type[1]
-    rowid = get_region_rowid(cursor, state, cd)
+    rowid = AllPrograms_util.get_region_rowid(cursor, state, cd)
     df_pgm = AllPrograms_util.get_enf_per_fac(ds, ds_type, num_fac, year)
     if df_pgm is not None and not df_pgm.empty:
         sql = ins_sql.format(
@@ -270,7 +248,7 @@ def write_ghg_emissions(df, ds_type):
 
     state = ds_type[2]
     cd = ds_type[1]
-    rowid = get_region_rowid(cursor, state, cd)
+    rowid = AllPrograms_util.get_region_rowid(cursor, state, cd)
     if df is not None:
         # idx will be the year
         for idx, row in df.iterrows():
@@ -289,7 +267,7 @@ def write_top_violators(df, ds_type, program):
 
     state = ds_type[1]
     cd = ds_type[2]
-    rowid = get_region_rowid(cursor, state, cd)
+    rowid = AllPrograms_util.get_region_rowid(cursor, state, cd)
     if df is not None:
         # idx will be the year
         for idx, row in df.iterrows():
@@ -321,7 +299,7 @@ def write_violations_by_facilities(
 
     state = ds_type[1]
     cd = ds_type[2]
-    rowid = get_region_rowid(cursor, state, cd)
+    rowid = AllPrograms_util.get_region_rowid(cursor, state, cd)
     df = AllPrograms_util.get_violations_by_facilities(
         df, action_field, flag, noncomp_field
     )

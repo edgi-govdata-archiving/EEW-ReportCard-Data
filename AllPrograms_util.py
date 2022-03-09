@@ -2,6 +2,28 @@ import pdb
 import pandas as pd
 
 
+def get_region_rowid(cursor, state, cd):
+    sel_sql = "select rowid from regions where region_type='{}' and state='{}'"
+    sel_cd_sql = sel_sql + " and region = '{}'"
+    sel_state_sql = sel_sql + " and region = ''"
+    ins_sql = "insert into regions (region_type,state,region) values ('{}','{}','{}')"
+    type = "CD"
+    if cd is not None:
+        sql = sel_cd_sql.format("CD", state, str(cd).zfill(2))
+    else:
+        type = "State"
+        sql = sel_state_sql.format("State", state)
+    cursor.execute(sql)
+    result = cursor.fetchone()
+    if result is not None:
+        return result[0]
+    else:
+        cd_str = "" if cd is None else str(cd).zfill(2)
+        sql = ins_sql.format(type, state, cd_str)
+        cursor.execute(sql)
+        return cursor.lastrowid
+
+
 # ### 7. Number of currently active facilities regulated in CAA, CWA, RCRRA, GHGRP
 # * The program_count() function looks at the ECHO_EXPORTER data that is passed in and counts the number of facilities have the 'flag' parameter set to 'Y' (AIR_FLAG, NPDES_FLAG, RCRA_FLAG, GHG_FLAG)
 # * cd_echo_data is a dictionary with key (state, cd), where the state_echo_data is filtered for records of the current CD.
