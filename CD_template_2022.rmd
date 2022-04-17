@@ -153,26 +153,26 @@ cwa_enf_dollar_years <- melt(py$cwa_enf_dollar_years, id=c("Year"))
 
 ```{r echo=FALSE, include=FALSE}
 # Color selection
-cols <- c("#D43F3A", "#EEA236", "#5CB85C", "#46B8DA")
+region_colors <- c("#D43F3A", "#EEA236", "#5CB85C", "#46B8DA")
 
 graph1 <- ggplot(cwa_insp_years, aes(x = Year, y = value, color = variable)) +
   geom_line() +
-  scale_color_manual(values = cols) +
+  scale_color_manual(values = region_colors) +
   guides(color = guide_legend(title = "Regions")) + 
   labs(y="# Inspections", x="Year", title="CWA - Inspections Per Facility")
 graph2 <- ggplot(cwa_viol_years, aes(x = Year, y = value, color = variable)) +
   geom_line() +
-  scale_color_manual(values = cols) +
+  scale_color_manual(values = region_colors) +
   guides(color = guide_legend(title = "Regions")) + 
   labs(y="# Violations", x="Year", title="CWA - Violations Per Facility")
 graph3 <- ggplot(cwa_enf_count_years, aes(x = Year, y = value, color = variable)) +
   geom_line() +
-  scale_color_manual(values = cols) +
+  scale_color_manual(values = region_colors) +
   guides(color = guide_legend(title = "Regions")) + 
   labs(y="# Enforcements", x="Year", title="CWA - Enforcement Actions Per Facility")
 graph4 <- ggplot(cwa_enf_dollar_years, aes(x = Year, y = value, color = variable)) +
   geom_line() +
-  scale_color_manual(values = cols) +
+  scale_color_manual(values = region_colors) +
   guides(color = guide_legend(title = "Regions")) + 
   labs(y="Fines ($1000)", x="Year", title="CWA - Enforcement Fines Per Facility")
 
@@ -335,7 +335,6 @@ was not available. The graphs therefore give trends rather than faithful statist
 CWArecurring2 <- CWArecurring[-is.na(CWArecurring$CD), ] 
 CWArecurring2[5] <-round(CWArecurring2[5],1)
 
-##until we fix the dataframe that is called from region.db, the above two lines make the under the clean water act statement
 CWArecurring <- CWArecurring %>%
   select(CD,Facilities, Percent)
 names(CWArecurring)[1] <- "Region"
@@ -366,21 +365,21 @@ effluentchange[,1:3] <-round(effluentchange[,1:3],2)
 
 president_colors <- c("#450d54", "#22908d", "#e56d13", "#0EAD5D")
 
-effluentgraph <- ggplot(effluentviolations, mapping=aes(x=factor(Year),
+effluentgraph <- ggplot(effluentviolations, mapping=aes(x=factor(Year), 
   y=Count, fill=President, group=1))+
   geom_bar(stat="identity", alpha=.6)+
-  scale_fill_manual(values=president_colors)+
+  scale_fill_manual(values=president_colors,guide=guide_legend(breaks=c("Bush","Obama","Trump","Biden")))+
   labs(y=" # Violations", x="Year", title="Clean Water Act Violations\n", subtitle ="Mostly complete data")+
   scale_y_continuous(expand=c(0,0), limits=c(0,max(effluentviolations$Count+(.2*max(effluentviolations$Count)))))+
   scale_x_discrete(breaks=c(2004,2008,2012,2016,2020))+
   theme_meg()+
   theme(axis.text.x=element_text(size=9),
-        axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5, size=10, color="green"), plot.title = 
-          element_text(lineheight = .1, size=10))
+        axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5, size=10, color="green"),
+        plot.title = element_text(lineheight = .1, size=10))
 
 ##Inspections % change and graph
 
-##So, we're going to do the first 3 years of Obama and Trump so average
+##So, we're going to do the four years of Obama and Trump so average
 #[9:11,2] Obama
 # [17:19,2] Trump
 inspectionchange <- data.frame("Obama Average" =mean(inspections[9:12,2]),
@@ -407,7 +406,8 @@ inspectiongraph <- ggplot(inspections, mapping=aes(x=factor(Year),
   scale_x_discrete(breaks=c(2004,2008,2012,2016,2020))+
   theme_meg()+
   theme(axis.text.x=element_text(size=9),
-          axis.title.x = element_blank(), plot.subtitle = element_text(size = 10, color = "dark gray", hjust=.5))
+          axis.title.x = element_blank(), plot.subtitle = element_text(size = 10, color = "dark gray", hjust=.5), plot.title = 
+          element_text(lineheight = .1, size=10))
 # axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5, size=9), plot.title = 
 #           element_text(lineheight = .1, size=10)) # SH
 
@@ -448,7 +448,8 @@ enforcementactiongraph <- ggplot(enforcement, mapping=aes(x=factor(Year),y=Count
   geom_text(aes(label=Count, family="Georgia", fontface="bold"), position = position_dodge(0.9), vjust = -0.1, size=3)+
   theme_meg()+
   theme(axis.text.x=element_text(size=9),
-          axis.title.x = element_blank(), plot.subtitle = element_text(size = 10, color = "dark gray", hjust=.5))
+          axis.title.x = element_blank(), plot.subtitle = element_text(size = 10, color = "dark gray", hjust=.5), plot.title = 
+          element_text(lineheight = .1, size=10))
 # axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5, size=9), plot.title = 
 #          element_text(lineheight = .1, size=10))
 
@@ -460,20 +461,21 @@ enforcementfinegraph <- enforcement %>% ggplot()+
   scale_x_discrete(breaks=c(2004,2008,2012,2016,2020))+
   theme_meg()+
   theme(axis.text.x=element_text(size=9),
-          axis.title.x = element_blank(), plot.subtitle = element_text(size = 10, color = "dark gray", hjust=.5))
+          axis.title.x = element_blank(), plot.subtitle = element_text(size = 10, color = "dark gray", hjust=.5), plot.title = 
+          element_text(lineheight = .1, size=10))
 # axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5, size=9), plot.caption = element_text(size=10), plot.title = 
 #          element_text(lineheight = .1, size=10))
 
 ```
 # Highlights for  `r full_name`
 
-* <h3>Comparing the first 3 years of the Obama administration to the first 3 years of the Trump administration, there has been a <span style="color:#569b5e">`r inspectionchange[1,5]`% `r inspectionchange[1,4]` in inspections,  `r enforcementchange[1,10]`%  `r enforcementchange[1,9]` in fines</span>, and a <span style="color:#569b5e">`r enforcementchange[1,8]`% `r enforcementchange[1,7]` in enforcement actions.</span></h3>
+* <h3>Comparing the four years of the Obama administration to the four years of the Trump administration, there has been a <span style="color:#569b5e">`r inspectionchange[1,5]`% `r inspectionchange[1,4]` in inspections,  `r enforcementchange[1,10]`%  `r enforcementchange[1,9]` in fines</span>, and a <span style="color:#569b5e">`r enforcementchange[1,8]`% `r enforcementchange[1,7]` in enforcement actions.</span></h3>
 
 <br />
 
 * <h3>Under the Clean Water Act, the law whose regulation is best documented by available EPA data, <span style="color:#569b5e">`r CWArecurring2[1,2]` facilities, representing `r CWArecurring2[1,5]`% of all regulated facilities in `r params$cd_state`,</span> were in violation for <span style="color:#569b5e">at least 9 months of the last 3 years.</span></h3>
 
-```{r echo=FALSE, out.width= "95%", out.extra='style="float:center; padding:0px"'}
+```{r echo=FALSE, fig.height=6, out.width= "95%", out.extra='style="float:center; padding:0px"'}
 effluentgraph/inspectiongraph/enforcementactiongraph/enforcementfinegraph
 ```
 
@@ -504,7 +506,7 @@ inspectionsper1000[2] <-round(inspectionsper1000[2],0)
 #Now let's visualize this 
 inspect1000bar <- ggplot(inspectionsper1000, aes(fill=Region, y=Inspectionsper1000, x=Program, alpha=Program))+
   geom_bar(position="dodge", stat="identity")+
-  scale_fill_manual(values=president_colors)+
+  scale_fill_manual(values=region_colors)+
   labs(y="Inspections per 1000 Facilities\n", x="")+
   scale_alpha_manual(values=c(.6,1,.6), guide='none')+
   geom_text(aes(label=Inspectionsper1000, family="Georgia"), position = position_dodge(0.9), vjust = -0.1, size=4)+
@@ -528,7 +530,7 @@ violationsper1000[2] <-round(violationsper1000[2],0)
 #Now let's visualize this 
 violations1000bar <- ggplot(violationsper1000, aes(fill=Region, y=violationsper1000, x=Program, alpha=Program))+
   geom_bar(position="dodge", stat="identity", show.legend=FALSE)+
-  scale_fill_manual(values=president_colors)+
+  scale_fill_manual(values=region_colors)+
   scale_alpha_manual(values=c(.3,1,.3), guide='none')+
   labs(y="Violations per 1000 Facilities", x="")+
   geom_text(aes(label=violationsper1000, family="Georgia"), position = position_dodge(0.9), vjust = -0.1, size=4)+
@@ -557,12 +559,32 @@ The reliability of data in figures throughout this report is indicated by the fi
 <h4>Report Generated on `r format(Sys.time(), '%B %d, %Y')`<span style="padding-left:400px">Page 5</span></h4> 
 
 <h1><span style="margin-bottom:0px; padding-bottom:0px">Recent Non-Compliance in this District</span></h1>
-<font size="2">These figures show the ten facilities in this district with the worst history of environmental compliance based on their number of noncompliant quarters in the past 3 years (not necessarily consecutive).</font>
+<font size="2">These figures show the ten facilities in this district with the worst history of environmental compliance based on their number of noncompliant quarters in the past 3 years (not necessarily consecutive). In some districts, for some programs, the number may be fewer than ten.</font>
 
 ```{r echo=FALSE, out.extra='style="float: left; width: 50%; height: 30%; margin-right: 5%"'}
 #call in data and clean up 
-
 nrows_df <- nrow( CAAbadactors )
+make_extras_string <- function(badactors) {
+  extras_string = ""
+  if (nrows_df > 10) {
+    last_fac_count = badactors[10,]$noncomp_count
+    extras_count = 0
+    for (i in 10:nrows_df) {
+      if (badactors[i,]$noncomp_count < last_fac_count) {
+        break
+      }
+      extras_count <- extras_count + 1
+    }
+    if (extras_count > 0) {
+      noun <- "facilities"
+      if (extras_count == 1) noun = "facility"
+      extras_string <- sprintf("%d additional %s with %d quarters in violation", 
+                               extras_count, noun, last_fac_count);
+    }
+  }
+}
+
+extras_string <- make_extras_string(CAAbadactors)
 if ( nrows_df > 0 ) {
   CAAbadactors <- CAAbadactors[-c(11:100),] # SH
   CAAbadactors$Facility <- CAAbadactors$fac_name # SH
@@ -608,25 +630,25 @@ if ( nrows_df > 0 ) {
 <br />
 <p style="text-align: right;"><font size="3">**ECHO reports for facilities:**</font></p>
 
-<p style="text-align: right;">[`r na.omit(CAAbadactors[1,7]) `](`r na.omit(CAAbadactors[1,4]) `)<br /></p>
-<p style="text-align: right;">[`r na.omit(CAAbadactors[2,7]) `](`r na.omit(CAAbadactors[2,4]) `)<br /></p>
-<p style="text-align: right;">[`r na.omit(CAAbadactors[3,7]) `](`r na.omit(CAAbadactors[3,4]) `)<br /></p>
-<p style="text-align: right;">[`r na.omit(CAAbadactors[4,7]) `](`r na.omit(CAAbadactors[4,4]) `)<br /></p>
-<p style="text-align: right;">[`r na.omit(CAAbadactors[5,7]) `](`r na.omit(CAAbadactors[5,4]) `)<br /></p>
-<p style="text-align: right;">[`r na.omit(CAAbadactors[6,7]) `](`r na.omit(CAAbadactors[6,4]) `)<br /></p>
-<p style="text-align: right;">[`r na.omit(CAAbadactors[7,7]) `](`r na.omit(CAAbadactors[7,4]) `)<br /></p>
-<p style="text-align: right;">[`r na.omit(CAAbadactors[8,7]) `](`r na.omit(CAAbadactors[8,4]) `)<br /></p>
-<p style="text-align: right;">[`r na.omit(CAAbadactors[8,7]) `](`r na.omit(CAAbadactors[9,4]) `)<br /></p>
-<p style="text-align: right;">[`r na.omit(CAAbadactors[8,7]) `](`r na.omit(CAAbadactors[10,4]) `)<br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(CAAbadactors[1,7]) `](`r na.omit(CAAbadactors[1,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(CAAbadactors[2,7]) `](`r na.omit(CAAbadactors[2,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(CAAbadactors[3,7]) `](`r na.omit(CAAbadactors[3,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(CAAbadactors[4,7]) `](`r na.omit(CAAbadactors[4,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(CAAbadactors[5,7]) `](`r na.omit(CAAbadactors[5,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(CAAbadactors[6,7]) `](`r na.omit(CAAbadactors[6,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(CAAbadactors[7,7]) `](`r na.omit(CAAbadactors[7,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(CAAbadactors[8,7]) `](`r na.omit(CAAbadactors[8,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(CAAbadactors[9,7]) `](`r na.omit(CAAbadactors[9,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(CAAbadactors[10,7]) `](`r na.omit(CAAbadactors[10,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">`r extras_string `</font><br /></p>
 
-<br />
-<br />
 <br />
 <br />
 
 ```{r echo=FALSE, out.extra='style="float: left; width: 50%; height: 30%; margin-right: 5%; margin-top:1.5%"'}
 #call in data and clean up 
 nrows_df <- nrow( RCRAbadactors )
+extras_string <- make_extras_string(RCRAbadactors)
 if ( nrows_df > 0 ) {
   RCRAbadactors <- RCRAbadactors[-c(11:100),] # SH - 
   RCRAbadactors$Facility <- RCRAbadactors$fac_name # SH - 
@@ -671,27 +693,24 @@ if ( nrows_df > 0 ) {
 ```
 <p style="text-align: right;"><font size="3">**ECHO reports for facilities:**</font></p>
 
-<p style="text-align: right;">[`r na.omit(RCRAbadactors[1,7]) `](`r na.omit(RCRAbadactors[1,4]) `)<br /></p>
-<p style="text-align: right;">[`r na.omit(RCRAbadactors[2,7]) `](`r na.omit(RCRAbadactors[2,4]) `)<br /></p>
-<p style="text-align: right;">[`r na.omit(RCRAbadactors[3,7]) `](`r na.omit(RCRAbadactors[3,4]) `)<br /></p>
-<p style="text-align: right;">[`r na.omit(RCRAbadactors[4,7]) `](`r na.omit(RCRAbadactors[4,4]) `)<br /></p>
-<p style="text-align: right;">[`r na.omit(RCRAbadactors[5,7]) `](`r na.omit(RCRAbadactors[5,4]) `)<br /></p>
-<p style="text-align: right;">[`r na.omit(RCRAbadactors[6,7]) `](`r na.omit(RCRAbadactors[6,4]) `)<br /></p>
-<p style="text-align: right;">[`r na.omit(RCRAbadactors[7,7]) `](`r na.omit(RCRAbadactors[7,4]) `)<br /></p>
-<p style="text-align: right;">[`r na.omit(RCRAbadactors[8,7]) `](`r na.omit(RCRAbadactors[8,4]) `)<br /></p>
-<p style="text-align: right;">[`r na.omit(RCRAbadactors[8,7]) `](`r na.omit(RCRAbadactors[9,4]) `)<br /></p>
-<p style="text-align: right;">[`r na.omit(RCRAbadactors[8,7]) `](`r na.omit(RCRAbadactors[10,4]) `)<br /></p>
-
-<br />
-<br />
-<br />
-<br />
+<p style="text-align: right;"><font size="2">[`r na.omit(RCRAbadactors[1,7]) `](`r na.omit(RCRAbadactors[1,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(RCRAbadactors[2,7]) `](`r na.omit(RCRAbadactors[2,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(RCRAbadactors[3,7]) `](`r na.omit(RCRAbadactors[3,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(RCRAbadactors[4,7]) `](`r na.omit(RCRAbadactors[4,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(RCRAbadactors[5,7]) `](`r na.omit(RCRAbadactors[5,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(RCRAbadactors[6,7]) `](`r na.omit(RCRAbadactors[6,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(RCRAbadactors[7,7]) `](`r na.omit(RCRAbadactors[7,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(RCRAbadactors[8,7]) `](`r na.omit(RCRAbadactors[8,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(RCRAbadactors[9,7]) `](`r na.omit(RCRAbadactors[9,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(RCRAbadactors[10,7]) `](`r na.omit(RCRAbadactors[10,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">`r extras_string `</font><br /></p>
 <br />
 <br />
 
 ```{r echo=FALSE, out.extra='style="float: left; width: 50%; height: 30%; margin-right: 5%; margin-top:1.5%"'}
 #call in data and clean up 
 nrows_df <- nrow( CWAbadactors )
+extras_string <- make_extras_string(CWAbadactors)
 if ( nrows_df > 0 ) {
   CWAbadactors <- CWAbadactors[-c(11:100),] # SH - 
   CWAbadactors$Facility <- CWAbadactors$fac_name # SH - 
@@ -736,14 +755,17 @@ if ( nrows_df > 0 ) {
 ```
 <p style="text-align: right;"><font size="3">**ECHO reports for facilities:**</font></p>
 
-<p style="text-align: right;">[`r na.omit(CWAbadactors[1,7]) `](`r na.omit(CWAbadactors[1,4]) `)<br /></p>
-<p style="text-align: right;">[`r na.omit(CWAbadactors[2,7]) `](`r na.omit(CWAbadactors[2,4]) `)<br /></p>
-<p style="text-align: right;">[`r na.omit(CWAbadactors[3,7]) `](`r na.omit(CWAbadactors[3,4]) `)<br /></p>
-<p style="text-align: right;">[`r na.omit(CWAbadactors[4,7]) `](`r na.omit(CWAbadactors[4,4]) `)<br /></p>
-<p style="text-align: right;">[`r na.omit(CWAbadactors[5,7]) `](`r na.omit(CWAbadactors[5,4]) `)<br /></p>
-<p style="text-align: right;">[`r na.omit(CWAbadactors[6,7]) `](`r na.omit(CWAbadactors[6,4]) `)<br /></p>
-<p style="text-align: right;">[`r na.omit(CWAbadactors[7,7]) `](`r na.omit(CWAbadactors[7,4]) `)<br /></p>
-<p style="text-align: right;">[`r na.omit(CWAbadactors[8,7]) `](`r na.omit(CWAbadactors[8,4]) `)<br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(CWAbadactors[1,7]) `](`r na.omit(CWAbadactors[1,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(CWAbadactors[2,7]) `](`r na.omit(CWAbadactors[2,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(CWAbadactors[3,7]) `](`r na.omit(CWAbadactors[3,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(CWAbadactors[4,7]) `](`r na.omit(CWAbadactors[4,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(CWAbadactors[5,7]) `](`r na.omit(CWAbadactors[5,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(CWAbadactors[6,7]) `](`r na.omit(CWAbadactors[6,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(CWAbadactors[7,7]) `](`r na.omit(CWAbadactors[7,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(CWAbadactors[8,7]) `](`r na.omit(CWAbadactors[8,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(CWAbadactors[9,7]) `](`r na.omit(CWAbadactors[9,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(CWAbadactors[10,7]) `](`r na.omit(CWAbadactors[10,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">`r extras_string `</font><br /></p>
 
 <br />
 <br />
@@ -777,7 +799,7 @@ if ( nrows_df > 0 ) {
       mutate(President = which_president(Year))
  
   vCAAgraph <- ggplot(CAAviolations, mapping=aes(x=factor(Year), y=Count, fill=President, group=1))+
-    geom_bar(stat="identity", show.legend = FALSE, alpha=.3)+
+    geom_bar(stat="identity", show.legend = FALSE, alpha=.6)+
     scale_fill_manual(values=president_colors)+
     labs(y=" # Violations", x="Year", title="CAA Violations\n", subtitle ="Very incomplete data")+
     scale_y_continuous(expand=c(0,0), limits=c(0,max(CAAviolations$Count+(.2*max(CAAviolations$Count)))))+
@@ -798,7 +820,7 @@ if ( nrows_df > 0 ) {
       mutate(President = which_president(Year))
   
   iCAAgraph <- ggplot(CAAinspections, mapping=aes(x=factor(Year), y=Count, fill=President, group=1))+
-    geom_bar(stat="identity", show.legend = FALSE, alpha=.3)+
+    geom_bar(stat="identity", show.legend = FALSE, alpha=.6)+
    scale_fill_manual(values=president_colors)+
    labs(y=" # Inspections", x="Year", title="CAA Inspections\n", subtitle ="Potentially incomplete data")+
     #ggtitle("CAA Inspections")+
@@ -829,7 +851,7 @@ if ( nrows_df > 0 ) {
   CAAenforcement$Amountinthousands <-round(CAAenforcement$Amountinthousands,2)
   
   eCAAgraph <- ggplot(CAAenforcement, mapping=aes(x=factor(Year), y=Count, fill=President, group=1))+
-    geom_bar(stat="identity", show.legend = FALSE, alpha=.3)+
+    geom_bar(stat="identity", show.legend = FALSE, alpha=.6)+
     scale_fill_manual(values=president_colors)+
     labs(y=" # Actions", x="Year", title="CAA Enforcement Actions\n", subtitle ="Potentially incomplete data")+
     scale_y_continuous(expand=c(0,0), limits=c(0,max(CAAenforcement$Count+(.2*max(CAAenforcement$Count)))))+
@@ -838,7 +860,7 @@ if ( nrows_df > 0 ) {
     theme(axis.text.x=element_text(size=10),
           axis.title.x = element_blank(), plot.subtitle = element_text(size = 10, color = "dark gray", hjust=.5))
   fineCAAgraph <- ggplot(CAAenforcement, mapping=aes(x=factor(Year), y=Amountinthousands, fill=President, group=1))+
-    geom_bar(stat="identity", alpha=.3)+
+    geom_bar(stat="identity", alpha=.6)+
     scale_fill_manual(values=president_colors)+
     labs(y=" Fines ($1000s)", x="Year", title="CAA Fines\n", subtitle ="Potentially incomplete data", caption="Values adjusted for inflation. Note, the y-axis reports values in\n1000's. A value of $2000 represents $2,000,000 (2 million dollars).")+
     scale_y_continuous(expand=c(0,0), limits=c(0,max(CAAenforcement$Amountinthousands+(.2*max(CAAenforcement$Amountinthousands)))))+
@@ -881,7 +903,7 @@ if ( nrows_df > 0 ) {
   # data cleaned elsewhere
   #plot
   vCWAgraph <- ggplot(CWAviolations, mapping=aes(x=factor(Year), y=Count, fill=President, group=1))+
-    geom_bar(stat="identity", show.legend = FALSE, alpha=.3)+
+    geom_bar(stat="identity", show.legend = FALSE, alpha=.6)+
     scale_fill_manual(values=president_colors)+
     labs(y=" # Violations", x="Year", title="CWA Violations\n", subtitle ="Mostly complete data")+
     scale_y_continuous(expand=c(0,0), limits=c(0,max(CWAviolations$Count+(.2*max(CWAviolations$Count)))))+
@@ -906,7 +928,7 @@ if ( nrows_df > 0 ) {
   CWAinspections[21,3] <- as.character("Biden")
   
   iCWAgraph <- ggplot(CWAinspections, mapping=aes(x=factor(Year), y=Count, fill=President, group=1))+
-    geom_bar(stat="identity", show.legend = FALSE, alpha=.3)+
+    geom_bar(stat="identity", show.legend = FALSE, alpha=.6)+
     scale_fill_manual(values=president_colors)+
     labs(y=" # Inspections", x="Year", title="CWA Inspections\n", subtitle ="Potentially incomplete data")+
     scale_y_continuous(expand=c(0,0), limits=c(0,max(CWAinspections$Count+(.2*max(CWAinspections$Count)))))+
@@ -938,7 +960,7 @@ if ( nrows_df > 0 ) {
   CWAenforcement$Amountinthousands <-round(CWAenforcement$Amountinthousands,2)
   
   eCWAgraph <- ggplot(CWAenforcement, mapping=aes(x=factor(Year), y=Count, fill=President, group=1))+
-    geom_bar(stat="identity", show.legend = FALSE, alpha=.3)+
+    geom_bar(stat="identity", show.legend = FALSE, alpha=.6)+
     scale_fill_manual(values=president_colors)+
     labs(y=" # Actions", x="Year", title="CWA Enforcement Actions\n", subtitle="Potentially incomplete data")+
     scale_y_continuous(expand=c(0,0), limits=c(0,max(CWAenforcement$Count+(.2*max(CWAenforcement$Count)))))+
@@ -947,7 +969,7 @@ if ( nrows_df > 0 ) {
     theme(axis.text.x=element_text(size=10),
           axis.title.x = element_blank(), plot.subtitle = element_text(size = 10, color = "dark gray", hjust=.5))
   fineCWAgraph <- ggplot(CWAenforcement, mapping=aes(x=factor(Year), y=Amountinthousands, fill=President, group=1))+
-    geom_bar(stat="identity", alpha=.3)+
+    geom_bar(stat="identity", alpha=.6)+
     scale_fill_manual(values=president_colors)+
     labs(y=" Fines($1000s)", x="Year", title="CWA Fines\n", subtitle="Potentially incomplete data", caption="Values adjusted for inflation. Note, the y-axis reports values in\n1000's. A value of $2000 represents $2,000,000 (2 million dollars).")+
     #ggtitle("CWA Fines")+
@@ -1006,9 +1028,9 @@ if ( nrows_df > 0 ) {
   RCRAviolations[21,3] <- as.character("Biden")
   
   vRCRAgraph <- ggplot(RCRAviolations, mapping=aes(x=factor(Year), y=Count, fill=President, group=1))+
-    geom_bar(stat="identity", show.legend = FALSE, alpha=.3)+
+    geom_bar(stat="identity", show.legend = FALSE, alpha=.6)+
     scale_fill_manual(values=president_colors)+
-    labs(y=" # Violations", x="Year", title = "RCRA violations\n", subtitle = "Very incomplete data")+
+    labs(y=" # Violations", x="Year", title = "RCRA Violations\n", subtitle = "Very incomplete data")+
     #ggtitle("RCRA violations")+
     scale_y_continuous(expand=c(0,0), limits=c(0,max(RCRAviolations$Count+(.2*max(RCRAviolations$Count)))))+
     scale_x_discrete(breaks=c(2004,2008,2012,2016,2020))+
@@ -1028,7 +1050,7 @@ if ( nrows_df > 0 ) {
   RCRAinspections[21,3] <- as.character("Biden")
   
   iRCRAgraph <- ggplot(RCRAinspections, mapping=aes(x=factor(Year), y=Count, fill=President, group=1))+
-    geom_bar(stat="identity", show.legend = FALSE, alpha=.3)+
+    geom_bar(stat="identity", show.legend = FALSE, alpha=.6)+
     scale_fill_manual(values=president_colors)+
     labs(y=" # Inspections", x="Year", title="RCRA Inspections\n", subtitle="Potentially incomplete data")+
     #ggtitle("RCRA Inspections")+
@@ -1059,7 +1081,7 @@ if ( nrows_df > 0 ) {
   RCRAenforcement$Amountinthousands <-round(RCRAenforcement$Amountinthousands,2)
   
   eRCRAgraph <- ggplot(RCRAenforcement, mapping=aes(x=factor(Year), y=Count, fill=President, group=1))+
-    geom_bar(stat="identity", show.legend = FALSE, alpha=.3)+
+    geom_bar(stat="identity", show.legend = FALSE, alpha=.6)+
     scale_fill_manual(values=president_colors)+
     labs(y=" # Actions", x="Year", title="RCRA Enforcement Actions\n", subtitle = "Potentially incomplete data")+
     scale_y_continuous(expand=c(0,0), limits=c(0,max(RCRAenforcement$Count+(.2*max(RCRAenforcement$Count)))))+
@@ -1068,7 +1090,7 @@ if ( nrows_df > 0 ) {
     theme(axis.text.x=element_text(size=10),
           axis.title.x = element_blank(), plot.subtitle = element_text(size = 10, color = "dark gray", hjust=.5))  
   fineRCRAgraph <- ggplot(RCRAenforcement, mapping=aes(x=factor(Year), y=Amountinthousands, fill=President, group=1))+
-    geom_bar(stat="identity", alpha=.3)+
+    geom_bar(stat="identity", alpha=.6)+
     scale_fill_manual(values=president_colors)+
     labs(y=" Fines($1000s)", x="Year", title="RCRA Fines\n", subtitle = "Potentially incomplete data", caption="Values adjusted for inflation. Note, the y-axis reports values in\n1000's. A value of $2000 represents $2,000,000 (2 million dollars).")+
     scale_y_continuous(expand=c(0,0), limits=c(0,max(RCRAenforcement$Amountinthousands+(.2*max(RCRAenforcement$Amountinthousands)))))+
