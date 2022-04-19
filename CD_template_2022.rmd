@@ -153,7 +153,7 @@ cwa_enf_dollar_years <- melt(py$cwa_enf_dollar_years, id=c("Year"))
 
 ```{r echo=FALSE, include=FALSE}
 # Color selection
-region_colors <- c("#D43F3A", "#EEA236", "#5CB85C", "#46B8DA")
+region_colors <- c("darkblue", "#008080", "orange", "#46B8DA")
 
 graph1 <- ggplot(cwa_insp_years, aes(x = Year, y = value, color = variable)) +
   geom_line() +
@@ -374,7 +374,7 @@ effluentgraph <- ggplot(effluentviolations, mapping=aes(x=factor(Year),
   scale_x_discrete(breaks=c(2004,2008,2012,2016,2020))+
   theme_meg()+
   theme(axis.text.x=element_text(size=9),
-        axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5, size=10, color="green"),
+        axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5, size=10, color="darkgreen"),
         plot.title = element_text(lineheight = .1, size=10))
 
 ##Inspections % change and graph
@@ -559,7 +559,8 @@ The reliability of data in figures throughout this report is indicated by the fi
 <h4>Report Generated on `r format(Sys.time(), '%B %d, %Y')`<span style="padding-left:400px">Page 5</span></h4> 
 
 <h1><span style="margin-bottom:0px; padding-bottom:0px">Recent Non-Compliance in this District</span></h1>
-<font size="2">These figures show the ten facilities in this district with the worst history of environmental compliance based on their number of noncompliant quarters in the past 3 years (not necessarily consecutive). In some districts, for some programs, the number may be fewer than ten.</font>
+<font size="2">These figures show the ten facilities in this district with the worst history of environmental compliance based on their number of noncompliant quarters in the past 3 years (not necessarily consecutive). In some districts, for some programs, the number may be fewer than ten.
+The EPA data used shows records for the past 12 months for CAA and RCRA, and 13 months for CWA. The facilities shown with equal number of quarters in violation are selected at random. We only have room for ten in the graph, so we note when there are more facilities with the same number of quarters in violation.</font>
 
 ```{r echo=FALSE, out.extra='style="float: left; width: 50%; height: 30%; margin-right: 5%"'}
 #call in data and clean up 
@@ -640,7 +641,7 @@ if ( nrows_df > 0 ) {
 <p style="text-align: right;"><font size="2">[`r na.omit(CAAbadactors[8,7]) `](`r na.omit(CAAbadactors[8,4]) `)</font><br /></p>
 <p style="text-align: right;"><font size="2">[`r na.omit(CAAbadactors[9,7]) `](`r na.omit(CAAbadactors[9,4]) `)</font><br /></p>
 <p style="text-align: right;"><font size="2">[`r na.omit(CAAbadactors[10,7]) `](`r na.omit(CAAbadactors[10,4]) `)</font><br /></p>
-<p style="text-align: right;"><font size="2">`r extras_string `</font><br /></p>
+<p style="text-align: right;"><font size="2">`r extras_string `</font>
 
 <br />
 <br />
@@ -766,11 +767,6 @@ if ( nrows_df > 0 ) {
 <p style="text-align: right;"><font size="2">[`r na.omit(CWAbadactors[9,7]) `](`r na.omit(CWAbadactors[9,4]) `)</font><br /></p>
 <p style="text-align: right;"><font size="2">[`r na.omit(CWAbadactors[10,7]) `](`r na.omit(CWAbadactors[10,4]) `)</font><br /></p>
 <p style="text-align: right;"><font size="2">`r extras_string `</font><br /></p>
-
-<br />
-<br />
-<br />
-<br />
 
 \pagebreak
 
@@ -910,7 +906,7 @@ if ( nrows_df > 0 ) {
     scale_x_discrete(breaks=c(2004,2008,2012,2016,2020))+
     theme_meg()+
     theme(axis.text.x=element_text(size=10),
-          axis.title.x = element_blank(), plot.subtitle = element_text(color="green",hjust=.5))
+          axis.title.x = element_blank(), plot.subtitle = element_text(color="darkgreen",hjust=.5))
 }
 ```
 
