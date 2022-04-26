@@ -319,10 +319,11 @@ grade <- function(score) {
 }
 
 metric_colors <- c("darkblue", "#008080", "orange")
+ranked_t$order <- c("b","a","c","b","a","c","b","a","c")
 
 cd_percent_bar <- ggplot(ranked_t, aes(fill=Metric, y=V1, x=Program, alpha=Program))+
   geom_bar(position="dodge", stat="identity")+
-  scale_fill_manual(values=metric_colors,breaks=c('Violations', 'Viol/Insp', 'Viol/Enf'), guide=guide_legend(breaks=c('Violations', 'Viol/Insp', 'Viol/Enf')))+
+  scale_fill_manual(values=metric_colors, labels = c("Violations","Violations/Inspections","Violations/Enforcements"))+
   labs(y="Percentiles Among Districts\n", x="")+scale_alpha_manual(values=c(1,1,1), guide='none')+
   geom_text(aes(label=V1, family="Georgia"), position = position_dodge(0.9), vjust = -0.1, size=5)+
   ggtitle(paste("Percentile Ranking Among All Districts, 2017-2021"))+
