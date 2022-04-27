@@ -3,6 +3,7 @@ import pdb
 import sqlite3
 import AllPrograms_util
 from ECHO_modules.get_data import get_echo_data
+from Region import Region
 
 
 def write_active_facs(active_facs, state, cd=None):
@@ -341,9 +342,48 @@ def write_single_cd_states():
             cursor.execute(sql)
     conn.commit()
 
+def make_per_1000(programs, focus_year):
+    """
+    Build the state_per_1000 and cd_per_1000 tables with the 
+    Region.get_all_per_1000() function for the five years
+    ending with the focus year.
+    
+    Parameters
+    ----------
+    programs : list
+        The EPA programs to include
 
-test_facs = {"XXX": 14, "YYY": 20, "ZZZ": 30}
-write_active_facs(test_facs, "MX", 4)
-test_facs = {"XXX": 15, "YYY": 23, "ZZZ": 33}
-write_active_facs(test_facs, "MX", 4)
-write_active_facs(test_facs, "MX")
+    focus_year : string
+        The end year for the results.
+    """
+
+    region = Region(type='Nation')
+
+    start_year = int(focus_year) - 4
+    total_df = region.get_all_per_1000( start_year )
+    for year in range(start_year+1, int(focus_year)):
+        df = region.get_all_per_1000( year )
+        df = df[(df['CD.State'] != 'MX') & (df['CD.State'] != 'GM') &
+                    (df['CD.State'] != 'MB')]
+        df.set_index('CD.State')
+        # breakpoint()
+        total_df = total_df.add(df)
+        total_df['CD.State'] = df['CD.State']
+        total_df['Region'] = df['Region']
+
+    (state_per_1000, cd_per_1000) = AllPrograms_util.build_all_per_1000(total_df)
+     
+    conn = sqlite3.connect('region.db')
+    state_per_1000.to_sql(name="state_per_1000", con=conn, if_exists="replace")
+    cd_per_1000.to_sql(name="cd_per_1000", con=conn, if_exists="replace")
+
+    conn.close()
+
+
+
+# test_facs = {"XXX": 14, "YYY": 20, "ZZZ": 30}
+# write_active_facs(test_facs, "MX", 4)
+# test_facs = {"XXX": 15, "YYY": 23, "ZZZ": 33}
+# write_active_facs(test_facs, "MX", 4)
+# write_active_facs(test_facs, "MX")
+make_per_1000(['CAA','CWA','RCRA'], '2021')

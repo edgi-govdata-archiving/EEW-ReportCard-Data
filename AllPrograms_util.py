@@ -290,3 +290,60 @@ def get_top_violators(df_active, flag, noncomp_field, action_field, num_fac=10):
     )
     df_active = df_active.head(num_fac)
     return df_active
+
+def build_all_per_1000(total_df):
+    """
+    Build the ranks for states and percentiles for CDs from total_df.
+
+    Parameters
+    ----------
+    total_df : DataFrame
+        Contains per_1000 figures for all states and CDs in selected years
+
+    Returns
+    -------
+    tuple
+        DataFrame of states, ranked
+        DataFrame of CDs, by percentiles
+    """
+    state_per_1000 = total_df[total_df['Region']=='State'].copy()
+    state_per_1000['CAA_Insp_Rank'] = (state_per_1000['CAA.Viol.per.1000'] /
+                    state_per_1000['CAA.Viol.per.1000']).rank()
+    state_per_1000['CAA_Viol_Rank'] = state_per_1000['CAA.Viol.per.1000'].rank()
+    state_per_1000['CAA_Enf_Rank'] = (state_per_1000['CAA.Enf.per.1000'] /
+                    state_per_1000['CAA.Viol.per.1000']).rank()
+    state_per_1000['CWA_Insp_Rank'] = (state_per_1000['CWA.Viol.per.1000'] /
+                    state_per_1000['CWA.Viol.per.1000']).rank()
+    state_per_1000['CWA_Viol_Rank'] = state_per_1000['CWA.Viol.per.1000'].rank()
+    state_per_1000['CWA_Enf_Rank'] = (state_per_1000['CWA.Enf.per.1000'] /
+                    state_per_1000['CWA.Viol.per.1000']).rank()
+    state_per_1000['CWA_Enf_Rank'] = state_per_1000['CWA.Enf.per.1000'].rank()
+    state_per_1000['RCRA_Insp_Rank'] = (state_per_1000['RCRA.Viol.per.1000'] /
+                    state_per_1000['RCRA.Viol.per.1000']).rank()
+    state_per_1000['RCRA_Viol_Rank'] = state_per_1000['RCRA.Viol.per.1000'].rank()
+    state_per_1000['RCRA_Enf_Rank'] = (state_per_1000['RCRA.Enf.per.1000'] /
+                    state_per_1000['RCRA.Viol.per.1000']).rank()
+    state_per_1000.drop('Region', axis=1, inplace=True)
+    state_per_1000.set_index('CD.State')
+    
+    cd_per_1000 = total_df[total_df['Region']=='Congressional District'].copy()
+    cd_per_1000['CAA_Insp_Pct'] = (cd_per_1000['CAA.Insp.per.1000'] /
+                    cd_per_1000['CAA.Viol.per.1000']).rank(pct=True)
+    cd_per_1000['CAA_Viol_Pct'] = cd_per_1000['CAA.Viol.per.1000'].rank(pct=True)
+    cd_per_1000['CAA_Enf_Pct'] = (cd_per_1000['CAA.Enf.per.1000'] /
+                    cd_per_1000['CAA.Viol.per.1000']).rank(pct=True)
+    cd_per_1000['CWA_Insp_Pct'] = (cd_per_1000['CWA.Insp.per.1000'] /
+                    cd_per_1000['CWA.Viol.per.1000']).rank(pct=True)
+    cd_per_1000['CWA_Viol_Pct'] = cd_per_1000['CWA.Viol.per.1000'].rank(pct=True)
+    cd_per_1000['CWA_Enf_Pct'] = (cd_per_1000['CWA.Enf.per.1000'] /
+                    cd_per_1000['CWA.Viol.per.1000']).rank(pct=True)
+    cd_per_1000['RCRA_Insp_Pct'] = (cd_per_1000['RCRA.Insp.per.1000'] /
+                    cd_per_1000['RCRA.Viol.per.1000']).rank(pct=True)
+    cd_per_1000['RCRA_Viol_Pct'] = cd_per_1000['RCRA.Viol.per.1000'].rank(pct=True)
+    cd_per_1000['RCRA_Enf_Pct'] = (cd_per_1000['RCRA.Enf.per.1000'] /
+                    cd_per_1000['RCRA.Viol.per.1000']).rank(pct=True)
+    cd_per_1000.drop('Region', axis=1, inplace=True)
+    cd_per_1000.set_index('CD.State')
+    
+    return (state_per_1000, cd_per_1000)
+

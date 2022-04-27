@@ -410,13 +410,22 @@ class Region:
         fetch = cursor.fetchone()
         return fetch[0] if fetch else 0
 
+    def get_ranked(self):
+        conn = sqlite3.connect("region.db")
 
-    '''
-        # How to do totals for enforcements, violations, inspections.
+        state_columns = 'CAA_Insp_Rank, CAA_Viol_Rank, CAA_Enf_Rank, '
+        state_columns += 'CWA_Insp_Rank, CWA_Viol_Rank, CWA_Enf_Rank, '
+        state_columns += 'RCRA_Insp_Rank, RCRA_Viol_Rank, RCRA_Enf_Rank'
+        cd_columns = 'CAA_Insp_Pct, CAA_Viol_Pct, CAA_Enf_Pct, '
+        cd_columns += 'CWA_Insp_Pct, CWA_Viol_Pct, CWA_Enf_Pct, '
+        cd_columns += 'RCRA_Insp_Pct, RCRA_Viol_Pct, RCRA_Enf_Pct'
 
-        if df_caa is not None or df_cwa is not None or df_rcra is not None:
-            df_totals = pd.concat([df_caa, df_cwa, df_rcra])
-            df_totals = df_totals.groupby(df_totals.index).agg("sum")
-            AllPrograms_db.write_total_enforcements("All", df_totals, ds_type)
-            print("Total Penalties for {} district {}".format(state, cd))
-    '''
+        sql = ''
+        if (self.type == 'State'):
+            sql = 'select {} from state_per_1000 where "CD.State" = \'{}\''
+            sql = sql.format(state_columns, self.state)
+        if (self.type == 'Congressional District'):
+            sql = 'select {} from cd_per_1000 where "CD.State" = \'{}{}\''
+            sql = sql.format(cd_columns, self.state, self.value)
+
+        return pd.read_sql_query( sql, conn )

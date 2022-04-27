@@ -481,6 +481,7 @@ def main(argv):
                 "RCRA_3YR_COMPL_QTRS_HISTORY",
             )
 
+    AllPrograms_db.make_per_1000(['CAA','CWA','RCRA'], focus_year)
 
 def usage():
     print("Usage:  AllPrograms.py -c cds_todo.csv -f <focus_year>")
