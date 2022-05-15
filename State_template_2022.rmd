@@ -577,8 +577,29 @@ The reliability of data in figures throughout this report is indicated by the fi
 ```{r echo=FALSE, out.extra='style="float: left; width: 50%; height: 30%; margin-right: 5%"'}
 #call in data and clean up 
 nrows_df <- nrow( CAAbadactors )
+make_extras_string <- function(badactors) {
+  extras_string = ""
+  if (nrows_df > 10) {
+    last_fac_count = badactors[10,]$noncomp_count
+    extras_count = 0
+    for (i in 10:nrows_df) {
+      if (badactors[i,]$noncomp_count < last_fac_count) {
+        break
+      }
+      extras_count <- extras_count + 1
+    }
+    if (extras_count > 0) {
+      noun <- "facilities"
+      if (extras_count == 1) noun = "facility"
+      extras_string <- sprintf("%d additional %s with %d quarters in violation", 
+                               extras_count, noun, last_fac_count);
+    }
+  }
+}
+
+extras_string <- make_extras_string(CAAbadactors)
 if ( nrows_df > 0 ) {
-  CAAbadactors <- CAAbadactors[-c(9:1000),] # SH
+  CAAbadactors <- CAAbadactors[-c(11:1000),] # SH
   CAAbadactors$Facility <- CAAbadactors$fac_name # SH
   CAAbadactors$Facility <- strtrim(CAAbadactors$Facility, 30)
   
@@ -617,31 +638,32 @@ if ( nrows_df > 0 ) {
   }
   CAAfacilities
 }
+
 ```
 <br />
 <p style="text-align: right;"><font size="3">**ECHO reports for facilities:**</font></p>
 
-<p style="text-align: right;">[`r na.omit(CAAbadactors[1,7]) `](`r na.omit(CAAbadactors[1,4]) `)<br /></p>
-<p style="text-align: right;">[`r na.omit(CAAbadactors[2,7]) `](`r na.omit(CAAbadactors[2,4]) `)<br /></p>
-<p style="text-align: right;">[`r na.omit(CAAbadactors[3,7]) `](`r na.omit(CAAbadactors[3,4]) `)<br /></p>
-<p style="text-align: right;">[`r na.omit(CAAbadactors[4,7]) `](`r na.omit(CAAbadactors[4,4]) `)<br /></p>
-<p style="text-align: right;">[`r na.omit(CAAbadactors[5,7]) `](`r na.omit(CAAbadactors[5,4]) `)<br /></p>
-<p style="text-align: right;">[`r na.omit(CAAbadactors[6,7]) `](`r na.omit(CAAbadactors[6,4]) `)<br /></p>
-<p style="text-align: right;">[`r na.omit(CAAbadactors[7,7]) `](`r na.omit(CAAbadactors[7,4]) `)<br /></p>
-<p style="text-align: right;">[`r na.omit(CAAbadactors[8,7]) `](`r na.omit(CAAbadactors[8,4]) `)<br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(CAAbadactors[1,7]) `](`r na.omit(CAAbadactors[1,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(CAAbadactors[2,7]) `](`r na.omit(CAAbadactors[2,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(CAAbadactors[3,7]) `](`r na.omit(CAAbadactors[3,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(CAAbadactors[4,7]) `](`r na.omit(CAAbadactors[4,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(CAAbadactors[5,7]) `](`r na.omit(CAAbadactors[5,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(CAAbadactors[6,7]) `](`r na.omit(CAAbadactors[6,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(CAAbadactors[7,7]) `](`r na.omit(CAAbadactors[7,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(CAAbadactors[8,7]) `](`r na.omit(CAAbadactors[8,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(CAAbadactors[9,7]) `](`r na.omit(CAAbadactors[9,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(CAAbadactors[10,7]) `](`r na.omit(CAAbadactors[10,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">`r extras_string `</font>
 
 <br />
 <br />
-<br />
-<br />
 
-```{r echo=FALSE, out.extra='style="float: left; width: 50%; height: 30%; margin-right: 5%"'}
-
-#call in data and clean up 
+```{r echo=FALSE, out.extra='style="float: left; width: 50%; height: 30%; margin-right: 5%; margin-top:1.5%"'}
 #call in data and clean up 
 nrows_df <- nrow( RCRAbadactors )
+extras_string <- make_extras_string(RCRAbadactors)
 if ( nrows_df > 0 ) {
-  RCRAbadactors <- RCRAbadactors[-c(9:1000),] # SH - 
+  RCRAbadactors <- RCRAbadactors[-c(11:100),] # SH - 
   RCRAbadactors$Facility <- RCRAbadactors$fac_name # SH - 
   RCRAbadactors$Facility <- strtrim(RCRAbadactors$Facility, 30)
   
@@ -684,27 +706,26 @@ if ( nrows_df > 0 ) {
 ```
 <p style="text-align: right;"><font size="3">**ECHO reports for facilities:**</font></p>
 
-<p style="text-align: right;">[`r na.omit(RCRAbadactors[1,7]) `](`r na.omit(RCRAbadactors[1,4]) `)<br /></p>
-<p style="text-align: right;">[`r na.omit(RCRAbadactors[2,7]) `](`r na.omit(RCRAbadactors[2,4]) `)<br /></p>
-<p style="text-align: right;">[`r na.omit(RCRAbadactors[3,7]) `](`r na.omit(RCRAbadactors[3,4]) `)<br /></p>
-<p style="text-align: right;">[`r na.omit(RCRAbadactors[4,7]) `](`r na.omit(RCRAbadactors[4,4]) `)<br /></p>
-<p style="text-align: right;">[`r na.omit(RCRAbadactors[5,7]) `](`r na.omit(RCRAbadactors[5,4]) `)<br /></p>
-<p style="text-align: right;">[`r na.omit(RCRAbadactors[6,7]) `](`r na.omit(RCRAbadactors[6,4]) `)<br /></p>
-<p style="text-align: right;">[`r na.omit(RCRAbadactors[7,7]) `](`r na.omit(RCRAbadactors[7,4]) `)<br /></p>
-<p style="text-align: right;">[`r na.omit(RCRAbadactors[8,7]) `](`r na.omit(RCRAbadactors[8,4]) `)<br /></p>
-
-<br />
-<br />
-<br />
-<br />
+<p style="text-align: right;"><font size="2">[`r na.omit(RCRAbadactors[1,7]) `](`r na.omit(RCRAbadactors[1,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(RCRAbadactors[2,7]) `](`r na.omit(RCRAbadactors[2,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(RCRAbadactors[3,7]) `](`r na.omit(RCRAbadactors[3,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(RCRAbadactors[4,7]) `](`r na.omit(RCRAbadactors[4,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(RCRAbadactors[5,7]) `](`r na.omit(RCRAbadactors[5,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(RCRAbadactors[6,7]) `](`r na.omit(RCRAbadactors[6,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(RCRAbadactors[7,7]) `](`r na.omit(RCRAbadactors[7,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(RCRAbadactors[8,7]) `](`r na.omit(RCRAbadactors[8,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(RCRAbadactors[9,7]) `](`r na.omit(RCRAbadactors[9,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(RCRAbadactors[10,7]) `](`r na.omit(RCRAbadactors[10,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">`r extras_string `</font><br /></p>
 <br />
 <br />
 
 ```{r echo=FALSE, out.extra='style="float: left; width: 50%; height: 30%; margin-right: 5%; margin-top:1.5%"'}
 #call in data and clean up 
 nrows_df <- nrow( CWAbadactors )
+extras_string <- make_extras_string(CWAbadactors)
 if ( nrows_df > 0 ) {
-  CWAbadactors <- CWAbadactors[-c(9:1000),] # SH - 
+  CWAbadactors <- CWAbadactors[-c(11:100),] # SH - 
   CWAbadactors$Facility <- CWAbadactors$fac_name # SH - 
   CWAbadactors$Facility <- strtrim(CWAbadactors$Facility, 30)
   
@@ -747,19 +768,17 @@ if ( nrows_df > 0 ) {
 ```
 <p style="text-align: right;"><font size="3">**ECHO reports for facilities:**</font></p>
 
-<p style="text-align: right;">[`r na.omit(CWAbadactors[1,7]) `](`r na.omit(CWAbadactors[1,4]) `)<br /></p>
-<p style="text-align: right;">[`r na.omit(CWAbadactors[2,7]) `](`r na.omit(CWAbadactors[2,4]) `)<br /></p>
-<p style="text-align: right;">[`r na.omit(CWAbadactors[3,7]) `](`r na.omit(CWAbadactors[3,4]) `)<br /></p>
-<p style="text-align: right;">[`r na.omit(CWAbadactors[4,7]) `](`r na.omit(CWAbadactors[4,4]) `)<br /></p>
-<p style="text-align: right;">[`r na.omit(CWAbadactors[5,7]) `](`r na.omit(CWAbadactors[5,4]) `)<br /></p>
-<p style="text-align: right;">[`r na.omit(CWAbadactors[6,7]) `](`r na.omit(CWAbadactors[6,4]) `)<br /></p>
-<p style="text-align: right;">[`r na.omit(CWAbadactors[7,7]) `](`r na.omit(CWAbadactors[7,4]) `)<br /></p>
-<p style="text-align: right;">[`r na.omit(CWAbadactors[8,7]) `](`r na.omit(CWAbadactors[8,4]) `)<br /></p>
-
-<br />
-<br />
-<br />
-<br />
+<p style="text-align: right;"><font size="2">[`r na.omit(CWAbadactors[1,7]) `](`r na.omit(CWAbadactors[1,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(CWAbadactors[2,7]) `](`r na.omit(CWAbadactors[2,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(CWAbadactors[3,7]) `](`r na.omit(CWAbadactors[3,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(CWAbadactors[4,7]) `](`r na.omit(CWAbadactors[4,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(CWAbadactors[5,7]) `](`r na.omit(CWAbadactors[5,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(CWAbadactors[6,7]) `](`r na.omit(CWAbadactors[6,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(CWAbadactors[7,7]) `](`r na.omit(CWAbadactors[7,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(CWAbadactors[8,7]) `](`r na.omit(CWAbadactors[8,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(CWAbadactors[9,7]) `](`r na.omit(CWAbadactors[9,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">[`r na.omit(CWAbadactors[10,7]) `](`r na.omit(CWAbadactors[10,4]) `)</font><br /></p>
+<p style="text-align: right;"><font size="2">`r extras_string `</font><br /></p>
 
 \pagebreak
 
@@ -784,12 +803,7 @@ if ( nrows_df > 0 ) {
 
   #clean up data
    CAAviolations <- CAAviolations %>%
-  mutate(
-    President = case_when(
-      Year < 2009 ~ "Bush",
-      Year < 2017 & Year > 2008 ~ "Obama",
-      Year > 2016 ~ "Trump"
-    ))
+      mutate(President = which_president(Year))
   
   vCAAgraph <- ggplot(CAAviolations, mapping=aes(x=factor(Year), y=Count, fill=President, group=1))+
     geom_bar(stat="identity", show.legend = FALSE, alpha=.3)+
@@ -810,12 +824,7 @@ if ( nrows_df > 0 ) {
   hasCAAinspections <- TRUE
   #clean up data
    CAAinspections <- CAAinspections %>%
-  mutate(
-    President = case_when(
-      Year < 2009 ~ "Bush",
-      Year < 2017 & Year > 2008 ~ "Obama",
-      Year > 2016 ~ "Trump"
-    ))
+      mutate(President = which_president(Year))
   
   iCAAgraph <- ggplot(CAAinspections, mapping=aes(x=factor(Year), y=Count, fill=President, group=1))+
     geom_bar(stat="identity", show.legend = FALSE, alpha=.6)+
@@ -838,12 +847,7 @@ if ( nrows_df > 0 ) {
   #clean up data
   CAAenforcement <- CAAenforcement_clean
   CAAenforcement <- CAAenforcement %>%
-  mutate(
-    President = case_when(
-      Year < 2009 ~ "Bush",
-      Year < 2017 & Year > 2008 ~ "Obama",
-      Year > 2016 ~ "Trump"
-    ))
+      mutate(President = which_president(Year))
   
   #adjust for inflation
   CAAenforcement <- merge(CAAenforcement, inflation, by.x='Year', by.y='index', all.x=TRUE)
@@ -925,9 +929,8 @@ if ( nrows_df > 0 ) {
   hasCWAinspections <- TRUE
   #clean up data
   names(CWAinspections)[1] <- "Year"
-  CWAinspections$President <- as.character("Bush")
-  CWAinspections[9:16,3] <- as.character("Obama")
-  CWAinspections[17:20,3] <- as.character("Trump")
+  CWAinspections <- CWAinspections %>%
+      mutate(President = which_president(Year))
   
   iCWAgraph <- ggplot(CWAinspections, mapping=aes(x=factor(Year), y=Count, fill=President, group=1))+
     geom_bar(stat="identity", show.legend = FALSE, alpha=.6)+
@@ -950,9 +953,8 @@ if ( nrows_df > 0 ) {
   hasCWAenforcement <- TRUE
   #clean up data
   CWAenforcement <- CWAenforcement_clean
-  CWAenforcement$President <- as.character("Bush")
-  CWAenforcement[8:16,4] <- as.character("Obama")
-  CWAenforcement[17:20,4] <- as.character("Trump")
+  CWAenforcement <- CWAenforcement %>%
+      mutate(President = which_president(Year))
   
   #adjust for inflation
   CWAenforcement <- merge(CWAenforcement, inflation, by.x='Year', by.y='index', all.x=TRUE)
@@ -1026,9 +1028,8 @@ nrows_df <- nrow( RCRAviolations )
 if ( nrows_df > 0 ) {
   hasRCRAviolations <- TRUE
   #clean up data
-  RCRAviolations$President <- as.character("Bush")
-  RCRAviolations[9:16,3] <- as.character("Obama")
-  RCRAviolations[17:20,3] <- as.character("Trump")
+  RCRAviolations <- RCRAviolations %>%
+      mutate(President = which_president(Year))
   
   vRCRAgraph <- ggplot(RCRAviolations, mapping=aes(x=factor(Year), y=Count, fill=President, group=1))+
     geom_bar(stat="identity", show.legend = FALSE, alpha=.3)+
@@ -1047,9 +1048,8 @@ nrows_df <- nrow( RCRAinspections )
 if ( nrows_df > 0 ) {
   hasRCRAinspections <- TRUE
   #clean up data
-  RCRAinspections$President <- as.character("Bush")
-  RCRAinspections[9:16,3] <- as.character("Obama")
-  RCRAinspections[17:20,3] <- as.character("Trump")
+  RCRAinspections <- RCRAinspections %>%
+      mutate(President = which_president(Year))
   
   iRCRAgraph <- ggplot(RCRAinspections, mapping=aes(x=factor(Year), y=Count, fill=President, group=1))+
     geom_bar(stat="identity", show.legend = FALSE, alpha=.6)+
@@ -1069,9 +1069,8 @@ if ( nrows_df > 0 ) {
   hasRCRAenforcement <- TRUE
   #clean up data
   RCRAenforcement <- RCRAenforcement_clean
-  RCRAenforcement$President <- as.character("Bush")
-  RCRAenforcement[8:16,4] <- as.character("Obama")
-  RCRAenforcement[17:20,4] <- as.character("Trump")
+  RCRAenforcement <- RCRAenforcement %>%
+      mutate(President = which_president(Year))
   
   #adjust for inflation
   RCRAenforcement <- merge(RCRAenforcement, inflation, by.x='Year', by.y='index', all.x=TRUE)
