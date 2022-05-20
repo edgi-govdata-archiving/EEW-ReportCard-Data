@@ -269,6 +269,53 @@ graph4 <- ggplot(cwa_enf_dollar_years, aes(x = Year, y = value, color = variable
   labs(y="Fines ($1000)", x="Year", title="CWA - Enforcement Fines Per Facility")
 
 ```
+```{r echo=FALSE}
+which_president <- function(which_year) {
+  case_when(
+      which_year < 2009 ~ "Bush",
+      which_year < 2017 & which_year > 2008 ~ "Obama",
+      which_year < 2021 & which_year > 2016 ~ "Trump",
+      which_year > 2020 ~ "Biden"
+    )
+}
+
+##getting %difference CWA violations
+CWAviolations <- CWAviolations %>%
+  mutate(President = which_president(Year))
+
+vCWAchange <- data.frame("BushObamaAverage" =mean(CWAviolations[1:16,2]),
+                             "Trump Average" =mean(CWAviolations[17:20,2])) # SH
+
+vCWAchange$PercentDifference <- as.numeric(100*(vCWAchange[1,2]-vCWAchange[1,1])/
+                                                 vCWAchange[1,1])
+vCWAchange$PercentDifference <-round(vCWAchange$PercentDifference,0)
+
+vCWAchange$Extra <- ifelse((vCWAchange$PercentDifference>=100)|(vCWAchange$PercentDifference<=-100), "much", "")
+vCWAchange$Change <- ifelse(vCWAchange$PercentDifference<0, "better", "worse")
+
+vCWAchange$Positive <- abs(vCWAchange$PercentDifference)
+vCWAchange$Value <- ifelse(vCWAchange$PercentDifference>=0, "increase", "decrease")
+
+#enforcement % difference
+enforcement$Amount <- round(enforcement$Amount,2)
+#add presidental years
+enforcement <- enforcement %>%
+  mutate(President = which_president(Year))
+
+actionchange <- data.frame("BushObamaAverage" =mean(enforcement[1:16,3]),
+                             "Trump Average" =mean(enforcement[17:19,3]))
+
+actionchange$PercentDifference <- as.numeric(100*(actionchange[1,2]-actionchange[1,1])/
+                                                 actionchange[1,1])
+
+actionchange$PercentDifference <-round(actionchange$PercentDifference,0)
+
+actionchange$Extra <- ifelse((actionchange$PercentDifference>=100)|(actionchange$PercentDifference<=-100), "much", "")
+actionchange$Change <- ifelse(actionchange$PercentDifference<0, "worse", "better")
+
+actionchange$Positive <- abs(actionchange$PercentDifference)
+actionchange$Value <- ifelse(actionchange$PercentDifference>=0, "increase", "decrease")
+```
 
 <br />
 <hr style="height:3px;border-width:0;margin-left:15px; margin-right:15px;color: #C1E0D7;background-color: #C1E0D7; margin-top: 0em; margin-bottom: 0em">
@@ -663,7 +710,7 @@ if ( nrows_df > 0 ) {
 nrows_df <- nrow( RCRAbadactors )
 extras_string <- make_extras_string(RCRAbadactors)
 if ( nrows_df > 0 ) {
-  RCRAbadactors <- RCRAbadactors[-c(11:100),] # SH - 
+  RCRAbadactors <- RCRAbadactors[-c(11:1000),] # SH - 
   RCRAbadactors$Facility <- RCRAbadactors$fac_name # SH - 
   RCRAbadactors$Facility <- strtrim(RCRAbadactors$Facility, 30)
   
@@ -725,7 +772,7 @@ if ( nrows_df > 0 ) {
 nrows_df <- nrow( CWAbadactors )
 extras_string <- make_extras_string(CWAbadactors)
 if ( nrows_df > 0 ) {
-  CWAbadactors <- CWAbadactors[-c(11:100),] # SH - 
+  CWAbadactors <- CWAbadactors[-c(11:1000),] # SH - 
   CWAbadactors$Facility <- CWAbadactors$fac_name # SH - 
   CWAbadactors$Facility <- strtrim(CWAbadactors$Facility, 30)
   
