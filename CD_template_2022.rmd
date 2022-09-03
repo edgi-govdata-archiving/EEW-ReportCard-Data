@@ -1134,6 +1134,7 @@ nrows_df <- nrow( RCRAenforcement_clean )
 if ( nrows_df > 0 ) {
   hasRCRAenforcement <- TRUE
   #clean up data
+  RCRAenforcement <- RCRAenforcement_clean
   RCRAenforcement <- RCRAenforcement %>%
       mutate(President = which_president(Year))
   
