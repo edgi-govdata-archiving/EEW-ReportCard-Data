@@ -3,6 +3,7 @@ import folium
 import pandas as pd
 from ECHO_modules.get_data import get_echo_data
 import sqlite3
+import numpy
 
 
 def cd_to_block(state, cd):
@@ -117,3 +118,16 @@ def gen_report(state, cd):
             except AttributeError:
                 continue
     return newdf
+    
+    
+   def run_all_districts(state):
+    """
+    Loops through all of the congressional districts of a state and calls gen_report(state, cd) on them
+
+    Parameter state: str of desired state to examine
+    """
+    
+    data = pd.read_table('state'+'.txt', sep='|',header =None,names=['BLOCKID','DISTRICT'])
+    dists = data['DISTRICT'].unique()
+    for cd in dists:
+        gen_report(state, cd)
