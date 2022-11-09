@@ -4,6 +4,7 @@ import pandas as pd
 from ECHO_modules.get_data import get_echo_data
 import sqlite3
 import numpy
+from git import Repo
 
 
 def cd_to_block(state, cd):
@@ -131,3 +132,8 @@ def gen_report(state, cd):
     dists = data['DISTRICT'].unique()
     for cd in dists:
         gen_report(state, cd)
+
+def clone_repo():
+    Repo.clone_from("https://github.com/edgi-govdata-archiving/ECHO_modules", "edgi-govdata-archiving/ECHO_modules")
+    
+    
