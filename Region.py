@@ -337,7 +337,8 @@ class Region:
         else:
             sql += ' and region_id={}'
             sql = sql.format( self.region_id )
-        return pd.read_sql_query( sql, conn )
+        return pd.read_sql_query( sql, conn ).sort_values(by='noncomp_count',
+                    ascending=False)
 
     def get_active_facilities( self, program, table='active_facilities' ):
         conn = sqlite3.connect("region.db")
