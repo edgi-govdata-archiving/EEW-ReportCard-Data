@@ -18,6 +18,8 @@ def make_selections():
         disabled=False
     )
     display(programs, active, naics)
-    return programs, active, naics
+    output = [programs, active, naics]
+    print("hi")
+    return output
 
 
