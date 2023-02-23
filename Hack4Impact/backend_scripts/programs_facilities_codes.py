@@ -19,7 +19,7 @@ def make_selections():
     )
     display(programs, active, naics)
     output = [programs, active, naics]
-    print("hi")
+
     return output
 
 
