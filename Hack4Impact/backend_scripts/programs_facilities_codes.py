@@ -18,5 +18,6 @@ def make_selections():
         disabled=False
     )
     display(programs, active, naics)
+    return programs, active, naics
 
 
