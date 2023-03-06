@@ -41,4 +41,4 @@ def query(output):
     naics_string = naics_string[:-4]
     naics_string += "))"
     sql_string = sql_string + naics_string
-    print(sql_string)
+    return sql_string
