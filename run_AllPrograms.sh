@@ -23,11 +23,11 @@ echo 'Running the AllPrograms.py commands to populate region.db' >> AllPrograms.
 for file in `ls state_cd-*.csv`
 do
     date >> AllPrograms.log
-    python3 AllPrograms.py -c $file -f 2020 >> AllPrograms.log 2>> AllPrograms.error
+    python3 AllPrograms.py -d $file -f 2021 >> AllPrograms.log 2>> AllPrograms.error
     if ! python3 check_AllPrograms.py -c $file; then 
         echo "Error on $file, retrying" >> AllPrograms.error; 
         date >> AllPrograms.log
-        python3 AllPrograms.py -c $file -f 2020 >> AllPrograms.log 2>> AllPrograms.error
+        python3 AllPrograms.py -d $file -f 2021 >> AllPrograms.log 2>> AllPrograms.error
         if ! python3 check_AllPrograms.py -c $file; then 
             echo "Error on retrying $file, failure" >> AllPrograms.error; 
 	fi
