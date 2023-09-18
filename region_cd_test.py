@@ -3,10 +3,12 @@ from Region import Region
 import pandas as pd
 
 programs = ['CAA', 'CWA', 'RCRA']
-region = Region( type='Congressional District', value='12', state='NY',
+
+region = Region( type='Congressional District', value='02', state='CO',
                 programs=programs )
 
-target_year = 2021
+target_year = 2022
+
 
 inflation = region.get_inflation( target_year )
 print( "Inflation" )
@@ -19,6 +21,7 @@ print(df)
 df = region.get_per_1000( 'violations', 'USA', target_year )
 print( "USA violations" )
 print(df)
+
 cwa_per_1000 = region.get_cwa_per_1000( target_year )
 print( "CWA violations per 1000 facilities" )
 print( cwa_per_1000['violations'] )
@@ -30,6 +33,7 @@ print( cwa_per_1000['enforcements'] )
 for cd in ['AK00','MT00','ND00']:
     for type in ['inspections','violations','enforcements']:
         print( '{} {}: {}'.format(cd, type, cwa_per_1000[cwa_per_1000['CD.State']=='AK00']))
+
 # print( cwa_per_1000[cwa_per_1000['CD.State']=='DE00'])
 # print( cwa_per_1000[cwa_per_1000['CD.State']=='MT00'])
 # print( cwa_per_1000[cwa_per_1000['CD.State']=='ND00'])

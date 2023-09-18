@@ -38,7 +38,7 @@ The _AllPrograms.py_ program writes into tables in the local _region.db_ SQLite 
 
 ## Local region.db SQLite database
 
-The schema of this small, local database is in _region_db.schema_.  The database collects summarized data from the SBU ECHO database organized by regions. (Currently the Congressional Districts are the only regions supported.) The tables in the database are:
+The schema of this small, local database is in _region_db.schema_.  The database collects summarized data from the SBU ECHO database organized by regions. (Currently  Congressional Districts and States are the only regions supported.) The tables in the database are:
 * regions - This identifies all of the regions (congressional districts) for which data exists. All other tables link via the regions table's rowid index.
 * active_facilities - the count of facilities for each program--CAA, CWA, RCRA, GHG
 * per_fac - counts of violations, etc. (type) by program (CAA, etc.) by year, per facility

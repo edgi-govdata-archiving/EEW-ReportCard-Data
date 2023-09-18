@@ -3,7 +3,7 @@ from Region import Region
 import pandas as pd
 
 programs = ['CAA', 'CWA', 'RCRA']
-region = Region( type='State', state='NY',
+region = Region( type='State', state='CO',
                 programs=programs )
 
 inflation = region.get_inflation( 2021 )
@@ -21,9 +21,11 @@ df = region.get_per_1000( 'violations', 'State', 2021 )
 print( "State violations" )
 print(df)
 
+'''
 cwa_per_1000 = region.get_cwa_per_1000( 2021 )
 print( "CWA violations per 1000 facilities" )
 print( cwa_per_1000 )
+'''
 
 print( 'CAA active facilities: {}'.format( region.get_active_facilities('CAA')))
 print( 'CWA active facilities: {}'.format( region.get_active_facilities('CWA')))

@@ -14,7 +14,7 @@ def main(argv):
         description="Check active facilities for each region against"
         " previous for gross discrepancies.",
     )
-    parser.add_argument("-c", "--cds_file", required=True, help="The CDs to work with")
+    parser.add_argument("-d", "--cds_file", required=True, help="The CDs to work with")
     my_args = parser.parse_args()
 
     found_errors = False

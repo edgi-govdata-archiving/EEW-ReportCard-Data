@@ -6,6 +6,24 @@ from ECHO_modules.get_data import get_echo_data
 from Region import Region
 
 
+def get_active_facs(mode, state, region, counties):
+    sql = 'select * from "ECHO_EXPORTER" where '
+    sql += '"FAC_STATE" = \'{}\''.format(state)
+    if mode == 'Congressional District':
+        if region != 0:
+            sql += ' and "FAC_DERIVED_CD113" = {}'
+            sql = sql.format(str(region))
+    elif mode == 'County':
+        echo_counties = counties[counties['County'] == region]['FAC_COUNTY']
+        county_str = "\',\'".join(echo_counties.tolist())
+        # county_str = "\'" + county_str + "\'"
+        sql += ' and "FAC_COUNTY" in (\'{}\')'
+        sql = sql.format(county_str)
+        print(sql)
+    region_echo_data = get_echo_data(sql, "REGISTRY_ID")
+    return region_echo_data.loc[region_echo_data["FAC_ACTIVE_FLAG"] == "Y"]
+
+
 def write_active_facs(active_facs, state, cd=None):
     ins_sql = (
         "insert into active_facilities (region_id,program,count) values ({},'{}',{})"
@@ -386,4 +404,4 @@ def make_per_1000(programs, focus_year):
 # test_facs = {"XXX": 15, "YYY": 23, "ZZZ": 33}
 # write_active_facs(test_facs, "MX", 4)
 # write_active_facs(test_facs, "MX")
-make_per_1000(['CAA','CWA','RCRA'], '2021')
+
