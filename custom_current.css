@@ -81,6 +81,10 @@ h6 {
   margin-bottom: 0px;
 }
 
+ul {
+  margin-left:40px;
+}
+
 /*title*/
 .title {
   font-family: Ubuntu Condensed;

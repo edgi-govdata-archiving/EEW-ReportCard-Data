@@ -5,6 +5,7 @@ import AllPrograms_util
 from ECHO_modules.get_data import get_echo_data
 from Region import Region
 
+
 def get_active_facs(mode, state, region, counties):
     sql = 'select * from "ECHO_EXPORTER" where '
     sql += '"FAC_STATE" = \'{}\''.format(state)
@@ -403,4 +404,4 @@ def make_per_1000(programs, focus_year):
 # test_facs = {"XXX": 15, "YYY": 23, "ZZZ": 33}
 # write_active_facs(test_facs, "MX", 4)
 # write_active_facs(test_facs, "MX")
-# make_per_1000(['CAA','CWA','RCRA'], '2021')
+

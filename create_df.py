@@ -1,7 +1,7 @@
 import pandas as pd
 from Region import Region
 
-def create_df( region_type, data_type, y_field, program, states, region_selected ):
+def create_df( region_type, data_type, y_field, program, states, region_selected = None ):
     usa_region = Region( type='Nation' )
     usa_num_facs = usa_region.get_active_facilities( program )
     usa_events = usa_region.get_events( data_type, program, 2021 )
