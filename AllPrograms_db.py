@@ -1,5 +1,6 @@
 import pdb
 
+import pandas as pd
 import sqlite3
 import AllPrograms_util
 from ECHO_modules.get_data import get_echo_data
@@ -24,7 +25,7 @@ def get_active_facs(mode, state, region, counties):
     return region_echo_data.loc[region_echo_data["FAC_ACTIVE_FLAG"] == "Y"]
 
 
-def write_active_facs(active_facs, state, cd=None):
+def write_active_facs(region_mode, active_facs, state, cd=None):
     ins_sql = (
         "insert into active_facilities (region_id,program,count) values ({},'{}',{})"
     )
@@ -33,14 +34,14 @@ def write_active_facs(active_facs, state, cd=None):
     conn = sqlite3.connect("region.db")
     cursor = conn.cursor()
 
-    rowid = AllPrograms_util.get_region_rowid(cursor, state, cd)
+    rowid = AllPrograms_util.get_region_rowid(cursor, region_mode, state, cd)
     for program, value in active_facs.items():
         sql = ins_sql.format(rowid, program, value, value)
         cursor.execute(sql)
     conn.commit()
 
 
-def write_recurring_violations(state, cd, viol_list):
+def write_recurring_violations(region_mode, state, cd, viol_list):
     ins_sql = "insert into recurring_violations (region_id,program,violations,facilities)"
     ins_sql += " values ({},'{}',{},{})"
     ins_sql += (
@@ -50,7 +51,7 @@ def write_recurring_violations(state, cd, viol_list):
     conn = sqlite3.connect("region.db")
     cursor = conn.cursor()
 
-    rowid = AllPrograms_util.get_region_rowid(cursor, state, cd)
+    rowid = AllPrograms_util.get_region_rowid(cursor, region_mode, state, cd)
     # pdb.set_trace()
     if viol_list is not None:
         for row in viol_list:
@@ -59,7 +60,7 @@ def write_recurring_violations(state, cd, viol_list):
     conn.commit()
 
 
-def write_violations(program, ds, ds_type):
+def write_violations(region_mode, program, ds, ds_type):
     ins_sql = (
         "insert into violations (region_id,program,year,count) values ({},'{}',{},{})"
     )
@@ -70,7 +71,7 @@ def write_violations(program, ds, ds_type):
 
     state = ds_type[2]
     cd = ds_type[1]
-    rowid = AllPrograms_util.get_region_rowid(cursor, state, cd)
+    rowid = AllPrograms_util.get_region_rowid(cursor, region_mode, state, cd)
     df_pgm = AllPrograms_util.get_events(ds, ds_type)
     if df_pgm is not None:
         # idx will be the year
@@ -81,7 +82,7 @@ def write_violations(program, ds, ds_type):
     return df_pgm
 
 
-def write_CWA_violations(df, ds_type):
+def write_CWA_violations(region_mode, df, ds_type):
     ins_sql = (
         "insert into violations (region_id,program,year,count) values ({},'{}',{},{})"
     )
@@ -92,7 +93,7 @@ def write_CWA_violations(df, ds_type):
 
     state = ds_type[2]
     cd = ds_type[1]
-    rowid = AllPrograms_util.get_region_rowid(cursor, state, cd)
+    rowid = AllPrograms_util.get_region_rowid(cursor, region_mode, state, cd)
     if df is not None:
         # idx will be the year
         for idx, row in df.iterrows():
@@ -101,7 +102,7 @@ def write_CWA_violations(df, ds_type):
     conn.commit()
 
 
-def write_inspections(program, ds, ds_type):
+def write_inspections(region_mode, program, ds, ds_type):
     ins_sql = (
         "insert into inspections (region_id,program,year,count) values ({},'{}',{},{})"
     )
@@ -112,7 +113,7 @@ def write_inspections(program, ds, ds_type):
 
     state = ds_type[2]
     cd = ds_type[1]
-    rowid = AllPrograms_util.get_region_rowid(cursor, state, cd)
+    rowid = AllPrograms_util.get_region_rowid(cursor, region_mode, state, cd)
     df_pgm = AllPrograms_util.get_inspections(ds, ds_type)
     # pdb.set_trace()
     if df_pgm is not None:
@@ -148,7 +149,8 @@ def write_total_inspections(program, df_pgm, ds_type):
     conn.commit()
 '''
 
-def write_enforcements(program, ds, ds_type):
+
+def write_enforcements(region_mode, program, ds, ds_type):
     ins_sql = "insert into enforcements (region_id,program,year,amount,count) "
     ins_sql += "values ({},'{}',{},{},{})"
     ins_sql += " on conflict(region_id,program,year) do update set amount={}, count={}"
@@ -158,7 +160,7 @@ def write_enforcements(program, ds, ds_type):
 
     state = ds_type[2]
     cd = ds_type[1]
-    rowid = AllPrograms_util.get_region_rowid(cursor, state, cd)
+    rowid = AllPrograms_util.get_region_rowid(cursor, region_mode, state, cd)
     df_pgm = AllPrograms_util.get_enforcements(ds, ds_type)
     # pdb.set_trace()
     if df_pgm is not None:
@@ -176,6 +178,7 @@ def write_enforcements(program, ds, ds_type):
             cursor.execute(sql)
     conn.commit()
     return df_pgm
+
 
 '''
     # This can be calculated from the data for the programs.
@@ -208,7 +211,8 @@ def write_total_enforcements(program, df_pgm, ds_type):
     conn.commit()
 '''
 
-def write_per_fac(program, ds_type, event, year, count):
+
+def write_per_fac(region_mode, program, ds_type, event, year, count):
     ins_sql = "insert into per_fac (region_id,program,type,year,count) "
     ins_sql += "values ({},'{}','{}',{},{})"
     ins_sql += " on conflict(region_id,program,type,year) do update set count={}"
@@ -218,14 +222,14 @@ def write_per_fac(program, ds_type, event, year, count):
 
     state = ds_type[2]
     cd = ds_type[1]
-    rowid = AllPrograms_util.get_region_rowid(cursor, state, cd)
+    rowid = AllPrograms_util.get_region_rowid(cursor, region_mode, state, cd)
     # pdb.set_trace()
     sql = ins_sql.format(rowid, program, event, year, count, count)
     cursor.execute(sql)
     conn.commit()
 
 
-def write_enf_per_fac(program, ds, ds_type, num_fac, year):
+def write_enf_per_fac(region_mode, program, ds, ds_type, num_fac, year):
     ins_sql = "insert into enf_per_fac (region_id,program,year,count,amount,num_fac)"
     ins_sql += " values ({},'{}',{},{},{},{}) on conflict(region_id,program,year)"
     ins_sql += " do update set count={}, amount={}, num_fac={}"
@@ -235,7 +239,7 @@ def write_enf_per_fac(program, ds, ds_type, num_fac, year):
 
     state = ds_type[2]
     cd = ds_type[1]
-    rowid = AllPrograms_util.get_region_rowid(cursor, state, cd)
+    rowid = AllPrograms_util.get_region_rowid(cursor, region_mode, state, cd)
     df_pgm = AllPrograms_util.get_enf_per_fac(ds, ds_type, num_fac, year)
     if df_pgm is not None and not df_pgm.empty:
         sql = ins_sql.format(
@@ -257,7 +261,7 @@ def write_enf_per_fac(program, ds, ds_type, num_fac, year):
     # program records
 
 
-def write_ghg_emissions(df, ds_type):
+def write_ghg_emissions(region_mode, df, ds_type):
     ins_sql = "insert into ghg_emissions (region_id,year,amount) "
     ins_sql += "values ({},{},{}) on conflict(region_id,year)"
     ins_sql += " do update set amount={}"
@@ -267,7 +271,7 @@ def write_ghg_emissions(df, ds_type):
 
     state = ds_type[2]
     cd = ds_type[1]
-    rowid = AllPrograms_util.get_region_rowid(cursor, state, cd)
+    rowid = AllPrograms_util.get_region_rowid(cursor, region_mode, state, cd)
     if df is not None:
         # idx will be the year
         for idx, row in df.iterrows():
@@ -276,7 +280,7 @@ def write_ghg_emissions(df, ds_type):
     conn.commit()
 
 
-def write_top_violators(df, ds_type, program):
+def write_top_violators(region_mode, df, ds_type, program):
     ins_sql = "insert into non_compliants (region_id,program,fac_name,"
     ins_sql += " noncomp_count,formal_action_count,dfr_url,fac_lat,fac_long)"
     ins_sql += "values ({},'{}',\"{}\",{},{},'{}',{},{})"
@@ -286,7 +290,7 @@ def write_top_violators(df, ds_type, program):
 
     state = ds_type[1]
     cd = ds_type[2]
-    rowid = AllPrograms_util.get_region_rowid(cursor, state, cd)
+    rowid = AllPrograms_util.get_region_rowid(cursor, region_mode, state, cd)
     if df is not None:
         # idx will be the year
         for idx, row in df.iterrows():
@@ -304,8 +308,8 @@ def write_top_violators(df, ds_type, program):
     conn.commit()
 
 
-def write_violations_by_facilities(
-    df, ds_type, program, action_field, flag, noncomp_field
+def write_violations_by_facilities(region_mode,
+        df, ds_type, program, action_field, flag, noncomp_field
 ):
     ins_sql = "insert into violations_by_facilities (region_id,program,"
     ins_sql += " noncomp_qtrs,num_facilities) "
@@ -318,7 +322,7 @@ def write_violations_by_facilities(
 
     state = ds_type[1]
     cd = ds_type[2]
-    rowid = AllPrograms_util.get_region_rowid(cursor, state, cd)
+    rowid = AllPrograms_util.get_region_rowid(cursor, region_mode, state, cd)
     df = AllPrograms_util.get_violations_by_facilities(
         df, action_field, flag, noncomp_field
     )
@@ -360,48 +364,229 @@ def write_single_cd_states():
             cursor.execute(sql)
     conn.commit()
 
-def make_per_1000(programs, focus_year):
+
+def make_per_1000(focus_year):
     """
     Build the state_per_1000 and cd_per_1000 tables with the 
-    Region.get_all_per_1000() function for the five years
+    get_all_per_1000() function for the five years
     ending with the focus year.
     
     Parameters
     ----------
-    programs : list
-        The EPA programs to include
-
     focus_year : string
         The end year for the results.
     """
 
-    region = Region(type='Nation')
-
     start_year = int(focus_year) - 4
-    total_df = region.get_all_per_1000( start_year )
-    for year in range(start_year+1, int(focus_year)):
-        df = region.get_all_per_1000( year )
+    total_df = get_all_per_1000(start_year)
+    for year in range(start_year + 1, int(focus_year)):
+        df = get_all_per_1000(year)
         df = df[(df['CD.State'] != 'MX') & (df['CD.State'] != 'GM') &
-                    (df['CD.State'] != 'MB')]
+                (df['CD.State'] != 'MB')]
         df.set_index('CD.State')
-        # breakpoint()
-        total_df = total_df.add(df)
         total_df['CD.State'] = df['CD.State']
         total_df['Region'] = df['Region']
 
-    (state_per_1000, cd_per_1000) = AllPrograms_util.build_all_per_1000(total_df)
-     
+    (state_per_1000, cd_per_1000, county_per_1000) = AllPrograms_util.build_all_per_1000(total_df)
+
     conn = sqlite3.connect('region.db')
     state_per_1000.to_sql(name="state_per_1000", con=conn, if_exists="replace")
     cd_per_1000.to_sql(name="cd_per_1000", con=conn, if_exists="replace")
+    county_per_1000.to_sql(name="county_per_1000", con=conn, if_exists="replace")
 
     conn.close()
 
 
+def _get_active_for_region(cursor, program, region_id):
+    sql = 'select count from active_facilities'
+    sql += ' where program=\'{}\' and region_id={}'
+    sql = sql.format(program, region_id)
+    cursor.execute(sql)
+    fetch = cursor.fetchone()
+    active = 0
+    if fetch:
+        active = fetch[0]
+    return active
+
+
+def _get_events_for_region(cursor, program, event_type, region_id, year):
+    sql = 'select count from {} where'
+    sql += ' program=\'{}\' and region_id={} and year={}'
+    sql = sql.format(event_type, program, region_id, year)
+    cursor.execute(sql)
+    fetch = cursor.fetchone()
+    num_events = 0
+    if fetch:
+        num_events = fetch[0] if fetch[0] else 0
+    return num_events
+
+
+def _get_state_per_1000(cursor, state, year):
+    sql = 'select rowid from regions where state=\'{}\''
+    sql = sql.format(state)
+    cursor.execute(sql)
+    region_ids = cursor.fetchall()
+    active = 0
+    num_events = {}
+    for program in ['CAA', 'CWA', 'RCRA']:
+        for event_type in ['inspections', 'violations', 'enforcements']:
+            num_events[(program, event_type)] = 0
+    for program in ['CAA', 'CWA', 'RCRA']:
+        for region_id in region_ids:
+            region_id = region_id[0]
+            active += _get_active_for_region(cursor, program, region_id)
+            for event_type in ['inspections', 'violations', 'enforcements']:
+                num_events[(program, event_type)] += _get_events_for_region(cursor,
+                                                                            program,
+                                                                            event_type,
+                                                                            region_id,
+                                                                            year)
+        for event_type in ['inspections', 'violations', 'enforcements']:
+            num_events[(program, event_type)] = 0 if active == 0 \
+                else 1000. * num_events[(program, event_type)] / active
+    return (num_events[('CAA', 'inspections')],
+            num_events[('CAA', 'violations')],
+            num_events[('CAA', 'enforcements')],
+            num_events[('CWA', 'inspections')],
+            num_events[('CWA', 'violations')],
+            num_events[('CWA', 'enforcements')],
+            num_events[('RCRA', 'inspections')],
+            num_events[('RCRA', 'violations')],
+            num_events[('RCRA', 'enforcements')],
+            'State')
+
+
+def _get_county_per_1000(cursor, region_id, state, county, year):
+    num_events = {}
+    for program in ['CAA', 'CWA', 'RCRA']:
+        for event_type in ['inspections', 'violations', 'enforcements']:
+            num_events[(program, event_type)] = 0
+    for program in ['CAA', 'CWA', 'RCRA']:
+        active = _get_active_for_region(cursor, program, region_id)
+        for event_type in ['inspections', 'violations', 'enforcements']:
+            num_events[(program, event_type)] = _get_events_for_region(cursor,
+                                                                       program,
+                                                                       event_type,
+                                                                       region_id,
+                                                                       year)
+        for event_type in ['inspections', 'violations', 'enforcements']:
+            num_events[(program, event_type)] = 0 if active == 0 \
+                else 1000. * num_events[(program, event_type)] / active
+        return (num_events[('CAA', 'inspections')],
+                num_events[('CAA', 'violations')],
+                num_events[('CAA', 'enforcements')],
+                num_events[('CWA', 'inspections')],
+                num_events[('CWA', 'violations')],
+                num_events[('CWA', 'enforcements')],
+                num_events[('RCRA', 'inspections')],
+                num_events[('RCRA', 'violations')],
+                num_events[('RCRA', 'enforcements')],
+                'County')
+
+
+def _get_cd_per_1000(cursor, region_mode, state, cd, year):
+    num_events = {}
+    for program in ['CAA', 'CWA', 'RCRA']:
+        for event_type in ['inspections', 'violations', 'enforcements']:
+            num_events[(program, event_type)] = 0
+    if cd == 0:
+        # This is a single-cd state.
+        # Include all identified cds for the state.
+        sql = 'select rowid from regions where state=\'{}\' and region_type=\'CD\''
+        sql = sql.format(state)
+        cursor.execute(sql)
+        region_ids = cursor.fetchall()
+        active = 0
+        for program in ['CAA', 'CWA', 'RCRA']:
+            for region_id in region_ids:
+                active += _get_active_for_region(program, region_id)
+                for event_type in ['inspections', 'violations', 'enforcements']:
+                    num_events[(program, event_type)] += _get_events_for_region(cursor,
+                                                                                program,
+                                                                                event_type,
+                                                                                region_id,
+                                                                                year)
+                for event_type in ['inspections', 'violations', 'enforcements']:
+                    num_events[(program, event_type)] = 0 if active == 0 \
+                        else 1000. * num_events[(program, event_type)] / active
+        return (num_events[('CAA', 'inspections')],
+                num_events[('CAA', 'violations')],
+                num_events[('CAA', 'enforcements')],
+                num_events[('CWA', 'inspections')],
+                num_events[('CWA', 'violations')],
+                num_events[('CWA', 'enforcements')],
+                num_events[('RCRA', 'inspections')],
+                num_events[('RCRA', 'violations')],
+                num_events[('RCRA', 'enforcements')],
+                'Congressional District')
+    else:
+        # Get the results for just this single state/cd
+        region_id = get_region_rowid(cursor, region_mode, state, str(cd).zfill(2))
+        for program in ['CAA', 'CWA', 'RCRA']:
+            active = _get_active_for_region(program, region_id)
+            for event_type in ['inspections', 'violations', 'enforcements']:
+                active = _get_active_for_region(program, region_id)
+            for event_type in ['inspections', 'violations', 'enforcements']:
+                num_events[(program, event_type)] = 0 if active == 0 \
+                    else 1000. * num_events[(program, event_type)] / active
+        return (num_events[('CAA', 'inspections')],
+                num_events[('CAA', 'violations')],
+                num_events[('CAA', 'enforcements')],
+                num_events[('CWA', 'inspections')],
+                num_events[('CWA', 'violations')],
+                num_events[('CWA', 'enforcements')],
+                num_events[('RCRA', 'inspections')],
+                num_events[('RCRA', 'violations')],
+                num_events[('RCRA', 'enforcements')],
+                'Congressional District')
+
+
+def get_all_per_1000(year):
+    conn = sqlite3.connect("region.db")
+    cursor = conn.cursor()
+    results = {}
+    df_real = pd.DataFrame()
+    sql = 'select state, cd from real_cds'
+    df_real = pd.read_sql_query(sql, conn)
+    for state, cd in df_real.iterrows():
+        sql = 'select cd from real_cds where state = \'{}\''.format(state)
+        df_real = pd.read_sql_query(sql, conn)
+        # Results will be dictionary with key=AL01, state/cd,
+        # and values a tuple (Num per 1000, event_type, Region) where
+        # event_type is 'inspections', 'violations', or 'enforcements' and
+        # Region is 'Congressional District' or 'County' or 'State'
+        for idx, row in df_real.iterrows():
+            cd = row['cd']
+            key = '{}{}'.format(state, str(cd).zfill(2))
+            results[key] = _get_cd_per_1000(cursor, state, cd, year)
+
+    sql = 'select rowid as region_id, state, region from regions where region_type=\'County\''
+    df_real = pd.read_sql_query(sql, conn)
+    # for region_id, state, region in df_real2.iterrows():
+    for idx, row in df_real.iterrows():
+        county = row['region']
+        key = '{}{}'.format(state, county)
+        results[key] = _get_county_per_1000(cursor, row['region_id'], state, county, year)
+
+    sql = 'select distinct(state) from regions'
+    cursor.execute(sql)
+    states = cursor.fetchall()
+    for state in states:
+        # Include all identified cds or counties for the state.
+        results[state[0]] = _get_state_per_1000(cursor, state[0], year)
+
+    conn.close()
+    df = pd.DataFrame.from_dict(results, orient='index',
+                                columns=['CAA.Insp.per.1000', 'CAA.Viol.per.1000', 'CAA.Enf.per.1000',
+                                         'CWA.Insp.per.1000', 'CWA.Viol.per.1000', 'CWA.Enf.per.1000',
+                                         'RCRA.Insp.per.1000', 'RCRA.Viol.per.1000', 'RCRA.Enf.per.1000',
+                                         'Region'])
+    df.reset_index(inplace=True)
+    df = df.rename(columns={'index': 'CD.State'})
+    return df
 
 # test_facs = {"XXX": 14, "YYY": 20, "ZZZ": 30}
 # write_active_facs(test_facs, "MX", 4)
 # test_facs = {"XXX": 15, "YYY": 23, "ZZZ": 33}
 # write_active_facs(test_facs, "MX", 4)
 # write_active_facs(test_facs, "MX")
-

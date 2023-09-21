@@ -6,7 +6,7 @@ programs = ['CAA', 'CWA', 'RCRA']
 region = Region( type='State', state='CO',
                 programs=programs )
 
-inflation = region.get_inflation( 2021 )
+inflation = get_inflation( 2021 )
 print( "Inflation" )
 print( inflation )
 

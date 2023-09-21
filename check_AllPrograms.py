@@ -62,7 +62,7 @@ def main(argv):
     sys.exit(found_errors)
 
 def usage():
-    print("Usage:  check_AllPrograms.py -c cds_todo.csv")
+    print("Usage:  check_AllPrograms.py -c -d cds_todo.csv ")
     exit
 
 

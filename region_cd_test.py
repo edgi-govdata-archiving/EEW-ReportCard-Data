@@ -10,7 +10,7 @@ region = Region( type='Congressional District', value='02', state='CO',
 target_year = 2022
 
 
-inflation = region.get_inflation( target_year )
+inflation = get_inflation( target_year )
 print( "Inflation" )
 print( inflation )
 

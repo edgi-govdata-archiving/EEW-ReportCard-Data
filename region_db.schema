@@ -1,7 +1,7 @@
 CREATE TABLE active_facilities ( region_id tinyint, program char(20), count int,
 unique( region_id, program ));
 CREATE TABLE regions (
-region_type char(20),
+region_type char(30),
 state char(10),
 region char(20),
 unique(region_type,state,region));

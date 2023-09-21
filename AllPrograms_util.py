@@ -2,24 +2,29 @@ import pdb
 import pandas as pd
 
 
-def get_region_rowid(cursor, state, cd):
+def get_region_rowid(cursor, region_mode, state, region):
     sel_sql = "select rowid from regions where region_type='{}' and state='{}'"
     sel_cd_sql = sel_sql + " and region = '{}'"
     sel_state_sql = sel_sql + " and region = ''"
     ins_sql = "insert into regions (region_type,state,region) values ('{}','{}','{}')"
-    type = "CD"
-    if cd is not None:
-        sql = sel_cd_sql.format("CD", state, str(cd).zfill(2))
+    if region is not None:
+        if region_mode == 'Congressional District':
+            sql = sel_cd_sql.format(region_mode, state, str(region).zfill(2))
+        elif region_mode == 'County':
+            sql = sel_cd_sql.format(region_mode, state, region)
     else:
-        type = "State"
         sql = sel_state_sql.format("State", state)
     cursor.execute(sql)
     result = cursor.fetchone()
     if result is not None:
         return result[0]
     else:
-        cd_str = "" if cd is None else str(cd).zfill(2)
-        sql = ins_sql.format(type, state, cd_str)
+        region_str = ""
+        if region_mode == 'Congressional District':
+            region_str = "" if region is None else str(region).zfill(2)
+        elif region_mode == 'County':
+            region_str = region
+        sql = ins_sql.format(region_mode, state, region_str)
         cursor.execute(sql)
         return cursor.lastrowid
 
@@ -49,11 +54,11 @@ Return the count of violations and number of facilities in the dataframe provide
 def get_rowdata(df, field, flag):
     num_fac = df.loc[df[flag] == "Y"].shape[0]
     if num_fac == 0:
-        return (0, 0)
+        return 0, 0
     count_viol = df.loc[
         ((df[field].str.count("S") + df[field].str.count("V")) >= 3)
     ].shape[0]
-    return (count_viol, num_fac)
+    return count_viol, num_fac
 
 
 def get_cwa_df(df):
@@ -291,9 +296,10 @@ def get_top_violators(df_active, flag, noncomp_field, action_field, num_fac=10):
     df_active = df_active.head(num_fac)
     return df_active
 
+
 def build_all_per_1000(total_df):
     """
-    Build the ranks for states and percentiles for CDs from total_df.
+    Build the ranks for states and percentiles for CDs or counties from total_df.
 
     Parameters
     ----------
@@ -304,46 +310,64 @@ def build_all_per_1000(total_df):
     -------
     tuple
         DataFrame of states, ranked
-        DataFrame of CDs, by percentiles
+        DataFrame of CDs or counties, by percentiles
     """
-    state_per_1000 = total_df[total_df['Region']=='State'].copy()
+    state_per_1000 = total_df[total_df['Region'] == 'State'].copy()
     state_per_1000['CAA_Insp_Rank'] = (state_per_1000['CAA.Viol.per.1000'] /
-                    state_per_1000['CAA.Viol.per.1000']).rank()
+                                       state_per_1000['CAA.Viol.per.1000']).rank()
     state_per_1000['CAA_Viol_Rank'] = state_per_1000['CAA.Viol.per.1000'].rank()
     state_per_1000['CAA_Enf_Rank'] = (state_per_1000['CAA.Enf.per.1000'] /
-                    state_per_1000['CAA.Viol.per.1000']).rank()
+                                      state_per_1000['CAA.Viol.per.1000']).rank()
     state_per_1000['CWA_Insp_Rank'] = (state_per_1000['CWA.Viol.per.1000'] /
-                    state_per_1000['CWA.Viol.per.1000']).rank()
+                                       state_per_1000['CWA.Viol.per.1000']).rank()
     state_per_1000['CWA_Viol_Rank'] = state_per_1000['CWA.Viol.per.1000'].rank()
     state_per_1000['CWA_Enf_Rank'] = (state_per_1000['CWA.Enf.per.1000'] /
-                    state_per_1000['CWA.Viol.per.1000']).rank()
+                                      state_per_1000['CWA.Viol.per.1000']).rank()
     state_per_1000['CWA_Enf_Rank'] = state_per_1000['CWA.Enf.per.1000'].rank()
     state_per_1000['RCRA_Insp_Rank'] = (state_per_1000['RCRA.Viol.per.1000'] /
-                    state_per_1000['RCRA.Viol.per.1000']).rank()
+                                        state_per_1000['RCRA.Viol.per.1000']).rank()
     state_per_1000['RCRA_Viol_Rank'] = state_per_1000['RCRA.Viol.per.1000'].rank()
     state_per_1000['RCRA_Enf_Rank'] = (state_per_1000['RCRA.Enf.per.1000'] /
-                    state_per_1000['RCRA.Viol.per.1000']).rank()
+                                       state_per_1000['RCRA.Viol.per.1000']).rank()
     state_per_1000.drop('Region', axis=1, inplace=True)
     state_per_1000.set_index('CD.State')
-    
-    cd_per_1000 = total_df[total_df['Region']=='Congressional District'].copy()
+
+    cd_per_1000 = total_df[total_df['Region'] == 'Congressional District'].copy()
     cd_per_1000['CAA_Insp_Pct'] = (cd_per_1000['CAA.Insp.per.1000'] /
-                    cd_per_1000['CAA.Viol.per.1000']).rank(pct=True)
+                                   cd_per_1000['CAA.Viol.per.1000']).rank(pct=True)
     cd_per_1000['CAA_Viol_Pct'] = cd_per_1000['CAA.Viol.per.1000'].rank(pct=True)
     cd_per_1000['CAA_Enf_Pct'] = (cd_per_1000['CAA.Enf.per.1000'] /
-                    cd_per_1000['CAA.Viol.per.1000']).rank(pct=True)
+                                  cd_per_1000['CAA.Viol.per.1000']).rank(pct=True)
     cd_per_1000['CWA_Insp_Pct'] = (cd_per_1000['CWA.Insp.per.1000'] /
-                    cd_per_1000['CWA.Viol.per.1000']).rank(pct=True)
+                                   cd_per_1000['CWA.Viol.per.1000']).rank(pct=True)
     cd_per_1000['CWA_Viol_Pct'] = cd_per_1000['CWA.Viol.per.1000'].rank(pct=True)
     cd_per_1000['CWA_Enf_Pct'] = (cd_per_1000['CWA.Enf.per.1000'] /
-                    cd_per_1000['CWA.Viol.per.1000']).rank(pct=True)
+                                  cd_per_1000['CWA.Viol.per.1000']).rank(pct=True)
     cd_per_1000['RCRA_Insp_Pct'] = (cd_per_1000['RCRA.Insp.per.1000'] /
-                    cd_per_1000['RCRA.Viol.per.1000']).rank(pct=True)
+                                    cd_per_1000['RCRA.Viol.per.1000']).rank(pct=True)
     cd_per_1000['RCRA_Viol_Pct'] = cd_per_1000['RCRA.Viol.per.1000'].rank(pct=True)
     cd_per_1000['RCRA_Enf_Pct'] = (cd_per_1000['RCRA.Enf.per.1000'] /
-                    cd_per_1000['RCRA.Viol.per.1000']).rank(pct=True)
+                                   cd_per_1000['RCRA.Viol.per.1000']).rank(pct=True)
     cd_per_1000.drop('Region', axis=1, inplace=True)
     cd_per_1000.set_index('CD.State')
-    
-    return (state_per_1000, cd_per_1000)
 
+    county_per_1000 = total_df[total_df['Region'] == 'County'].copy()
+    county_per_1000['CAA_Insp_Pct'] = (county_per_1000['CAA.Insp.per.1000'] /
+                                       county_per_1000['CAA.Viol.per.1000']).rank(pct=True)
+    county_per_1000['CAA_Viol_Pct'] = county_per_1000['CAA.Viol.per.1000'].rank(pct=True)
+    county_per_1000['CAA_Enf_Pct'] = (county_per_1000['CAA.Enf.per.1000'] /
+                                      county_per_1000['CAA.Viol.per.1000']).rank(pct=True)
+    county_per_1000['CWA_Insp_Pct'] = (county_per_1000['CWA.Insp.per.1000'] /
+                                       county_per_1000['CWA.Viol.per.1000']).rank(pct=True)
+    county_per_1000['CWA_Viol_Pct'] = county_per_1000['CWA.Viol.per.1000'].rank(pct=True)
+    county_per_1000['CWA_Enf_Pct'] = (county_per_1000['CWA.Enf.per.1000'] /
+                                      county_per_1000['CWA.Viol.per.1000']).rank(pct=True)
+    county_per_1000['RCRA_Insp_Pct'] = (county_per_1000['RCRA.Insp.per.1000'] /
+                                        county_per_1000['RCRA.Viol.per.1000']).rank(pct=True)
+    county_per_1000['RCRA_Viol_Pct'] = county_per_1000['RCRA.Viol.per.1000'].rank(pct=True)
+    county_per_1000['RCRA_Enf_Pct'] = (county_per_1000['RCRA.Enf.per.1000'] /
+                                       county_per_1000['RCRA.Viol.per.1000']).rank(pct=True)
+    county_per_1000.drop('Region', axis=1, inplace=True)
+    county_per_1000.set_index('CD.State')
+
+    return state_per_1000, cd_per_1000, county_per_1000
