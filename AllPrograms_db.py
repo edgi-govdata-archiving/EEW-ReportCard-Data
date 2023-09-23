@@ -557,7 +557,7 @@ def get_all_per_1000(year):
         # Region is 'Congressional District' or 'County' or 'State'
         for idx, row in df_real.iterrows():
             cd = row['cd']
-            key = '{}{}'.format(state, str(cd).zfill(2))
+            key = '{}-{}'.format(state, str(cd).zfill(2))
             results[key] = _get_cd_per_1000(cursor, state, cd, year)
 
     sql = 'select rowid as region_id, state, region from regions where region_type=\'County\''
@@ -565,7 +565,8 @@ def get_all_per_1000(year):
     # for region_id, state, region in df_real2.iterrows():
     for idx, row in df_real.iterrows():
         county = row['region']
-        key = '{}{}'.format(state, county)
+        state = row['state']
+        key = '{}-{}'.format(state, county)
         results[key] = _get_county_per_1000(cursor, row['region_id'], state, county, year)
 
     sql = 'select distinct(state) from regions'

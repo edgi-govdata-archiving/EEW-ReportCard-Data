@@ -13,14 +13,14 @@ mv AllPrograms.error ${ERRORNAME}
 echo 'Saving the current region.db' > AllPrograms.log 2> AllPrograms.error
 cp region.db ${SAVENAME}
 date >> AllPrograms.log
-echo 'Saving the log file from the last population of region_counties.db' >> AllPrograms.log
+echo 'Saving the log file from the last population of region.db' >> AllPrograms.log
 
 echo 'Cleaning out the affected tables' >> AllPrograms.log
 sqlite3 region.db < clean_regions.sql
 
-echo 'Running the AllPrograms.py commands to populate region_counties.db' >> AllPrograms.log
+echo 'Running the AllPrograms.py commands to populate region.db' >> AllPrograms.log
 
-# pip install --upgrade git+https://github.com/edgi-govdata-archiving/ECHO_modules
+pip install --upgrade git+https://github.com/edgi-govdata-archiving/ECHO_modules
 
 date >> AllPrograms.log
 

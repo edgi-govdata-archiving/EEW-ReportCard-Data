@@ -64,7 +64,7 @@ class Region:
         conn = sqlite3.connect("region.db")
         cursor = conn.cursor()
 
-        self.region_id = get_region_rowid(cursor, self.state, self.value)
+        self.region_id = get_region_rowid(cursor, self.type, self.state, self.value)
         conn.close()
 
     '''
