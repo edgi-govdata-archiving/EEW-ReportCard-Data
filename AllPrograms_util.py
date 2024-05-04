@@ -1,6 +1,29 @@
 import pdb
 import pandas as pd
+import geopandas
+import io
+import os.path
+import requests
+import zipfile
+import sqlite3
+from ECHO_modules.geographies import fips
 
+def set_focus_year(db, year):
+    conn = sqlite3.connect(db)
+    cursor = conn.cursor()
+    sql = "insert into config (focus_year) values ({}) \
+        on conflict(focus_year) do update set focus_year = {}".format(year, year)
+    cursor.execute(sql)
+    conn.close()
+
+def get_focus_year(db):
+    conn = sqlite3.connect(db)
+    cursor = conn.cursor()
+    sql = 'select focus_year from config'
+    cursor.execute(sql)
+    focus_year = cursor.fetchone()
+    conn.close()
+    return focus_year
 
 def get_region_rowid(cursor, region_mode, state, region):
     sel_sql = "select rowid from regions where region_type='{}' and state='{}'"
@@ -29,17 +52,31 @@ def get_region_rowid(cursor, region_mode, state, region):
         return cursor.lastrowid
 
 
+def get_cd118_shapefile(state):
+    # See if we already have the file, so we don't need to download 
+    # and unpack it
+    state_fips = fips[state]
+    cd_file = "./content/tl_2023_"+state_fips+"_cd118.shp"
+    if not os.path.isfile(cd_file):
+        url = "https://www2.census.gov/geo/tiger/TIGER2023/CD/tl_2023_"+state_fips+"_cd118.zip"
+        request = requests.get(url)
+        z = zipfile.ZipFile(io.BytesIO(request.content))
+        z.extractall("./content")
+    cd_shapefile = geopandas.read_file(cd_file, crs=4269)
+    return cd_shapefile
+
+
 # ### 7. Number of currently active facilities regulated in CAA, CWA, RCRRA, GHGRP
 # * The program_count() function looks at the ECHO_EXPORTER data that is passed in and counts the number of facilities have the 'flag' parameter set to 'Y' (AIR_FLAG, NPDES_FLAG, RCRA_FLAG, GHG_FLAG)
 # * cd_echo_data is a dictionary with key (state, cd), where the state_echo_data is filtered for records of the current CD.
-# * cd_echo_active is a dictionary for active facilities in the CD.
+# * cd_echo_active is a dictionary for active facilities in the region.
 # * The number of records from these dictionaries is written into a file named like 'active-facilities_All_pg3', in a directory identified by the state and CD, e.g. "LA2".
 
 
 def program_count(echo_data, program, flag, state, cd):
     count = echo_data.loc[echo_data[flag] == "Y"].shape[0]
     print(
-        "There are {} active facilities in {} CD {} tracked under {}.".format(
+        "There are {} active facilities in {} - {} tracked under {}.".format(
             str(count), state, cd, program
         )
     )
@@ -61,13 +98,19 @@ def get_rowdata(df, field, flag):
     return count_viol, num_fac
 
 
-def get_cwa_df(df):
+def get_cwa_df(df, focus_year):
     year = df["YEARQTR"].astype("str").str[0:4:1]
     df["YEARQTR"] = year
     df.rename(columns={"YEARQTR": "YEAR"}, inplace=True)
     # Remove fields not relevant to this graph.
     df = df.drop(
         columns=[
+            "HLRNC",
+            "FAC_NAME",
+            "FAC_STREET",
+            "FAC_CITY",
+            "FAC_STATE",
+            "FAC_COUNTY",
             "FAC_LAT",
             "FAC_LONG",
             "FAC_ZIP",
@@ -84,8 +127,15 @@ def get_cwa_df(df):
     )
     d = df.groupby(pd.to_datetime(df["YEAR"], format="%Y").dt.to_period("Y")).sum()
     d.index = d.index.strftime("%Y")
+    d = d.copy()
+    d = d[d.index <= focus_year]
     d = d[d.index > "2000"]
-    d["Total"] = d.sum(axis=1)
+    cols = ['NUME90Q', 'NUMCVDT', 'NUMSVCD', 'NUMPSCH']
+    d['Total'] = d[cols].sum(axis=1)
+    # d1 = d[d.index <= focus_year]
+    # d2 = d1[d1.index > "2000"]
+    # d2["Total"] = d2[cols].sum(axis=1)
+    # return d2
     return d
 
 
@@ -295,7 +345,6 @@ def get_top_violators(df_active, flag, noncomp_field, action_field, num_fac=10):
     )
     df_active = df_active.head(num_fac)
     return df_active
-
 
 def build_all_per_1000(total_df):
     """

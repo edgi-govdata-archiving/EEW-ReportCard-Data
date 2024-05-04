@@ -15,9 +15,15 @@ from ECHO_modules.make_data_sets import make_data_sets
 def main(argv):
     parser = argparse.ArgumentParser(
         prog="AllPrograms.py",
-        description="Get data for all CDs and States passed in, and for the "
+        description="Get data for all regions passed in, and for the "
                     " focus year specified. "
                     "Write the data into the regions.db SQLite database.",
+    )
+    parser.add_argument(
+        "-b",
+        "--database",
+        required=True,
+        help="The Sqlite3 database",
     )
     parser.add_argument(
         "-f",
@@ -26,36 +32,58 @@ def main(argv):
         help="The year on which the report will focus",
     )
     group = parser.add_mutually_exclusive_group()
-    group.add_argument("-d", "--cds_file", required=False, help="The CDs to work with")
+    group.add_argument("-d", "--cds_state", required=False, help="The state to work with")
     group.add_argument("-c", "--county_state", required=False, help="The state to work with")
     my_args = parser.parse_args()
 
+    _database = my_args.database
     _region_mode = 'County'
-    focus_year = str(my_args.focus_year)
     state_regions = []
     state_counties = pd.DataFrame()
-    if my_args.cds_file:
+    if my_args.cds_state:
         _region_mode = 'Congressional District'
+        # Read the CDs for the given state (cds_state) from the
+        # region.db table real_cds
+        """ Old code
         with open(my_args.cds_file, "r") as read_obj:
             csv_reader = reader(read_obj)
             raw_state_regions = list(map(tuple, csv_reader))
         for state, region in raw_state_regions:
-            region = int(region)
-            state_regions.append((state, region))
+        """
+        state = my_args.cds_state
+        cds = AllPrograms_db.get_real_cds(_database, state)
+        if int(cds[0][0]) == 0:
+            # This is a state with only one CD, but the ECHO data
+            # may show some incorrect values. Treat this as a full
+            # state.
+            _region_mode = 'State'
+            state_regions.append((state, None))
+        else: # Congressional District or County
+            for cd in cds:
+                cd = int(cd[0])
+                # pd.concat(state_regions, (state, cd))
+                state_regions.append((state, cd))
     elif my_args.county_state:
         _region_mode = 'County'
         url = "https://raw.githubusercontent.com/edgi-govdata-archiving/"
-        url += "ECHO_modules/packaging/data/state_counties_corrected.csv"
+        url += "ECHO_modules/main/data/state_counties_corrected.csv"
         all_counties = pd.read_csv(url)
         state_counties = pd.DataFrame()
-        one_state_counties = all_counties[all_counties['FAC_STATE'] == my_args.county_state]
-        state_counties = state_counties.append(one_state_counties)
+        this_state_counties = all_counties[all_counties['FAC_STATE'] == my_args.county_state]
+        state_counties = pd.concat([state_counties, this_state_counties], ignore_index=True)
         state_regions = pd.unique(pd.Series(
             state_counties[['FAC_STATE', 'County']].apply(tuple, axis=1).tolist()))
         state_regions = state_regions.tolist()
     else:
         print('Option -c, -d, must be used')
         exit
+
+    """
+    The generated database (region.db) will be based on a particular year, generally
+    the last year of complete data in ECHO. Set that as the "focus_year".
+    """
+    focus_year = str(my_args.focus_year)
+    AllPrograms_util.set_focus_year(_database, focus_year)
 
     """
     First get facility information.  If there are no facilities (probably due
@@ -76,12 +104,12 @@ def main(argv):
     for state, region in state_regions:
         try:
             if _region_mode == 'County':
-                counties = state_counties[state_counties['FAC_STATE'] == state]
+                cds_or_counties = state_counties[state_counties['FAC_STATE'] == state]
             else:
-                counties = None
+                cds_or_counties = AllPrograms_util.get_cd118_shapefile(state)
             try:
                 region_echo_active[(state, region)] = (
-                    AllPrograms_db.get_active_facs(_region_mode, state, region, counties))
+                    AllPrograms_db.get_active_facs(_region_mode, state, region, cds_or_counties))
                 print("Active facilities for {}-{} = {}".format(state, region,
                                                                 len(region_echo_active[(state, region)])))
             except urllib.error.HTTPError:
@@ -108,7 +136,7 @@ def main(argv):
         ), "GHG": AllPrograms_util.program_count(
             region_echo_active[(state, region)], "GHG", "GHG_FLAG", state, region
         )}
-        AllPrograms_db.write_active_facs(_region_mode, active_facs, state, region)
+        AllPrograms_db.write_active_facs(_database, _region_mode, active_facs, state, region)
 
     states = list(
         set([s_region[0] for s_region in state_regions])
@@ -139,12 +167,14 @@ def main(argv):
     data_sets = make_data_sets(data_set_list)
     print("{} data sets:".format(_region_mode))
     for state, region in state_regions:
-        if region is None:
+        if region is None and _region_mode != 'State':
             continue
         for ds_key, data_set in data_sets.items():
             print(state + "-" + str(region) + " - " + ds_key)
             data_set.store_results(
-                region_type="{}".format(_region_mode), region_value=str(region), state=state
+                region_type=_region_mode, 
+                        region_value=region if region is None else str(region), 
+                        state=state
             )
 
     """
@@ -200,7 +230,7 @@ def main(argv):
                 "CAA Penalties - {} District: {} - {} facilities with violations in {}"
             )
             print(message.format(state, region, num_fac, focus_year))
-            df_caa = AllPrograms_db.write_enf_per_fac(_region_mode,
+            df_caa = AllPrograms_db.write_enf_per_fac(_database, _region_mode,
                 "CAA", data_sets["CAA Penalties"], ds_type, num_fac, focus_year)
 
             print("  CWA")
@@ -213,7 +243,7 @@ def main(argv):
                 "CWA Penalties - {} District: {} - {} facilities with violations in {}"
             )
             print(message.format(state, region, num_fac, focus_year))
-            df_cwa = AllPrograms_db.write_enf_per_fac(_region_mode,
+            df_cwa = AllPrograms_db.write_enf_per_fac(_database, _region_mode,
                 "CWA", data_sets["CWA Penalties"], ds_type, num_fac, focus_year
             )
 
@@ -227,11 +257,12 @@ def main(argv):
                 "RCRA Penalties - {} District: {} - {} facilities with violations in {}"
             )
             print(message.format(state, region, num_fac, focus_year))
-            df_rcra = AllPrograms_db.write_enf_per_fac(_region_mode,
+            df_rcra = AllPrograms_db.write_enf_per_fac(_database, _region_mode,
                 "RCRA", data_sets["RCRA Penalties"], ds_type, num_fac, focus_year
             )
 
-            AllPrograms_db.write_recurring_violations(_region_mode, state, region, rowdata_region)
+            AllPrograms_db.write_recurring_violations(_database, _region_mode, 
+                                                      state, region, rowdata_region)
 
         # Removed total_enf_per_fac.  It can be calculated from the individual
         # program records
@@ -258,24 +289,28 @@ def main(argv):
     effluent_violations_focus_year = {}  # For use later
 
     for state, region in state_regions:
-        if region is None:
+        if region is None and _region_mode != 'State':
             continue
-        ds_type = ("{}".format(_region_mode), str(region).zfill(2), state)
+        region_value = region
+        if _region_mode != 'State':
+            region_value = str(region)
+        ds_type = ("{}".format(_region_mode), region_value, state)
         print("CWA Violations - {} District: {}".format(state, region))
         df = (
             data_sets["CWA Violations"]
-            .results[("{}".format(_region_mode), str(region), state)]
+            .results[("{}".format(_region_mode), region_value, state)]
             .dataframe
         )
         if df is None:
             continue
         else:
             df = df.copy()
-        effluent_violations_all = AllPrograms_util.get_cwa_df(df)
+        effluent_violations_all = AllPrograms_util.get_cwa_df(df, focus_year)
         for idx, row in effluent_violations_all.iterrows():
             if idx == focus_year:
                 effluent_violations_focus_year[(state, region)] = row["Total"]
-        AllPrograms_db.write_CWA_violations(_region_mode, effluent_violations_all, ds_type)
+        AllPrograms_db.write_CWA_violations(_database, _region_mode, 
+                                            effluent_violations_all, ds_type)
 
     # ### 11. Percent change in inspections
     # For each region the date field for that program type is used to count up all 
@@ -290,45 +325,45 @@ def main(argv):
         if region is None:
             ds_type = ("State", None, state)
         else:
-            ds_type = ("{}".format(_region_mode), str(region), state)
+            ds_type = (_region_mode, str(region), state)
         print("CAA Inspections - {} District: {}".format(state, region))
-        df_caa = AllPrograms_db.write_inspections(_region_mode,
+        df_caa = AllPrograms_db.write_inspections(_database, _region_mode,
             "CAA", data_sets["CAA Inspections"], ds_type
         )
 
         print("CWA Inspections - {} District: {}".format(state, region))
-        df_cwa = AllPrograms_db.write_inspections(_region_mode,
+        df_cwa = AllPrograms_db.write_inspections(_database, _region_mode,
             "CWA", data_sets["CWA Inspections"], ds_type
         )
 
         print("RCRA Inspections - {} District: {}".format(state, region))
-        df_rcra = AllPrograms_db.write_inspections(_region_mode,
+        df_rcra = AllPrograms_db.write_inspections(_database, _region_mode,
             "RCRA", data_sets["RCRA Inspections"], ds_type
         )
 
         print("CAA Violations - {} District: {}".format(state, region))
-        df_caa = AllPrograms_db.write_violations(_region_mode,
+        df_caa = AllPrograms_db.write_violations(_database, _region_mode,
             "CAA", data_sets["CAA Violations"], ds_type
         )
 
         print("RCRA Violations - {} District: {}".format(state, region))
-        df_rcra = AllPrograms_db.write_violations(_region_mode,
+        df_rcra = AllPrograms_db.write_violations(_database, _region_mode,
             "RCRA", data_sets["RCRA Violations"], ds_type
         )
 
         print("CAA Penalties - {} District: {}".format(state, region))
-        df_caa = AllPrograms_db.write_enforcements(_region_mode,
-            "CAA", data_sets["CAA Penalties"], ds_type
+        df_caa = AllPrograms_db.write_enforcements(_database, _region_mode,
+            "CAA", data_sets["CAA Penalties"], ds_type, focus_year
         )
 
         print("CWA Penalties - {} District: {}".format(state, region))
-        df_cwa = AllPrograms_db.write_enforcements(_region_mode,
-            "CWA", data_sets["CWA Penalties"], ds_type
+        df_cwa = AllPrograms_db.write_enforcements(_database, _region_mode,
+            "CWA", data_sets["CWA Penalties"], ds_type, focus_year
         )
 
         print("RCRA Penalties - {} District: {}".format(state, region))
-        df_rcra = AllPrograms_db.write_enforcements(_region_mode,
-            "RCRA", data_sets["RCRA Penalties"], ds_type
+        df_rcra = AllPrograms_db.write_enforcements(_database, _region_mode,
+            "RCRA", data_sets["RCRA Penalties"], ds_type, focus_year
         )
 
     # ### 13.a. Focus year - inspections per regulated facility - by district
@@ -341,8 +376,9 @@ def main(argv):
 
     for state, region in state_regions:
         if region is None:
-            continue
-        ds_type = ("{}".format(_region_mode), str(region), state)
+            ds_type = ("State", None, state)
+        else:
+            ds_type = (_region_mode, str(region), state)
         pgm_count_caa = AllPrograms_util.program_count(
             region_echo_active[(state, region)], "CAA", "AIR_FLAG", state, region
         )
@@ -359,7 +395,8 @@ def main(argv):
             if pgm_count_caa > 0 and num is not None:
                 num = num / pgm_count_caa
                 print("CAA inspections per regulated facilities: ", num)
-                AllPrograms_db.write_per_fac(_region_mode, "CAA", ds_type, "inspections", focus_year, num)
+                AllPrograms_db.write_per_fac(_database, _region_mode, "CAA", 
+                                             ds_type, "inspections", focus_year, num)
         except pd.errors.OutOfBoundsDatetime:
             print("Bad date in region CWA data")
         try:
@@ -369,7 +406,8 @@ def main(argv):
             if pgm_count_caa > 0 and num is not None:
                 num /= pgm_count_caa
                 print("CAA violations per regulated facilities: ", num)
-                AllPrograms_db.write_per_fac(_region_mode, "CAA", ds_type, "violations", focus_year, num)
+                AllPrograms_db.write_per_fac(_database, _region_mode, "CAA", 
+                                             ds_type, "violations", focus_year, num)
         except pd.errors.OutOfBoundsDatetime:
             print("Bad date in region CWA data")
         try:
@@ -379,7 +417,8 @@ def main(argv):
             if pgm_count_cwa > 0 and num is not None:
                 num /= pgm_count_cwa
                 print("CWA inspections per regulated facilities: ", num)
-                AllPrograms_db.write_per_fac(_region_mode, "CWA", ds_type, "inspections", focus_year, num)
+                AllPrograms_db.write_per_fac(_database, _region_mode, "CWA", 
+                                             ds_type, "inspections", focus_year, num)
         except pd.errors.OutOfBoundsDatetime:
             print("Bad date in region CWA data")
         try:
@@ -388,7 +427,8 @@ def main(argv):
                 num = effluent_violations_focus_year[(state, region)]
                 if pgm_count_cwa > 0 and num is not None:
                     num = num / pgm_count_cwa
-                    AllPrograms_db.write_per_fac(_region_mode, "CWA", ds_type, "violations", focus_year, num)
+                    AllPrograms_db.write_per_fac(_database, _region_mode, "CWA", 
+                                                 ds_type, "violations", focus_year, num)
         except pd.errors.OutOfBoundsDatetime:
             print("Bad date in state CWA data")
         try:
@@ -398,7 +438,8 @@ def main(argv):
             if pgm_count_rcra > 0 and num is not None:
                 num /= pgm_count_rcra
                 print("RCRA inspections per regulated facilities: ", num)
-                AllPrograms_db.write_per_fac(_region_mode, "RCRA", ds_type, "inspections", focus_year, num)
+                AllPrograms_db.write_per_fac(_database, _region_mode, "RCRA", 
+                                             ds_type, "inspections", focus_year, num)
         except pd.errors.OutOfBoundsDatetime:
             print("Bad date in region CWA data")
         try:
@@ -408,7 +449,8 @@ def main(argv):
             if pgm_count_rcra > 0 and num is not None:
                 num /= pgm_count_rcra
                 print("RCRA violations per regulated facilities: ", num)
-                AllPrograms_db.write_per_fac(_region_mode, "RCRA", ds_type, "violations", focus_year, num)
+                AllPrograms_db.write_per_fac(_database, _region_mode, "RCRA", 
+                                             ds_type, "violations", focus_year, num)
         except pd.errors.OutOfBoundsDatetime:
             print("Bad date in region CWA data")
 
@@ -418,14 +460,15 @@ def main(argv):
 
     for state, region in state_regions:
         if region is None:
-            continue
-        ds_type = ("{}".format(_region_mode), str(region), state)
+            ds_type = ("State", None, state)
+        else:
+            ds_type = (_region_mode, str(region), state)
         print("Greenhouse Gas Emissions - {} District: {}".format(state, region))
         df_ghg = AllPrograms_util.get_ghg_emissions(
             data_sets["Greenhouse Gas Emissions"], ds_type
         )
         if df_ghg is not None:
-            AllPrograms_db.write_ghg_emissions(_region_mode, df_ghg, ds_type)
+            AllPrograms_db.write_ghg_emissions(_database, _region_mode, df_ghg, ds_type)
 
     # ### 20. Top facilities with compliance problems over the past 3 years
     # * The get_top_violators() function counts non-compliance quarters ('S' and 'V' violations) for facilities and then sorts the facilities.
@@ -434,10 +477,10 @@ def main(argv):
 
     for state, region in state_regions:
         if region is None:
-            continue
+            ds_type = ("State", None, state)
         else:
-            df_active = region_echo_active[(state, region)]
-            ds_type = ("{}".format(_region_mode), state, region)
+            ds_type = (_region_mode, str(region), state)
+        df_active = region_echo_active[(state, region)]
         df_violators = AllPrograms_util.get_top_violators(
             df_active,
             "AIR_FLAG",
@@ -450,7 +493,8 @@ def main(argv):
                 columns={"CAA_FORMAL_ACTION_COUNT": "formal_action_count"}, inplace=True
             )
             df_violators = df_violators.fillna(0)
-            AllPrograms_db.write_top_violators(_region_mode, df_violators, ds_type, "CAA")
+            AllPrograms_db.write_top_violators(_database, _region_mode, df_violators, 
+                                               ds_type, "CAA")
 
         df_violators = AllPrograms_util.get_top_violators(
             df_active,
@@ -464,7 +508,8 @@ def main(argv):
                 columns={"CWA_FORMAL_ACTION_COUNT": "formal_action_count"}, inplace=True
             )
             df_violators = df_violators.fillna(0)
-            AllPrograms_db.write_top_violators(_region_mode, df_violators, ds_type, "CWA")
+            AllPrograms_db.write_top_violators(_database, _region_mode, df_violators, 
+                                               ds_type, "CWA")
 
         df_violators = AllPrograms_util.get_top_violators(
             df_active,
@@ -479,18 +524,20 @@ def main(argv):
                 inplace=True,
             )
             df_violators = df_violators.fillna(0)
-            AllPrograms_db.write_top_violators(_region_mode, df_violators, ds_type, "RCRA")
+            AllPrograms_db.write_top_violators(_database, _region_mode, df_violators, 
+                                               ds_type, "RCRA")
 
     # Number of facilities by number of non-compliant quarters over the past 3 years.
 
     for state, region in state_regions:
         if region is None:
-            continue
+            ds_type = ("State", None, state)
         else:
-            df_active = region_echo_active[(state, region)]
-            ds_type = ("{}".format(_region_mode), state, region)
+            ds_type = (_region_mode, str(region), state)
+        df_active = region_echo_active[(state, region)]
         if not df_active.empty:
             AllPrograms_db.write_violations_by_facilities(
+                _database,
                 _region_mode,
                 df_active,
                 ds_type,
@@ -500,6 +547,7 @@ def main(argv):
                 "CAA_3YR_COMPL_QTRS_HISTORY",
             )
             AllPrograms_db.write_violations_by_facilities(
+                _database,
                 _region_mode,
                 df_active,
                 ds_type,
@@ -509,6 +557,7 @@ def main(argv):
                 "CWA_13QTRS_COMPL_HISTORY",
             )
             AllPrograms_db.write_violations_by_facilities(
+                _database,
                 _region_mode,
                 df_active,
                 ds_type,
