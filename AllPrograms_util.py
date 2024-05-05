@@ -58,10 +58,13 @@ def get_cd118_shapefile(state):
     state_fips = fips[state]
     cd_file = "./content/tl_2023_"+state_fips+"_cd118.shp"
     if not os.path.isfile(cd_file):
-        url = "https://www2.census.gov/geo/tiger/TIGER2023/CD/tl_2023_"+state_fips+"_cd118.zip"
-        request = requests.get(url)
-        z = zipfile.ZipFile(io.BytesIO(request.content))
-        z.extractall("./content")
+        try:
+            url = "https://www2.census.gov/geo/tiger/TIGER2023/CD/tl_2023_"+state_fips+"_cd118.zip"
+            request = requests.get(url)
+            z = zipfile.ZipFile(io.BytesIO(request.content))
+            z.extractall("./content")
+        except:
+            return None
     cd_shapefile = geopandas.read_file(cd_file, crs=4269)
     return cd_shapefile
 

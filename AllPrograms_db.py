@@ -24,15 +24,15 @@ def get_active_facs(mode, state, region, cds_or_counties):
         # county_str = "\'" + county_str + "\'"
         sql += ' and "FAC_COUNTY" in (\'{}\')'
         sql = sql.format(county_str)
-        print(sql)
     region_echo_data = get_echo_data(sql, "REGISTRY_ID")
     region_echo_data = region_echo_data.loc[region_echo_data["FAC_ACTIVE_FLAG"] == "Y"]
-    if mode == 'Congressional District':
+    if mode == 'Congressional District' and type(cds_or_counties) == geopandas.geodataframe.GeoDataFrame: 
         region_echo_data['geometry'] = geopandas.GeoSeries.from_wkb(region_echo_data['wkb_geometry'])
         region_echo_data.drop('wkb_geometry', axis=1, inplace=True)
         region_echo_data = geopandas.GeoDataFrame(region_echo_data, crs=4269)
         join = region_echo_data.sjoin(cds_or_counties, how="left")
-        region_echo_data = join.loc[join["CD118FP"].astype(float) == float(region)]
+        join['CD118FP'] = pd.to_numeric(join['CD118FP'], errors='coerce')
+        region_echo_data = join.loc[join["CD118FP"] == float(region)]
     return region_echo_data
 
 

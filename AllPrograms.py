@@ -100,13 +100,12 @@ def main(argv):
 
     region_echo_active = {}
     remove_state_regions = []
-    state = ''
+    if _region_mode == 'County':
+        cds_or_counties = state_counties[state_counties['FAC_STATE'] == state]
+    else:
+        cds_or_counties = AllPrograms_util.get_cd118_shapefile(state)
     for state, region in state_regions:
         try:
-            if _region_mode == 'County':
-                cds_or_counties = state_counties[state_counties['FAC_STATE'] == state]
-            else:
-                cds_or_counties = AllPrograms_util.get_cd118_shapefile(state)
             try:
                 region_echo_active[(state, region)] = (
                     AllPrograms_db.get_active_facs(_region_mode, state, region, cds_or_counties))

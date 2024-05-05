@@ -142,5 +142,6 @@ CREATE TABLE IF NOT EXISTS "county_per_1000" (
 );
 CREATE INDEX "ix_county_per_1000_index"ON "county_per_1000" ("index");
 CREATE TABLE IF NOT EXISTS "config" (
-focus_year tinyint
+focus_year tinyint,
+unique(focus_year)
 );

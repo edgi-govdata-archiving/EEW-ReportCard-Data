@@ -29,5 +29,5 @@ echo 'Set the committees that should be included in reports'
 sqlite3 leg_info.db < set_included_committees.sql
 
 echo 'Running real_cds.py to build the real_cds table of regions.db'
-python3 real_cds.py
+# python3 real_cds.py
 date >> leg_info.log
