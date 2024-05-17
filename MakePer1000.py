@@ -3,5 +3,6 @@
 
 import AllPrograms_db
 
-focus_year = 2022
-AllPrograms_db.make_per_1000(focus_year)
+focus_year = 2023
+database = 'region_cds.db'
+AllPrograms_db.make_per_1000(database, focus_year)

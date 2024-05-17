@@ -92,6 +92,19 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 ```
 
 ```{r echo=FALSE, include=FALSE}
+library(reticulate)
+virtualenv_create('eew-env')
+py_install('pandas', envname='eew-env')
+```
+
+```{r echo=FALSE, include=FALSE}
+virtualenv_python('eew-env')
+py_install('pandas', envname='eew-env')
+
+u <- import('Region')
+```
+
+```{r echo=FALSE, include=FALSE}
 virtualenv_python('edgienv')
 u <- import( 'Region' )
 region <- u$Region(type='Congressional District', value=Region_CD, state=params$state, programs=c('CAA', 'CWA', 'RCRA'))

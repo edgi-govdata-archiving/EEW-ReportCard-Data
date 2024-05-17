@@ -412,9 +412,9 @@ def make_per_1000(db, focus_year):
     """
 
     start_year = int(focus_year) - 4
-    total_df = get_all_per_1000(start_year)
+    total_df = get_all_per_1000(db, start_year)
     for year in range(start_year + 1, int(focus_year)):
-        df = get_all_per_1000(year)
+        df = get_all_per_1000(db, year)
         df = df[(df['CD.State'] != 'MX') & (df['CD.State'] != 'GM') &
                 (df['CD.State'] != 'MB')]
         df.set_index('CD.State')
@@ -518,7 +518,7 @@ def _get_county_per_1000(cursor, region_id, state, county, year):
             'County')
 
 
-def _get_cd_per_1000(cursor, region_mode, state, cd, year):
+def _get_cd_per_1000(cursor, state, cd, year):
     num_events = {}
     for program in ['CAA', 'CWA', 'RCRA']:
         for event_type in ['inspections', 'violations', 'enforcements']:
@@ -526,14 +526,14 @@ def _get_cd_per_1000(cursor, region_mode, state, cd, year):
     if cd == 0:
         # This is a single-cd state.
         # Include all identified cds for the state.
-        sql = 'select rowid from regions where state=\'{}\' and region_type=\'CD\''
+        sql = 'select rowid from regions where state=\'{}\' and region_type=\'State\''
         sql = sql.format(state)
         cursor.execute(sql)
         region_ids = cursor.fetchall()
         active = 0
         for program in ['CAA', 'CWA', 'RCRA']:
             for region_id in region_ids:
-                active += _get_active_for_region(program, region_id)
+                active += _get_active_for_region(cursor, program, region_id)
                 for event_type in ['inspections', 'violations', 'enforcements']:
                     num_events[(program, event_type)] += _get_events_for_region(cursor,
                                                                                 program,
@@ -555,11 +555,16 @@ def _get_cd_per_1000(cursor, region_mode, state, cd, year):
                 'Congressional District')
     else:
         # Get the results for just this single state/cd
-        region_id = AllPrograms_util.get_region_rowid(cursor, region_mode, state, str(cd).zfill(2))
+        region_id = AllPrograms_util.get_region_rowid(cursor, 'Congressional District', 
+                                                      state, str(cd).zfill(2))
         for program in ['CAA', 'CWA', 'RCRA']:
-            active = _get_active_for_region(program, region_id)
+            active = _get_active_for_region(cursor, program, region_id)
             for event_type in ['inspections', 'violations', 'enforcements']:
-                active = _get_active_for_region(program, region_id)
+                num_events[(program, event_type)] += _get_events_for_region(cursor,
+                                                                            program,
+                                                                            event_type,
+                                                                            region_id,
+                                                                            year)
             for event_type in ['inspections', 'violations', 'enforcements']:
                 num_events[(program, event_type)] = 0 if active == 0 \
                     else 1000. * num_events[(program, event_type)] / active
@@ -574,7 +579,6 @@ def _get_cd_per_1000(cursor, region_mode, state, cd, year):
                 num_events[('RCRA', 'enforcements')],
                 'Congressional District')
 
-
 def get_all_per_1000(db, year):
     conn = sqlite3.connect(db)
     cursor = conn.cursor()
@@ -582,17 +586,15 @@ def get_all_per_1000(db, year):
     df_real = pd.DataFrame()
     sql = 'select state, cd from real_cds'
     df_real = pd.read_sql_query(sql, conn)
-    for state, cd in df_real.iterrows():
-        sql = 'select cd from real_cds where state = \'{}\''.format(state)
-        df_real = pd.read_sql_query(sql, conn)
+    for idx, row in df_real.iterrows():
         # Results will be dictionary with key=AL01, state/cd,
         # and values a tuple (Num per 1000, event_type, Region) where
         # event_type is 'inspections', 'violations', or 'enforcements' and
         # Region is 'Congressional District' or 'County' or 'State'
-        for idx, row in df_real.iterrows():
-            cd = row['cd']
-            key = '{}-{}'.format(state, str(cd).zfill(2))
-            results[key] = _get_cd_per_1000(cursor, state, cd, year)
+        cd = row['cd']
+        state = row['state']
+        key = '{}-{}'.format(state, str(cd).zfill(2))
+        results[key] = _get_cd_per_1000(cursor, state, cd, year)
 
     sql = 'select rowid as region_id, state, region from regions where region_type=\'County\''
     df_real = pd.read_sql_query(sql, conn)

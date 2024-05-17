@@ -15,7 +15,7 @@ param_table <- names %>%
     district = District
   ) %>% select(cd_state,state,district,full_name)
 
-target <- c("TX34", "AL01")
+target <- c("AR01", "TX34", "AL01")
 #so for shiny we would want the target to be specific2
 selected <- param_table %>% filter(param_table$cd_state %in% target)
 

@@ -294,7 +294,7 @@ class Region:
             sql = 'select {} from state_per_1000 where "CD.State" = \'{}\''
             sql = sql.format(state_columns, self.state)
         elif self.type == 'Congressional District':
-            sql = 'select {} from cd_per_1000 where "CD.State" = \'{}{}\''
+            sql = 'select {} from cd_per_1000 where "CD.State" = \'{}-{}\''
             sql = sql.format(cd_columns, self.state, self.value)
         elif self.type == 'County':
             sql = 'select {} from county_per_1000 where "CD.State" = \'{}{}\''
