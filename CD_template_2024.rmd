@@ -5,10 +5,10 @@ output:
     number_sections: false
     css: ["custom_current.css"]
 params: 
-  cd_state: "AR01"
-  full_name: "Arkansas 1st District"
-  state: "AR"
-  district: "01"
+  cd_state: "TX34"
+  full_name: "Texas 34th District"
+  state: "TX"
+  district: "34"
 ---
 
 ```{r setup, include=FALSE}
@@ -218,8 +218,8 @@ which_president <- function(which_year) {
 CWAviolations <- CWAviolations %>%
   mutate(President = which_president(Year))
 
-vCWAchange <- data.frame("BushObamaAverage" =mean(CWAviolations[1:16,2]),
-                             "Trump Average" =mean(CWAviolations[17:20,2])) # SH
+vCWAchange <- data.frame("PreBidenAverage" =mean(CWAviolations[1:20,2]),
+                             "Biden Average" =mean(CWAviolations[21:23,2])) # SH
 
 vCWAchange$PercentDifference <- as.numeric(100*(vCWAchange[1,2]-vCWAchange[1,1])/
                                                  vCWAchange[1,1])
@@ -236,8 +236,8 @@ enforcement$Amount <- round(enforcement$Amount,2)
 #add presidental years
 enforcement <- enforcement %>%
   mutate(President = which_president(Year))
-actionchange <- data.frame("BushObamaAverage" =mean(enforcement[1:16,3]),
-                             "Trump Average" =mean(enforcement[17:19,3]))
+actionchange <- data.frame("PreBidenAverage" =mean(enforcement[1:20,3]),
+                             "Biden Average" =mean(enforcement[21:23,3]))
 
 actionchange$PercentDifference <- as.numeric(100*(actionchange[1,2]-actionchange[1,1])/
                                                  actionchange[1,1])
@@ -301,10 +301,9 @@ Congressional Report Card</span></div>
 
 # Introduction 
 
-## Why Report Cards on compliance with and enforcement of Environmental Laws?
+## Why report cards on compliance with and enforcement of environmental protection laws?
 
-The Environmental Protection Agency (EPA) is charged by Congress to enforce laws that protect people from air pollution, water pollution and hazardous waste. **Without effective enforcement, these laws are meaningless**. Based on data from EPA’s Enforcement and Compliance History Online (ECHO) database this report card reviews violations, inspections and enforcement actions under three laws: Clean Air Act (CAA), Clean Water Act (CWA) and Resource Conservation and Recovery Act (RCRA) for this Congressional District or State since 2001. Report cards like this one are becoming available on the [EEW website](https://www.environmentalenforcementwatch.org) for all House Representatives and Senators. The [EEW website](https://www.environmentalenforcementwatch.org) also has a summary analysis of enforcement trends and data issues for all geographies covered by the House Energy and Commerce and Senate Environment and Public Works Committees. The report cards contain data from *both* state environmental agencies and the EPA. If the  states are enforcing the above laws, it is because the EPA has delegated that authority to them. The EPA must ensure that states are doing their job. Congress must ensure that the EPA is doing its job. And the public must have accurate data from states and the EPA in order to understand if national environmental laws are being properly enforced. For the first time, EEW Congressional Report Cards give members of Congress and their constituents the chance to evaluate whether the EPA is fulfilling its mandate in their district. Congress can strengthen EPA enforcement by increasing its budget, passing more effective laws, requiring better data collection, and holding the EPA accountable when it fails to protect people.
-
+The Environmental Protection Agency (EPA) is charged by Congress to enforce laws that protect people from air pollution, water pollution and hazardous waste. **Without effective enforcement, these laws are meaningless**. Based on data from EPA’s Enforcement and Compliance History Online (ECHO) database this report card reviews violations, inspections and enforcement actions under three laws: Clean Air Act (CAA), Clean Water Act (CWA) and Resource Conservation and Recovery Act (RCRA) for this Congressional District or State since 2001. Report cards like this one are becoming available on the [EEW website](https://www.environmentalenforcementwatch.org) for all House Representatives and Senators. The [EEW website](https://www.environmentalenforcementwatch.org) also has a summary analysis of enforcement trends and data issues for all geographies covered by the House Energy and Commerce and Senate Environment and Public Works Committees. The report cards contain data from *both* state environmental agencies and the EPA. If the states are enforcing the above laws, it is because the EPA has delegated that authority to them. The EPA must ensure that states are doing their job. Congress must ensure that the EPA is doing its job. And the public must have accurate data from states and the EPA in order to understand if national environmental laws are being properly enforced. For the first time, EEW Congressional Report Cards give members of Congress and their constituents the chance to evaluate whether the EPA is fulfilling its mandate in their district. Congress can strengthen EPA enforcement by increasing its budget, passing more effective laws, requiring better data collection, and holding the EPA accountable when it fails to protect people.
 
 
 ## What is a "regulated facility"?
@@ -320,10 +319,10 @@ A regulated facility in this report is a facility that reports air or water emis
 <hr style="height:3px;border-width:0;margin-left:15px; margin-right:15px;color: #C1E0D7;background-color: #C1E0D7; margin-top: 0em; margin-bottom: 0em">
 <h4>Report Generated on `r format(Sys.time(), '%B %d, %Y')`<span style="padding-left:400px">Page 2</span></h4>
 
-# Grading the District on Data from 2017 through 2021
+# Grading the District on Data from `r strtoi(target_year)-4` through `target_year`
 
 
-<h3>This graph shows how this district compares by its percentile with other U.S. congressional districts on three metrics: number of violations, number of violations per inspection, and number of violations per enforcement action. These metrics are used on the data from each of the three EPA programs--the Clean Water Act (CWA), the Clean Air Act (CAA) and the Resource Conservation and Recovery Act (RCRA). The data used is for the past five years, 2017 through 2021.</h3>
+<h3>This graph shows how this district compares by its percentile with other U.S. congressional districts on three metrics: number of violations, number of violations per inspection, and number of violations per enforcement action. These metrics are used on the data from each of the three EPA programs--the Clean Water Act (CWA), the Clean Air Act (CAA) and the Resource Conservation and Recovery Act (RCRA). The data used is for the past five years, `r strtoi(target_year)-4` through `target_year`.</h3>
 
 <br />
 
@@ -345,7 +344,7 @@ cd_percent_bar <- ggplot(ranked_t, aes(fill=order, y=V1, x=Program, alpha=Progra
   scale_fill_manual(values=metric_colors, labels = c("Violations/Facility","Violations/Inspections","Violations/Enforcements"))+
   labs(y="Percentiles Among Districts\n", x="")+scale_alpha_manual(values=c(1,1,1), guide='none')+
   geom_text(aes(label=V1, family="Georgia"), position = position_dodge(0.9), vjust = -0.1, size=5)+
-  ggtitle(paste("Percentile Ranking Among All Districts, 2017-2021"))+
+  ggtitle(paste("Percentile Ranking Among All Districts, 2019-2023"))+
   scale_y_continuous(expand=c(0,0),limits=c(0,100))+
   theme_meg()
   
@@ -355,7 +354,7 @@ cd_percent_bar <- ggplot(ranked_t, aes(fill=order, y=V1, x=Program, alpha=Progra
 cd_percent_bar
 ```
 
-<h3>As an example, a Violations per Facility score of `r ranked$CWA_Viol_Pct` for CWA means that this district has more violations than `r ranked$CWA_Viol_Pct`% of all districts in the United States. From these scores we can assign letter grades to districts--the top 20%, those districts with more violations than 80% of all districts, would get an F; the districts scoring between 60% and 80% get a D; between 40% and 60% get a C; between 20% and 40% get a B; and less than 20% get an A. With that grading scheme, `r params$full_name` is given the following grades:</h3>
+<h3>As an example, a Violations per Facility score of `r ranked$CWA_Viol_Pct` for CWA violations means that this district has more violations than `r ranked$CWA_Viol_Pct`% of all districts in the United States. From these scores we can assign letter grades to districts--the top 20%, those districts with more violations than 80% of all districts, would get an F; the districts scoring between 60% and 80% get a D; between 40% and 60% get a C; between 20% and 40% get a B; and less than 20% get an A. As such, `r params$full_name` receives the following grades:</h3>
 
 <ul>
   <li><h3>CAA Violations per Facility - `r grade(ranked$CAA_Viol_Pct)`</h3></li>
@@ -373,7 +372,7 @@ cd_percent_bar
 <ul>
   <li>More <strong>violations per active facility</strong> are worse.</li>
   <li>More <strong>inspections</strong> mean more problems will be found, which is good. Dividing violations by inspections indicates the strength of the inspecting</li>
-  <li>More <strong>enforcements</strong> when violations are found disincentivizes violating. Dividing violations by enforcements indicates the willingness to call fouls.</li>
+  <li>More <strong>enforcements</strong> when violations are found disincentivizes violating. Dividing violations by enforcements indicates EPA's willingness to penalize.</li>
 </ul>
 
 *see data limitations page for metric calculations
@@ -385,7 +384,7 @@ cd_percent_bar
 <hr style="height:3px;border-width:0;margin-left:15px; margin-right:15px;color: #C1E0D7;background-color: #C1E0D7; margin-top: 0em; margin-bottom: 0em">
 <h4>Report Generated on `r format(Sys.time(), '%B %d, %Y')`<span style="padding-left:400px">Page 3</span></h4>
 
-# Clean Water Act - Inspections, Violations, Enforcements Since 2000
+# Clean Water Act - Inspections, Violations, Enforcements Since 2001
 
 
 <h3>These graphs show the changes in numbers of inspections, violations and enforcement actions
@@ -409,11 +408,11 @@ knitr::opts_chunk$set(fig.width = 10,fig.height = 6)
 ```
 
 
-<h3>Clean Water Act Violations*: <span style="color:#569b5e">Violations during the four Trump administration years were `r vCWAchange[1,4]` `r vCWAchange[1,5]`</span> than the average over the previous 16 years, representing a <span style="color:#569b5e">`r vCWAchange[1,6]`% `r vCWAchange[1,7]`</span> in violations</h3>
+<h3>Clean Water Act Violations*: <span style="color:#569b5e">Violations during the Trump administration `r vCWAchange[1,4]` `r vCWAchange[1,5]`</span> than the average over the previous 16 years, representing a <span style="color:#569b5e">`r vCWAchange[1,6]`% `r vCWAchange[1,7]`</span> in violations</h3>
 
 <br />
 
-<h3>Enforcement Actions under Clean Air Act, Clean Water Act, and the Resource Conservation and Recovery Act*: <span style="color:#569b5e">`r actionchange[1,4]` `r actionchange[1,5]`</span> than the average over the previous 16 years, representing a <span style="color:#569b5e">`r actionchange[1,6]`% `r actionchange[1,7]`</span> in enforcement actions</h3>
+<h3>Enforcement actions under Clean Air Act, Clean Water Act, and the Resource Conservation and Recovery Act*: <span style="color:#569b5e">`r actionchange[1,4]` `r actionchange[1,5]`</span> than the average over the previous 16 years, representing a <span style="color:#569b5e">`r actionchange[1,6]`% `r actionchange[1,7]`</span> in enforcement actions</h3>
 
 <p>When comparing the graphs, note that the vertical axes may have considerably different scales.</p>
 <br />
@@ -451,11 +450,12 @@ CWArecurring[3] <-round(CWArecurring[3],0)
 
 ```{r echo=FALSE}
 ##getting %difference effluent violations
-#[9:11,2] Obama
-# [17:20,2] Trump
+#[9:12,2] Obama
+# [17:20,2] Trump [17:19] first three years
+# [21:23,2] Biden first three years
 effluentviolations <- CWAviolations # SH
-effluentchange <- data.frame("Obama Average" =mean(effluentviolations[9:12,2]),
-                             "Trump Average" =mean(effluentviolations[17:20,2])) # SH
+effluentchange <- data.frame("Trump Average" =mean(effluentviolations[17:19,2]),
+                             "Biden Average" =mean(effluentviolations[21:23,2])) # SH
 effluentchange$PercentDifference <- as.numeric(100*(effluentchange[1,2]-effluentchange[1,1])/
                                                  effluentchange[1,1])
 effluentchange[,1:3] <-round(effluentchange[,1:3],2)
@@ -470,19 +470,18 @@ effluentgraph <- ggplot(effluentviolations, mapping=aes(x=factor(Year),
   scale_fill_manual(values=president_colors,breaks=c('Bush', 'Obama', 'Trump', 'Biden'), guide=guide_legend(breaks=c("Bush","Obama","Trump","Biden")))+
   labs(y=" # Violations", x="Year", title="Clean Water Act Violations\n", subtitle ="Mostly complete data")+
   scale_y_continuous(expand=c(0,0), limits=c(0,max(effluentviolations$Count+(.2*max(effluentviolations$Count)))))+
-  scale_x_discrete(breaks=c(2004,2008,2012,2016,2020))+
+  scale_x_discrete(breaks=c(2004,2008,2012,2016,2020,2024))+
   theme_meg()+
   theme(axis.text.x=element_text(size=9),
         axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5, size=10, color="darkgreen"),
         plot.title = element_text(lineheight = .1, size=10))
 
 ##Inspections % change and graph
-
-##So, we're going to do the four years of Obama and Trump so average
-#[9:11,2] Obama
-# [17:19,2] Trump
-inspectionchange <- data.frame("Obama Average" =mean(inspections[9:12,2]),
-                             "Trump Average" =mean(inspections[17:20,2]))
+#[9:12,2] Obama
+# [17:20,2] Trump [17:19] first three years
+# [21:23,2] Biden first three years
+inspectionchange <- data.frame("Trump Average" =mean(inspections[17:19,2]),
+                             "Biden Average" =mean(inspections[21:23,2]))
 inspectionchange$PercentDifference <- as.numeric(100*(inspectionchange[1,2]-inspectionchange[1,1])/
                                                  inspectionchange[1,1])
 inspectionchange[,1:3] <-round(inspectionchange[,1:3],0)
@@ -502,7 +501,7 @@ inspectiongraph <- ggplot(inspections, mapping=aes(x=factor(Year),
   scale_fill_manual(values=president_colors, breaks=c('Bush', 'Obama', 'Trump', 'Biden'))+
   labs(y="Inspections", x="Year", title="Facility Inspections-CAA,CWA,RCRA\n", subtitle = "Potentially incomplete data")+
   scale_y_continuous(expand=c(0,0), limits=c(0,max(inspections$Count+(.2*max(inspections$Count)))))+
-  scale_x_discrete(breaks=c(2004,2008,2012,2016,2020))+
+  scale_x_discrete(breaks=c(2004,2008,2012,2016,2020,2024))+
   theme_meg()+
   theme(axis.text.x=element_text(size=9),
           axis.title.x = element_blank(), plot.subtitle = element_text(size = 10, color = "dark gray", hjust=.5), plot.title = 
@@ -511,12 +510,13 @@ inspectiongraph <- ggplot(inspections, mapping=aes(x=factor(Year),
 #           element_text(lineheight = .1, size=10)) # SH
 
 #enforcement
-#[9:11,2] Obama
-# [17:19,2] Trump
-enforcementchange <- data.frame("Obama Average Count" =mean(enforcement[9:12,3]),
-                               "Trump Average Count" =mean(enforcement[17:20,3]),
-                               "Obama Average Fine" =mean(enforcement[9:12,2]),
-                               "Trump Average Fine" =mean(enforcement[17:20,2])) # SH
+#[9:12,2] Obama
+# [17:20,2] Trump [17:19] first three years
+# [21:23,2] Biden first three years
+enforcementchange <- data.frame("Trump Average Count" =mean(enforcement[17:19,3]),
+                               "Biden Average Count" =mean(enforcement[21:23,3]),
+                               "Trump Average Fine" =mean(enforcement[17:19,2]),
+                               "Biden Average Fine" =mean(enforcement[21:23,2])) # SH
 enforcementchange$PercentDifferenceCount <- as.numeric(100*(enforcementchange[1,2]-enforcementchange[1,1])/
                                                    enforcementchange[1,1])
 enforcementchange$PercentDifferenceFine <- as.numeric(100*(enforcementchange[1,4]-enforcementchange[1,3])/
@@ -541,8 +541,8 @@ enforcementactiongraph <- ggplot(enforcement, mapping=aes(x=factor(Year),y=Count
   geom_bar(stat="identity", show.legend = FALSE, alpha=.6)+
   scale_fill_manual(values=president_colors, breaks=c('Bush', 'Obama', 'Trump', 'Biden'))+
   labs(y="# Actions", x="Year", title="Enforcement Actions-CAA,CWA,RCRA\n", subtitle = "Potentially incomplete data")+
-  scale_y_continuous(expand=c(0,0), limits=c(0,max(enforcement$Count+(.2*max(enforcement$Count)))))+
-  scale_x_discrete(breaks=c(2004,2008,2012,2016,2020))+
+  scale_y_continuous(expand=c(0,0), limits=c(0,max(effluentviolations$Count+(.2*max(effluentviolations$Count)))))+
+  scale_x_discrete(breaks=c(2004,2008,2012,2016,2020,2024))+
   geom_text(aes(label=Count, family="Georgia", fontface="bold"), position = position_dodge(0.9), vjust = -0.1, size=3)+
   theme_meg()+
   theme(axis.text.x=element_text(size=9),
@@ -556,7 +556,7 @@ enforcementfinegraph <- enforcement %>% ggplot()+
   scale_fill_manual(values=president_colors, breaks=c('Bush', 'Obama', 'Trump', 'Biden'))+
   labs(y="Fines ($1000s)", x="Year", caption="Values adjusted for inflation. Note, the y-axis reports values in 1000's. A value of $2000\nrepresents $2,000,000 (2 million dollars).", title="Enforcement Fines-CAA,CWA,RCRA\n", subtitle="Potentially incomplete data")+
   scale_y_continuous(expand=c(0,0), limits=c(0,max(enforcement$Amountinthousands+(.2*max(enforcement$Amountinthousands)))))+
-  scale_x_discrete(breaks=c(2004,2008,2012,2016,2020))+
+  scale_x_discrete(breaks=c(2004,2008,2012,2016,2020,2024))+
   theme_meg()+
   theme(axis.text.x=element_text(size=9),
           axis.title.x = element_blank(), plot.subtitle = element_text(size = 10, color = "dark gray", hjust=.5), plot.title = 
@@ -568,7 +568,7 @@ enforcementfinegraph <- enforcement %>% ggplot()+
 
 # Highlights for  `r full_name`
 
-<h3>Comparing the four years of the Obama administration to the four years of the Trump administration, there has been a <span style="color:#569b5e">`r inspectionchange[1,5]`% `r inspectionchange[1,4]` in inspections,  `r enforcementchange[1,10]`%  `r enforcementchange[1,9]` in fines</span>, and a <span style="color:#569b5e">`r enforcementchange[1,8]`% `r enforcementchange[1,7]` in enforcement actions.</span></h3>
+<h3>Comparing the first three years of the Trump administration to those of the Biden administration, there was a <span style="color:#569b5e">`r inspectionchange[1,5]`% `r inspectionchange[1,4]` in inspections,  `r enforcementchange[1,10]`%  `r enforcementchange[1,9]` in fines</span>, and a <span style="color:#569b5e">`r enforcementchange[1,8]`% `r enforcementchange[1,7]` in enforcement actions.</span></h3>
 
 <br />
 
@@ -578,7 +578,7 @@ enforcementfinegraph <- enforcement %>% ggplot()+
 effluentgraph/inspectiongraph/enforcementactiongraph/enforcementfinegraph
 ```
 
-The reliability of data in figures throughout this report is indicated by the figure subtitle and degree of transparency. See the data limitations page (Page 10) to view the transparency-coding table and access state and congressional district data [here](https://colab.research.google.com/github/edgi-govdata-archiving/ECHO-Cross-Program/blob/master/AllPrograms.ipynb).
+The reliability of data in figures throughout this report is indicated by the figure subtitle and degree of transparency. See the data limitations page (Page 10) to view the transparency-coding table and access state and congressional district data [here](https://colab.research.google.com/github/edgi-govdata-archiving/ECHO-Cross-Program/blob/main/ECHO-Cross-Programs.ipynb).
 
 <p>When comparing the graphs, note that the vertical axes may have considerably different scales.</p>
 
@@ -663,8 +663,8 @@ The reliability of data in figures throughout this report is indicated by the fi
 <h4>Report Generated on `r format(Sys.time(), '%B %d, %Y')`<span style="padding-left:400px">Page 6</span></h4> 
 
 <h1><span style="margin-bottom:0px; padding-bottom:0px">Recent Non-Compliance in this District</span></h1>
-<font size="2">These figures show the ten facilities in this district with the worst history of environmental compliance based on their number of noncompliant quarters in the past 3 years (not necessarily consecutive). In some districts, for some programs, the number may be fewer than ten.
-The EPA data used shows records for the past 12 months for CAA and RCRA, and 13 months for CWA. The facilities shown with equal number of quarters in violation are selected at random. We only have room for ten in the graph, so we note when there are more facilities with the same number of quarters in violation.</font>
+<font size="2">These figures show the ten facilities in this district with the worst environmental compliance based on the number of noncompliant quarters in the past 3 years (not necessarily consecutive). In some districts, for some programs, the number may be fewer than ten.
+The EPA data shows records for the past 12 months for CAA and RCRA, and 13 months for CWA. The facilities shown with equal number of quarters in violation are selected at random. We only have room for ten in the graph, so we note when there are more facilities with the same number of quarters in violation.</font>
 
 ```{r echo=FALSE, out.extra='style="float: left; width: 50%; height: 30%; margin-right: 5%"'}
 #call in data and clean up 
@@ -884,7 +884,7 @@ if (nrows_df > 0) {
 
 <div class="text-box-info">
 
-The [Clean Air Act (CAA)](https://www.epa.gov/laws-regulations/summary-clean-air-act) regulates air emissions from mobile sources, such as cars, and stationary sources, such as refineries and power plants. *Please note, in this report we are only utilizing data from stationary air emission sources.* For the CAA, violations are most commonly recognized via inspections. Infrequent inspection usually results in fewer identified violations. If CAA violations have decreased, make sure to check whether inspections have also decreased as recent cuts in inspections are likely related to drops in CAA violations. Unless thorough inspections are occurring regularly, fewer violations does not necessarily mean air quality has improved. 
+The [Clean Air Act (CAA)](https://www.epa.gov/laws-regulations/summary-clean-air-act) regulates air emissions from mobile sources, such as cars, and stationary sources, such as refineries and power plants. *Please note, in this report we are only utilizing data from stationary air emission sources.* For the CAA, violations are most commonly recognized via inspections. Infrequent inspection usually results in fewer identified violations. If CAA violations have decreased, make sure to check whether inspections have also decreased, as cuts in inspections are likely related to drops in CAA violations. Unless thorough inspections are occurring regularly, fewer violations does not necessarily mean air quality has improved. 
 [More info on CAA](https://docs.google.com/presentation/d/1MzRQf3QeJqmYMSttdk0ghrXeOmOZgOV_MTynl-ri6Ik/edit?usp=sharing)
 
 </div>
@@ -906,7 +906,7 @@ if (nrows_df > 0) {
     scale_fill_manual(values=president_colors,breaks=c('Bush', 'Obama', 'Trump', 'Biden'))+
     labs(y=" # Violations", x="Year", title="CAA Violations\n", subtitle ="Very incomplete data")+
     scale_y_continuous(expand=c(0,0), limits=c(0,max(CAAviolations$Count+(.2*max(CAAviolations$Count)))))+
-    scale_x_discrete(breaks=c(2004,2008,2012, 2016, 2020))+
+    scale_x_discrete(breaks=c(2004,2008,2012, 2016, 2020,2024))+
     theme_meg()+
     theme(axis.text.x=element_text(size=10),
           axis.title.x = element_blank(), plot.subtitle = element_text(size = 10, color = "red", hjust=.5))
@@ -929,7 +929,7 @@ if (nrows_df > 0) {
    labs(y=" # Inspections", x="Year", title="CAA Inspections\n", subtitle ="Potentially incomplete data")+
     #ggtitle("CAA Inspections")+
     scale_y_continuous(expand=c(0,0), limits=c(0,max(CAAinspections$Count+(.2*max(CAAinspections$Count)))))+
-    scale_x_discrete(breaks=c(2004,2008,2012, 2016, 2020))+
+    scale_x_discrete(breaks=c(2004,2008,2012, 2016, 2020,2024))+
     theme_meg()+
     theme(axis.text.x=element_text(size=10),
           axis.title.x = element_blank(), plot.subtitle = element_text(size = 10, color = "dark gray", hjust=.5))
@@ -960,7 +960,7 @@ if (nrows_df > 0) {
     scale_fill_manual(values=president_colors,breaks=c('Bush', 'Obama', 'Trump', 'Biden'))+
     labs(y=" # Actions", x="Year", title="CAA Enforcement Actions\n", subtitle ="Potentially incomplete data")+
     scale_y_continuous(expand=c(0,0), limits=c(0,max(CAAenforcement$Count+(.2*max(CAAenforcement$Count)))))+
-    scale_x_discrete(breaks=c(2004,2008,2012, 2016, 2020))+
+    scale_x_discrete(breaks=c(2004,2008,2012, 2016, 2020,2024))+
     theme_meg()+
     theme(axis.text.x=element_text(size=10),
           axis.title.x = element_blank(), plot.subtitle = element_text(size = 10, color = "dark gray", hjust=.5))
@@ -969,7 +969,7 @@ if (nrows_df > 0) {
     scale_fill_manual(values=president_colors,breaks=c('Bush', 'Obama', 'Trump', 'Biden'), guide=guide_legend(breaks=c("Bush","Obama","Trump","Biden")))+
     labs(y=" Fines ($1000s)", x="Year", title="CAA Fines\n", subtitle ="Potentially incomplete data", caption="Values adjusted for inflation. Note, the y-axis reports values in\n1000's. A value of $2000 represents $2,000,000 (2 million dollars).")+
     scale_y_continuous(expand=c(0,0), limits=c(0,max(CAAenforcement$Amountinthousands+(.2*max(CAAenforcement$Amountinthousands)))))+
-    scale_x_discrete(breaks=c(2004,2008,2012, 2016, 2020))+
+    scale_x_discrete(breaks=c(2004,2008,2012, 2016, 2020,2024))+
     theme_meg()+
     theme(axis.text.x=element_text(size=10),
           axis.title.x = element_blank(), plot.subtitle = element_text(size = 10, color = "dark gray", hjust=.5))
@@ -984,7 +984,7 @@ knitr::opts_chunk$set(fig.width = 10,fig.height = 6)
 
 
 
-These figures show patterns of CAA inspections, violations, enforcement actions and fines in this district since 2001 based on available EPA data (see page 10). The bars are colored by the president. Figure transparency illustrates data reliability: the more transparent the figure is, the more uncertain the data. Data on CAA violations is particularly unreliable as emissions are often not directly monitored but are estimates. Inspection, enforcement, and fine data can be unreliable because state reporting to ECHO may be incomplete.For access to the Jupyter Notebook which pulls data from ECHO at the state and congressional district level, click [here](https://colab.research.google.com/github/edgi-govdata-archiving/ECHO-Cross-Program/blob/master/AllPrograms.ipynb). 
+These figures show patterns of CAA inspections, violations, enforcement actions and fines in this district since 2001 based on available EPA data (see page 10). The bars are colored by the president. Figure transparency illustrates data reliability: the more transparent the figure is, the more uncertain the data. Data on CAA violations is particularly unreliable as emissions are often not directly monitored but are estimates. Inspection, enforcement, and fine data can be unreliable because state reporting to ECHO may be incomplete. For access to the Jupyter Notebook which pulls data from ECHO at the state and congressional district level, click [here](https://github.com/edgi-govdata-archiving/ECHO-Cross-Program/blob/main/ECHO-Cross-Programs.ipynb). 
 
 <p>When comparing the graphs, note that the vertical axes may have considerably different scales.</p>
 
@@ -1017,7 +1017,7 @@ if (nrows_df > 0) {
     scale_fill_manual(values=president_colors,breaks=c('Bush', 'Obama', 'Trump', 'Biden'))+
     labs(y=" # Violations", x="Year", title="CWA Violations\n", subtitle ="Mostly complete data")+
     scale_y_continuous(expand=c(0,0), limits=c(0,max(CWAviolations$Count+(.2*max(CWAviolations$Count)))))+
-    scale_x_discrete(breaks=c(2004,2008,2012,2016,2020))+
+    scale_x_discrete(breaks=c(2004,2008,2012,2016,2020,2024))+
     theme_meg()+
     theme(axis.text.x=element_text(size=10),
           axis.title.x = element_blank(), plot.subtitle = element_text(color="darkgreen",hjust=.5))
@@ -1040,7 +1040,7 @@ if (nrows_df > 0) {
     scale_fill_manual(values=president_colors,breaks=c('Bush', 'Obama', 'Trump', 'Biden'))+
     labs(y=" # Inspections", x="Year", title="CWA Inspections\n", subtitle ="Potentially incomplete data")+
     scale_y_continuous(expand=c(0,0), limits=c(0,max(CWAinspections$Count+(.2*max(CWAinspections$Count)))))+
-    scale_x_discrete(breaks=c(2004,2008,2012,2016,2020))+
+    scale_x_discrete(breaks=c(2004,2008,2012,2016,2020,2024))+
     theme_meg()+
     theme(axis.text.x=element_text(size=10),
           axis.title.x = element_blank(), plot.subtitle = element_text(size = 10, color = "dark gray", hjust=.5))}
@@ -1070,7 +1070,7 @@ if (nrows_df > 0) {
     scale_fill_manual(values=president_colors,breaks=c('Bush', 'Obama', 'Trump', 'Biden'))+
     labs(y=" # Actions", x="Year", title="CWA Enforcement Actions\n", subtitle="Potentially incomplete data")+
     scale_y_continuous(expand=c(0,0), limits=c(0,max(CWAenforcement$Count+(.2*max(CWAenforcement$Count)))))+
-    scale_x_discrete(breaks=c(2004,2008,2012, 2016,2020))+
+    scale_x_discrete(breaks=c(2004,2008,2012, 2016,2020,2024))+
     theme_meg()+
     theme(axis.text.x=element_text(size=10),
           axis.title.x = element_blank(), plot.subtitle = element_text(size = 10, color = "dark gray", hjust=.5))
@@ -1080,7 +1080,7 @@ if (nrows_df > 0) {
     labs(y=" Fines($1000s)", x="Year", title="CWA Fines\n", subtitle="Potentially incomplete data", caption="Values adjusted for inflation. Note, the y-axis reports values in\n1000's. A value of $2000 represents $2,000,000 (2 million dollars).")+
     #ggtitle("CWA Fines")+
     scale_y_continuous(expand=c(0,0), limits=c(0,max(CWAenforcement$Amountinthousands+(.2*max(CWAenforcement$Amountinthousands)))))+
-    scale_x_discrete(breaks=c(2004,2008,2012, 2016,2020))+
+    scale_x_discrete(breaks=c(2004,2008,2012, 2016,2020,2024))+
     theme_meg()+
     theme(axis.text.x=element_text(size=10),
           axis.title.x = element_blank(), plot.subtitle = element_text(size = 10, color = "dark gray", hjust=.5))
@@ -1102,8 +1102,7 @@ if (hasCWAenforcement) {
 
 
 `r no_enforcement`
-These figures show patterns of Clean Water Act inspections, violations, enforcement actions and fines in this district since 2001 based on available EPA data (see page 10). The bars are colored by the president. Figure transparency illustrates data reliability: the more transparent, the more uncertain the data. Data on CWA violations is particularly reliable as effluent violations are automatically reported to EPA.
-For access to the Jupyter Notebook which pulls data from ECHO at the state and congressional district level, click [here](https://colab.research.google.com/github/edgi-govdata-archiving/ECHO-Cross-Program/blob/master/AllPrograms.ipynb).
+These figures show patterns of Clean Water Act inspections, violations, enforcement actions and fines in this district since 2001 based on available EPA data (see page 10). The bars are colored by the president. Figure transparency illustrates data reliability: the more transparent, the more uncertain the data. Data on CWA violations is particularly reliable as effluent violations are automatically reported to EPA. For access to the Jupyter Notebook which pulls data from ECHO at the state and congressional district level, click [here](https://github.com/edgi-govdata-archiving/ECHO-Cross-Program/blob/main/ECHO-Cross-Programs.ipynb).
 
 <p>When comparing the graphs, note that the vertical axes may have considerably different scales.</p>
 
@@ -1142,7 +1141,7 @@ if (nrows_df > 0) {
     labs(y=" # Violations", x="Year", title = "RCRA Violations\n", subtitle = "Very incomplete data")+
     #ggtitle("RCRA violations")+
     scale_y_continuous(expand=c(0,0), limits=c(0,max(RCRAviolations$Count+(.2*max(RCRAviolations$Count)))))+
-    scale_x_discrete(breaks=c(2004,2008,2012,2016,2020))+
+    scale_x_discrete(breaks=c(2004,2008,2012,2016,2020,2024))+
     theme_meg()+
     theme(axis.text.x=element_text(size=10),
           axis.title.x = element_blank(), plot.subtitle = element_text(size = 10, color = "red", hjust=.5))
@@ -1162,7 +1161,7 @@ if (nrows_df > 0) {
     labs(y=" # Inspections", x="Year", title="RCRA Inspections\n", subtitle="Potentially incomplete data")+
     #ggtitle("RCRA Inspections")+
     scale_y_continuous(expand=c(0,0), limits=c(0,max(RCRAinspections$Count+(.2*max(RCRAinspections$Count)))))+
-    scale_x_discrete(breaks=c(2004,2008,2012,2016, 2020))+
+    scale_x_discrete(breaks=c(2004,2008,2012,2016, 2020,2024))+
     theme_meg()+
     theme(axis.text.x=element_text(size=10),
           axis.title.x = element_blank(), plot.subtitle = element_text(size = 10, color = "dark gray", hjust=.5))
@@ -1190,7 +1189,7 @@ if (nrows_df > 0) {
     scale_fill_manual(values=president_colors,breaks=c('Bush', 'Obama', 'Trump', 'Biden'))+
     labs(y=" # Actions", x="Year", title="RCRA Enforcement Actions\n", subtitle = "Potentially incomplete data")+
     scale_y_continuous(expand=c(0,0), limits=c(0,max(RCRAenforcement$Count+(.2*max(RCRAenforcement$Count)))))+
-    scale_x_discrete(breaks=c(2004,2008,2012, 2016,2020))+
+    scale_x_discrete(breaks=c(2004,2008,2012, 2016,2020,2024))+
     theme_meg()+
     theme(axis.text.x=element_text(size=10),
           axis.title.x = element_blank(), plot.subtitle = element_text(size = 10, color = "dark gray", hjust=.5))  
@@ -1199,7 +1198,7 @@ if (nrows_df > 0) {
     scale_fill_manual(values=president_colors,breaks=c('Bush', 'Obama', 'Trump', 'Biden'), guide=guide_legend(breaks=c("Bush","Obama","Trump","Biden")))+
     labs(y=" Fines($1000s)", x="Year", title="RCRA Fines\n", subtitle = "Potentially incomplete data", caption="Values adjusted for inflation. Note, the y-axis reports values in\n1000's. A value of $2000 represents $2,000,000 (2 million dollars).")+
     scale_y_continuous(expand=c(0,0), limits=c(0,max(RCRAenforcement$Amountinthousands+(.2*max(RCRAenforcement$Amountinthousands)))))+
-    scale_x_discrete(breaks=c(2004,2008,2012, 2016,2020))+
+    scale_x_discrete(breaks=c(2004,2008,2012, 2016,2020,2024))+
     theme_meg()+
     theme(axis.text.x=element_text(size=10),
           axis.title.x = element_blank(), plot.subtitle = element_text(size = 10, color = "dark gray", hjust=.5))
@@ -1217,7 +1216,7 @@ if (! file.exists(image_loc)) {
 }
 ```	
 
-These figures show patterns of RCRA inspections, violations, enforcement actions and fines in this district since 2001 based on available EPA data (see page 10). The bars are colored by the president. Figure transparency illustrates data reliability: the more transparent, the more uncertain the data. Data on RCRA violations is particularly unreliable as violations are not necessarily directly measured. Inspection, enforcement, and fine data can be unreliable because state reporting to ECHO may be incomplete.For access to the Jupyter Notebooks which pull data from ECHO at the state and congressional district level, click [here](https://colab.research.google.com/github/edgi-govdata-archiving/ECHO-Cross-Program/blob/master/AllPrograms.ipynb).
+These figures show patterns of RCRA inspections, violations, enforcement actions and fines in this district since 2001 based on available EPA data (see page 10). The bars are colored by the president. Figure transparency illustrates data reliability: the more transparent, the more uncertain the data. Data on RCRA violations is particularly unreliable as violations are not necessarily directly measured. Inspection, enforcement, and fine data can be unreliable because state reporting to ECHO may be incomplete. For access to the Jupyter Notebooks which pull data from ECHO at the state and congressional district level, click [here](https://github.com/edgi-govdata-archiving/ECHO-Cross-Program/blob/main/ECHO-Cross-Programs.ipynb).
 
 <p>When comparing the graphs, note that the vertical axes may have considerably different scales.</p>
 
@@ -1251,7 +1250,7 @@ These figures show patterns of RCRA inspections, violations, enforcement actions
 
 ### This member of Congress serves on the following committees relevant to this report: 
 
-```{r echo=FALSE, results='asis'}
+```{r echo=FALSE, include=FALSE, results='asis'}
 for (committee in committees) {
   cat('\n')
   cat(sprintf("## Committee Name: %s", committee[[1]]$name), '\n')
@@ -1290,8 +1289,8 @@ In this report, we have divided data issues into three categories, using transpa
 
 <a ><img src="logosandimages/datareliabilitytable.png" style="float: center; width: 100%" ></a>
 
-### Notes on 2021 data
-We do not include data from `r strtoi(target_year)+1` because we are only part way through the year. It is important to note, as well, that data from 2020 will be strongly influenced by the EPA’s decision to suspend, from March through August, pollution monitoring requirements for industries that claim to have been impacted by COVID-19. EDGI’s report on this policy [“More Permission to Pollute”](https://envirodatagov.org/more-permission-to-pollute-the-decline-of-epa-enforcement-and-industry-compliance-during-covid/) found that, despite relatively few facilities claiming the COVID exemption, a much larger proportion of facilities are still failing to report environmental data. 
+### Notes on `target_year` data
+We do not include data from `r strtoi(target_year)+1` because we are only part way through the year.
 
 \pagebreak
 
@@ -1303,23 +1302,21 @@ We do not include data from `r strtoi(target_year)+1` because we are only part w
 
 ## Page 3: Comparisons to past years
 
-To enable direct comparison between changes in enforcement and violations over the years, we calculate the percent change in Clean Water Act violations and enforcement actions per district or state between Trump’s years in office, and the historical average in each district from 2001 to 2016. We analyze data since 2001, as EPA is most confident in its own data since 2001. We analyze violations data just for the Clean Water Act because that data is the most complete due to routine digital reporting requirements. We analyze all forms of enforcement actions, informal and formal. All data is drawn from the ECHO database. 
+To enable direct comparison between changes in enforcement and violations over the years, we calculate the percent change in Clean Water Act violations and enforcement actions per district or state between Biden’s first three years in office, and the historical average in each district from 2001 to 2020. We analyze data since 2001, as EPA is most confident in its own data since 2001. We analyze violations data just for the Clean Water Act because that data is the most complete due to routine digital reporting requirements. We analyze all forms of enforcement actions, informal and formal. All data is drawn from the ECHO database. 
 
 We describe rates to be “Much Worse” if the percent increase in violations or decrease in enforcement actions is greater than 100%, “Worse” if the percent change is between 0% and 100% percent and “the same” if there is no change. 
 
 We describe rates to be “Better” if violation rates decreased or enforcement rates increased by 0% to 100% and “Much Better” if rates of enforcement or compliance increased by more than 100%.
 
-Figures for the one complete year of the Biden Administration for which data is available (2021) is shown but not included in the comparisons.
 <br />
 
 
 ## Page 4: Highlights from this District
 
-Trump and Obama Administration comparison: To enable comparison to a more recent administration we compare levels of inspection and enforcement in the first three years of the Obama administration to the first three years of the Trump administration. For these figures inspections and enforcement numbers for the CWA, CAA and RCRA are combined. 
+Trump and Biden Administration comparison: We compare levels of inspection and enforcement in the first three years of the Trump administration to those of the Biden administration. For these figures inspections and enforcement numbers for the CWA, CAA and RCRA are combined. 
 
 Does a reduction in violations indicate better adherence or less oversight?
 
-Figures for the one complete year of the Biden Administration for which data is available (2021) is shown but not included in the comparisons.
 <br />
 
 ### Facilities in Violation (non-compliant facilities): 
@@ -1343,7 +1340,7 @@ To generate a comparison across Congressional Districts, each of which has a dif
 
 ## Page 6: Recent Noncompliance in this District
 
-To examine facilities with consistent records of noncompliance, we provide information on the 10 facilities with the most quarters of non-compliance under the CAA, CWA, and RCRA. Important notes here: These charts show the number of quarters of non-compliance, not exactly *which* quarters they were out of compliance. Non-compliance shown here may not be consecutive. Quarters can also be confusing: there are 4 quarters in a year, so 12 quarters equals 3 years of time. In some locations there may be more than 10 facilities out of compliance for all 12 quarters. We limit our figures to 10 facilities for space and clarity. A list of 20 facilities can be found in the Jupyter notebook for that district or state. Additionally, the x-axis for these figures displays a maximum of 12 quarters for the CAA and RCRA, but 13 for the CWA. Under the CWA, violations are reported automatically, so we have violations information for the first three quarters of 2020 for the CWA, and only the first two quarters of 2020 for CAA and RCRA. 
+To examine facilities with consistent records of noncompliance, we provide information on the 10 facilities with the most quarters of non-compliance under the CAA, CWA, and RCRA. Important notes here: these charts show the number of quarters of non-compliance, not exactly *which* quarters they were out of compliance. Non-compliance shown here may not be consecutive. Quarters can also be confusing: there are 4 quarters in a year, so 12 quarters equals 3 years of time. In some locations there may be more than 10 facilities out of compliance for all 12 quarters. We limit our figures to 10 facilities for space and clarity. A list of 20 facilities can be found in the Jupyter notebook for that district or state. Additionally, the x-axis for these figures displays a maximum of 12 quarters for the CAA and RCRA, but 13 for the CWA.
 
 
 \pagebreak
@@ -1360,11 +1357,11 @@ Environmental Enforcement Watch (EEW) is a collaborative project across working 
 <h3><span style="color:#569b5e">A full list of EEW members, including their roles in this project, can be found [here](https://www.environmentalenforcementwatch.org/about/).</span></h3> 
 
 ### About this Project 
-This EEW project aims to make EPA data more directly accessible to the public and their representatives.In our first iteration of this project, we released reports for the 76  Senators and House Representatives that sit on the House Energy & Commerce Committee and the Senate Environment & Public Works Committee. We are now making report cards available for *every* state and congressional district in the US. By providing a novel look at the chronic state of non-compliance, we hope to provide representatives with the information they need to evaluate the state of environmental law compliance and enforcement in their communities so they might more effectively hold EPA accountable.
+This EEW project aims to make EPA data more directly accessible to the public and their representatives. By providing a novel look at the chronic state of non-compliance, we hope to provide representatives with the information they need to evaluate the state of environmental law compliance and enforcement in their communities so they might more effectively hold EPA accountable.
 
 
 ### Useful Links
-[State and Congressional District Jupyter Notebooks](https://colab.research.google.com/github/edgi-govdata-archiving/ECHO-Cross-Program/blob/master/AllPrograms.ipynb) | 
+[State and Congressional District Jupyter Notebooks](https://colab.research.google.com/github/edgi-govdata-archiving/ECHO-Cross-Program/blob/main/ECHO-Cross-Programs.ipynb) | 
 [National-Level Jupyter Notebook](https://colab.research.google.com/github/edgi-govdata-archiving/ECHO-Cross-Program/blob/master/ECHO_National.ipynb) |
 [Github Repository to produce reports](https://github.com/edgi-govdata-archiving/CD-report) | 
 [EEW website](https://www.environmentalenforcementwatch.org) |
