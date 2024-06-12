@@ -5,10 +5,10 @@ output:
     number_sections: false
     css: ["custom_current.css"]
 params: 
-  cd_state: "TX34"
-  full_name: "Texas 34th District"
-  state: "TX"
-  district: "34"
+  cd_state: "AR01"
+  full_name: "Arkansas 1st District"
+  state: "AR"
+  district: "01"
 ---
 
 ```{r setup, include=FALSE}
@@ -1250,7 +1250,7 @@ These figures show patterns of RCRA inspections, violations, enforcement actions
 
 ### This member of Congress serves on the following committees relevant to this report: 
 
-```{r echo=FALSE, include=FALSE, results='asis'}
+```{r echo=FALSE, results='asis'}
 for (committee in committees) {
   cat('\n')
   cat(sprintf("## Committee Name: %s", committee[[1]]$name), '\n')

@@ -11,13 +11,6 @@ from Region import Region, get_inflation
 def get_active_facs(mode, state, region, cds_or_counties):
     sql = 'select * from "ECHO_EXPORTER" where '
     sql += '"FAC_STATE" = \'{}\''.format(state)
-    """ Old code for FAC_DERIVED_CD113
-    if mode == 'Congressional District':
-        if region != 0:
-            sql += ' and "FAC_DERIVED_CD113" = {}'
-            sql = sql.format(str(region))
-    elif mode == 'County':
-    """
     if mode == 'County':
         echo_counties = cds_or_counties[cds_or_counties['County'] == region]['FAC_COUNTY']
         county_str = "\',\'".join(echo_counties.tolist())
