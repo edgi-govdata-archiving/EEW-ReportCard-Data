@@ -7,8 +7,8 @@ output:
 params: 
   cd_state: "AR01"
   full_name: "Arkansas 1st District"
-  state: "AR"
-  district: "01"
+  state: "AK"
+  district: "00"
 ---
 
 ```{r setup, include=FALSE}
@@ -267,9 +267,9 @@ theme_meg <- function () {
 }
 
 if (CD == '00') {
-  map_src <- paste('State_maps/',params$state,'_map.png',sep='')
+  map_src <- paste('State_maps/map_',params$state,'.png',sep='')
 } else {
-  map_src <- paste('CD_maps/',params$state,CD,'_map.png',sep='')
+  map_src <- paste('CD_maps/map_',params$state,CD,'.png',sep='')
 }
 ```
 

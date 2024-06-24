@@ -35,9 +35,9 @@ render_report <- function(region,
                           state,
                           district) {
 
-  template <- "CD_template_2022.rmd"
+  template <- "CD_template_2024.rmd"
 
-  out_file <- paste0(cd_state, "_2021")
+  out_file <- paste0(cd_state, "_2023")
 
   parameters <- list(cd_state = cd_state,
                      full_name=full_name,

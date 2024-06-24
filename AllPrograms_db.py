@@ -26,6 +26,10 @@ def get_active_facs(mode, state, region, cds_or_counties):
         join = region_echo_data.sjoin(cds_or_counties, how="left")
         join['CD118FP'] = pd.to_numeric(join['CD118FP'], errors='coerce')
         region_echo_data = join.loc[join["CD118FP"] == float(region)]
+    elif mode == 'State':
+        region_echo_data['geometry'] = geopandas.GeoSeries.from_wkb(region_echo_data['wkb_geometry'])
+        region_echo_data.drop('wkb_geometry', axis=1, inplace=True)
+        region_echo_data = geopandas.GeoDataFrame(region_echo_data, crs=4269)
     return region_echo_data
 
 
@@ -404,15 +408,26 @@ def make_per_1000(db, focus_year):
         The end year for the results.
     """
 
+    exclude_states = ['AS', 'MX', 'GM', 'MB', 'VI']
+    one_cd_states = ['AK', 'DC', 'DE', 'PR', 'ND', 'SD', 'VT', 'WY']
+    oner_df = pd.DataFrame()
     start_year = int(focus_year) - 4
     total_df = get_all_per_1000(db, start_year)
     for year in range(start_year + 1, int(focus_year)):
         df = get_all_per_1000(db, year)
-        df = df[(df['CD.State'] != 'MX') & (df['CD.State'] != 'GM') &
-                (df['CD.State'] != 'MB')]
+        for s in exclude_states:
+            df = df[df['CD.State'] != s]
+        # df = df[(df['CD.State'] != 'AS') & (df['CD.State'] != 'MX') & (df['CD.State'] != 'GM') &
+        #         (df['CD.State'] != 'MB')]
         df.set_index('CD.State')
         total_df['CD.State'] = df['CD.State']
         total_df['Region'] = df['Region']
+        for s in one_cd_states:
+            oner_df = pd.concat([oner_df, total_df[total_df['CD.State'] == s]], ignore_index=True)
+            state_cd = '{}-00'.format(s)
+            oner_df.loc[oner_df['CD.State'] == s, 'Region'] = 'Congressional District'
+            oner_df.loc[oner_df['CD.State'] == s, 'CD.State'] = state_cd
+        total_df = pd.concat([total_df, oner_df], ignore_index=True)
 
     (state_per_1000, cd_per_1000, county_per_1000) = AllPrograms_util.build_all_per_1000(total_df)
 
@@ -518,24 +533,26 @@ def _get_cd_per_1000(cursor, state, cd, year):
             num_events[(program, event_type)] = 0
     if cd == 0:
         # This is a single-cd state.
-        # Include all identified cds for the state.
+        # The data for the CD will be same as the data for the state.
         sql = 'select rowid from regions where state=\'{}\' and region_type=\'State\''
         sql = sql.format(state)
         cursor.execute(sql)
-        region_ids = cursor.fetchall()
+        region_id = cursor.fetchone()
         active = 0
+        if region_id is None:
+            return []
+        region_id = region_id[0]
         for program in ['CAA', 'CWA', 'RCRA']:
-            for region_id in region_ids:
-                active += _get_active_for_region(cursor, program, region_id)
-                for event_type in ['inspections', 'violations', 'enforcements']:
-                    num_events[(program, event_type)] += _get_events_for_region(cursor,
-                                                                                program,
-                                                                                event_type,
-                                                                                region_id,
-                                                                                year)
-                for event_type in ['inspections', 'violations', 'enforcements']:
-                    num_events[(program, event_type)] = 0 if active == 0 \
-                        else 1000. * num_events[(program, event_type)] / active
+            active += _get_active_for_region(cursor, program, region_id)
+            for event_type in ['inspections', 'violations', 'enforcements']:
+                num_events[(program, event_type)] += _get_events_for_region(cursor,
+                                                                            program,
+                                                                            event_type,
+                                                                            region_id,
+                                                                            year)
+            for event_type in ['inspections', 'violations', 'enforcements']:
+                num_events[(program, event_type)] = 0 if active == 0 \
+                    else 1000. * num_events[(program, event_type)] / active
         return (num_events[('CAA', 'inspections')],
                 num_events[('CAA', 'violations')],
                 num_events[('CAA', 'enforcements')],

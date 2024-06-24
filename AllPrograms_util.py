@@ -32,7 +32,10 @@ def get_region_rowid(cursor, region_mode, state, region):
     ins_sql = "insert into regions (region_type,state,region) values ('{}','{}','{}')"
     if region is not None:
         if region_mode == 'Congressional District':
-            sql = sel_cd_sql.format(region_mode, state, str(region).zfill(2))
+            if region == 0:
+                sql = "select rowid from regions where state='{}'".format(state)
+            else:
+                sql = sel_cd_sql.format(region_mode, state, str(region).zfill(2))
         elif region_mode == 'County':
             sql = sel_cd_sql.format(region_mode, state, region)
     else:

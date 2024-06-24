@@ -124,8 +124,6 @@ def main(argv):
 
     for state, region in state_regions:
         rowdata = []
-        if region is None:
-            continue
         active_facs = {"CAA": AllPrograms_util.program_count(
             region_echo_active[(state, region)], "CAA", "AIR_FLAG", state, region
         ), "CWA": AllPrograms_util.program_count(
