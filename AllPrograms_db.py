@@ -408,8 +408,8 @@ def make_per_1000(db, focus_year):
         The end year for the results.
     """
 
-    exclude_states = ['AS', 'MX', 'GM', 'MB', 'VI']
-    one_cd_states = ['AK', 'DC', 'DE', 'PR', 'ND', 'SD', 'VT', 'WY']
+    exclude_states = ['AS', 'MX', 'GM', 'MB']
+    one_cd_states = ['AK', 'DC', 'DE', 'PR', 'ND', 'SD', 'VI', 'VT', 'WY']
     oner_df = pd.DataFrame()
     start_year = int(focus_year) - 4
     total_df = get_all_per_1000(db, start_year)
@@ -420,14 +420,34 @@ def make_per_1000(db, focus_year):
         # df = df[(df['CD.State'] != 'AS') & (df['CD.State'] != 'MX') & (df['CD.State'] != 'GM') &
         #         (df['CD.State'] != 'MB')]
         df.set_index('CD.State')
-        total_df['CD.State'] = df['CD.State']
-        total_df['Region'] = df['Region']
-        for s in one_cd_states:
-            oner_df = pd.concat([oner_df, total_df[total_df['CD.State'] == s]], ignore_index=True)
-            state_cd = '{}-00'.format(s)
-            oner_df.loc[oner_df['CD.State'] == s, 'Region'] = 'Congressional District'
-            oner_df.loc[oner_df['CD.State'] == s, 'CD.State'] = state_cd
-        total_df = pd.concat([total_df, oner_df], ignore_index=True)
+        total_df['CAA.Insp.per.1000'] += df['CAA.Insp.per.1000']
+        total_df['CAA.Viol.per.1000'] += df['CAA.Viol.per.1000']
+        total_df['CAA.Enf.per.1000'] += df['CAA.Enf.per.1000']
+        total_df['CWA.Insp.per.1000'] += df['CWA.Insp.per.1000']
+        total_df['CWA.Viol.per.1000'] += df['CWA.Viol.per.1000']
+        total_df['CWA.Enf.per.1000'] += df['CWA.Enf.per.1000']
+        total_df['RCRA.Insp.per.1000'] += df['RCRA.Insp.per.1000']
+        total_df['RCRA.Viol.per.1000'] += df['RCRA.Viol.per.1000']
+        total_df['RCRA.Enf.per.1000'] += df['RCRA.Enf.per.1000']
+        # total_df['CD.State'] = df['CD.State']
+        # total_df['Region'] = df['Region']
+   
+    total_df['CAA.Insp.per.1000'] /= 5
+    total_df['CAA.Viol.per.1000'] /= 5
+    total_df['CAA.Enf.per.1000'] /= 5
+    total_df['CWA.Insp.per.1000'] /= 5
+    total_df['CWA.Viol.per.1000'] /= 5
+    total_df['CWA.Enf.per.1000'] /= 5
+    total_df['RCRA.Insp.per.1000'] /= 5
+    total_df['RCRA.Viol.per.1000'] /= 5
+    total_df['RCRA.Enf.per.1000'] /= 5
+    
+    for s in one_cd_states:
+        oner_df = pd.concat([oner_df, total_df[total_df['CD.State'] == s]], ignore_index=True)
+        state_cd = '{}-00'.format(s)
+        oner_df.loc[oner_df['CD.State'] == s, 'Region'] = 'Congressional District'
+        oner_df.loc[oner_df['CD.State'] == s, 'CD.State'] = state_cd
+    # total_df = pd.concat([total_df, oner_df], ignore_index=True)
 
     (state_per_1000, cd_per_1000, county_per_1000) = AllPrograms_util.build_all_per_1000(total_df)
 

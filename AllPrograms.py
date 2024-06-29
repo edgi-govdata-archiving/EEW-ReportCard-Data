@@ -164,8 +164,6 @@ def main(argv):
     data_sets = make_data_sets(data_set_list)
     print("{} data sets:".format(_region_mode))
     for state, region in state_regions:
-        if region is None and _region_mode != 'State':
-            continue
         for ds_key, data_set in data_sets.items():
             print(state + "-" + str(region) + " - " + ds_key)
             data_set.store_results(
@@ -213,53 +211,51 @@ def main(argv):
     """
 
     for state, region in state_regions:
-        if region is None:
-            continue
-        else:
-            ds_type = ("{}".format(_region_mode), str(region), state)
-            rowdata_region = []
-            rd = AllPrograms_util.get_rowdata(
-                region_echo_active[(state, region)], "CAA_3YR_COMPL_QTRS_HISTORY", "AIR_FLAG"
-            )
-            rowdata_region.append(["CAA", rd[0], rd[1]])
-            num_fac = rd[1]
-            message = (
-                "CAA Penalties - {} District: {} - {} facilities with violations in {}"
-            )
-            print(message.format(state, region, num_fac, focus_year))
-            df_caa = AllPrograms_db.write_enf_per_fac(_database, _region_mode,
-                "CAA", data_sets["CAA Penalties"], ds_type, num_fac, focus_year)
+        region_value = None if region is None else str(region)
+        ds_type = ("{}".format(_region_mode), region_value, state)
+        rowdata_region = []
+        rd = AllPrograms_util.get_rowdata(
+            region_echo_active[(state, region)], "CAA_3YR_COMPL_QTRS_HISTORY", "AIR_FLAG"
+        )
+        rowdata_region.append(["CAA", rd[0], rd[1]])
+        num_fac = rd[1]
+        message = (
+            "CAA Penalties - {} District: {} - {} facilities with violations in {}"
+        )
+        print(message.format(state, region, num_fac, focus_year))
+        df_caa = AllPrograms_db.write_enf_per_fac(_database, _region_mode,
+            "CAA", data_sets["CAA Penalties"], ds_type, num_fac, focus_year)
 
-            print("  CWA")
-            rd = AllPrograms_util.get_rowdata(
-                region_echo_active[(state, region)], "CWA_13QTRS_COMPL_HISTORY", "NPDES_FLAG"
-            )
-            rowdata_region.append(["CWA", rd[0], rd[1]])
-            num_fac = rd[1]
-            message = (
-                "CWA Penalties - {} District: {} - {} facilities with violations in {}"
-            )
-            print(message.format(state, region, num_fac, focus_year))
-            df_cwa = AllPrograms_db.write_enf_per_fac(_database, _region_mode,
-                "CWA", data_sets["CWA Penalties"], ds_type, num_fac, focus_year
-            )
+        print("  CWA")
+        rd = AllPrograms_util.get_rowdata(
+            region_echo_active[(state, region)], "CWA_13QTRS_COMPL_HISTORY", "NPDES_FLAG"
+        )
+        rowdata_region.append(["CWA", rd[0], rd[1]])
+        num_fac = rd[1]
+        message = (
+            "CWA Penalties - {} District: {} - {} facilities with violations in {}"
+        )
+        print(message.format(state, region, num_fac, focus_year))
+        df_cwa = AllPrograms_db.write_enf_per_fac(_database, _region_mode,
+            "CWA", data_sets["CWA Penalties"], ds_type, num_fac, focus_year
+        )
 
-            print("  RCRA")
-            rd = AllPrograms_util.get_rowdata(
-                region_echo_active[(state, region)], "RCRA_3YR_COMPL_QTRS_HISTORY", "RCRA_FLAG"
-            )
-            rowdata_region.append(["RCRA", rd[0], rd[1]])
-            num_fac = rd[1]
-            message = (
-                "RCRA Penalties - {} District: {} - {} facilities with violations in {}"
-            )
-            print(message.format(state, region, num_fac, focus_year))
-            df_rcra = AllPrograms_db.write_enf_per_fac(_database, _region_mode,
-                "RCRA", data_sets["RCRA Penalties"], ds_type, num_fac, focus_year
-            )
+        print("  RCRA")
+        rd = AllPrograms_util.get_rowdata(
+            region_echo_active[(state, region)], "RCRA_3YR_COMPL_QTRS_HISTORY", "RCRA_FLAG"
+        )
+        rowdata_region.append(["RCRA", rd[0], rd[1]])
+        num_fac = rd[1]
+        message = (
+            "RCRA Penalties - {} District: {} - {} facilities with violations in {}"
+        )
+        print(message.format(state, region, num_fac, focus_year))
+        df_rcra = AllPrograms_db.write_enf_per_fac(_database, _region_mode,
+            "RCRA", data_sets["RCRA Penalties"], ds_type, num_fac, focus_year
+        )
 
-            AllPrograms_db.write_recurring_violations(_database, _region_mode, 
-                                                      state, region, rowdata_region)
+        AllPrograms_db.write_recurring_violations(_database, _region_mode, 
+                                                  state, region, rowdata_region)
 
         # Removed total_enf_per_fac.  It can be calculated from the individual
         # program records
@@ -286,8 +282,6 @@ def main(argv):
     effluent_violations_focus_year = {}  # For use later
 
     for state, region in state_regions:
-        if region is None and _region_mode != 'State':
-            continue
         region_value = region
         if _region_mode != 'State':
             region_value = str(region)

@@ -5,13 +5,23 @@ output:
     number_sections: false
     css: ["custom_current.css"]
 params: 
-  cd_state: "AR01"
-  full_name: "Arkansas 1st District"
-  state: "AK"
+  cd_state: "DE00"
+  full_name: "Delaware's Congressional District"
+  state: "DE"
   district: "00"
 ---
 
 ```{r setup, include=FALSE}
+#  cd_state: "AK00"
+#  full_name: "Alaska's Congressional District"
+#  state: "AK"
+#  district: "00"
+#  cd_state: "AL05"
+#  full_name: "Alabama's 5th Congressional District"
+#  state: "AL"
+#  district: "05"
+
+
 library(reticulate)
 library(rlist)
 library(data.table)
@@ -44,7 +54,7 @@ full_name <- params$full_name
 # So if the CD variable is "00", we will use a Region_CD variable
 # when getting the region data.
 Region_CD <- CD
-if (Region_CD == "00") Region_CD <- "01"
+# if (Region_CD == "00") Region_CD <- "01"
 
 output_loc <- paste("Output/", params$cd_state, "/", sep = "")
 dir.create(output_loc)
@@ -133,7 +143,8 @@ RCRAinspections <- region$get_events('inspections', 'RCRA')
 CAAbadactors <- region$get_non_compliants('CAA')
 CWAbadactors <- region$get_non_compliants('CWA')
 RCRAbadactors <- region$get_non_compliants('RCRA')
-ranked <- round(region$get_ranked() * 100.)
+ranked_raw <- region$get_ranked()
+ranked <- round(ranked_raw * 100.)
 ranked_t <- data.table::transpose(ranked)
 ranked_t["Program"] <- c("CAA", "CAA", "CAA", "CWA", "CWA","CWA","RCRA", "RCRA","RCRA")
 ranked_t["Metric"] <- c("Viol/Insp", "Violations", "Viol/Enf", "Viol/Insp", "Violations", "Viol/Enf", "Viol/Insp", "Violations", "Viol/Enf")

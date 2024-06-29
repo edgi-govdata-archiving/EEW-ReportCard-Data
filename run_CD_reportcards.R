@@ -17,7 +17,7 @@ if (is.null(opt$states)){
   stop("A regular expression identifying states to be selected must be supplied.n", call.=FALSE)
 }
 
-load("names.rda")
+load("cd_118.rda")
 names <- cd2
 rm(cd2)
 

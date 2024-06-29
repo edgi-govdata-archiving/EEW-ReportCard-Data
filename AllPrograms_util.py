@@ -30,7 +30,9 @@ def get_region_rowid(cursor, region_mode, state, region):
     sel_cd_sql = sel_sql + " and region = '{}'"
     sel_state_sql = sel_sql + " and region = ''"
     ins_sql = "insert into regions (region_type,state,region) values ('{}','{}','{}')"
-    if region is not None:
+    if region_mode == 'State' or region is None:
+        sql = sel_state_sql.format("State", state)
+    else:
         if region_mode == 'Congressional District':
             if region == 0:
                 sql = "select rowid from regions where state='{}'".format(state)
@@ -38,8 +40,6 @@ def get_region_rowid(cursor, region_mode, state, region):
                 sql = sel_cd_sql.format(region_mode, state, str(region).zfill(2))
         elif region_mode == 'County':
             sql = sel_cd_sql.format(region_mode, state, region)
-    else:
-        sql = sel_state_sql.format("State", state)
     cursor.execute(sql)
     result = cursor.fetchone()
     if result is not None:

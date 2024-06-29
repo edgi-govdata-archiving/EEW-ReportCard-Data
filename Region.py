@@ -66,7 +66,11 @@ class Region:
         if type != None:
             conn = sqlite3.connect(self.db)
             cursor = conn.cursor()
-            self.region_id = get_region_rowid(cursor, self.type, self.state, self.value)
+            if self.value == '00' and self.type == 'Congressional District':
+                #Single-CD state - use statewide data
+                self.region_id = get_region_rowid(cursor, 'State', self.state, self.value)
+            else:
+                self.region_id = get_region_rowid(cursor, self.type, self.state, self.value)
             conn.close()
 
     def get_inflation(self):
