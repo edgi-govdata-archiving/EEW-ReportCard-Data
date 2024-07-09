@@ -6,7 +6,48 @@ import os.path
 import requests
 import zipfile
 import sqlite3
+import time
 from ECHO_modules.geographies import fips
+
+class RegionDataSet:
+    '''
+    Attribures
+    ----------
+    name : string
+    df : DataFrame
+    date_field : string
+    agg_type : string
+    agg_col : string
+    date_format : string
+    '''
+
+    def __init__(self, name, dataframe, date_field, agg_type, agg_col,
+                 date_format):
+        self.name = name
+        self.df = dataframe
+        self.date_field = date_field
+        self.agg_type = agg_type
+        self.agg_col = agg_col
+        self.date_format = date_format
+
+    def get_name(self):
+        return self.name
+    
+    def get_dataframe(self):
+        return self.df
+    
+    def get_date_field(self):
+        return self.date_field
+
+    def get_agg_type(self):
+        return self.agg_type
+
+    def get_agg_col(self):
+        return self.agg_col
+
+    def get_date_format(self):
+        return self.date_format
+
 
 def set_focus_year(db, year):
     conn = sqlite3.connect(db)
@@ -76,25 +117,134 @@ def get_cd118_shapefile(state):
 # * The program_count() function looks at the ECHO_EXPORTER data that is passed in and counts the number of facilities have the 'flag' parameter set to 'Y' (AIR_FLAG, NPDES_FLAG, RCRA_FLAG, GHG_FLAG)
 # * cd_echo_data is a dictionary with key (state, cd), where the state_echo_data is filtered for records of the current CD.
 # * cd_echo_active is a dictionary for active facilities in the region.
-# * The number of records from these dictionaries is written into a file named like 'active-facilities_All_pg3', in a directory identified by the state and CD, e.g. "LA2".
+# * The number of records from these dictionaries is written into a file named lue 'active-facilities_All_pg3', in a directory identified by the state and CD, e.g. "LA2".
 
 
-def program_count(echo_data, program, flag, state, cd):
+def program_count(echo_data, program, flag, cd):
     count = echo_data.loc[echo_data[flag] == "Y"].shape[0]
     print(
-        "There are {} active facilities in {} - {} tracked under {}.".format(
-            str(count), state, cd, program
+        "There are {} active facilities in {} tracked under {}.".format(
+            str(count), cd, program
         )
     )
     return count
+
+"""
+Take the state DataSets and extract the records for each of the regions
+(County or Congressional District) into a DataFrame. Return a dictionary
+with keys (data_set_name, region).
+"""
+def _add_reg_id(id1, source_df):
+    reg_id = source_df.loc[source_df.index == id1, "REGISTRY_ID"].item()
+    # print("{} -- {}".format(id1, reg_id))
+    return reg_id
+
+def add_registry_id(data_set_name, state_df, exp_to_pgm):
+    print(f"Working on {data_set_name}. {len(state_df)} records in region.")
+    source_df = exp_to_pgm["CWA"]
+    state_df['NPDES_ID'] = state_df.index
+    tic = time.perf_counter() 
+    state_df["REGISTRY_ID"] = state_df["NPDES_ID"].apply(_add_reg_id, args=(source_df,))
+    toc = time.perf_counter()
+    print(f"Processed {data_set_name} in {toc - tic:0.4f} seconds")
+    return state_df
+
+def make_region_sets(mode, state, data_set_list, data_sets, state_echo_active,
+                     state_regions, exp_to_pgm):
+    region_sets = {}
+    facs_registry_list = {}
+    for region in state_regions:
+        if mode == 'County':
+            facs = state_echo_active[state_echo_active['FAC_COUNTY'] == region]
+        elif mode == 'Congressional District':
+            facs = state_echo_active[state_echo_active['CD118FP'] == region]
+        elif mode == 'State':
+            facs = state_echo_active
+        facs_registry_list[('CAA', region)] = facs[facs["AIR_FLAG"] == 'Y'].index.to_list()
+        facs_registry_list[('CWA', region)] = facs[facs["NPDES_FLAG"] == 'Y'].index.to_list()
+        facs_registry_list[('RCRA', region)] = facs[facs["RCRA_FLAG"] == 'Y'].index.to_list()
+        facs_registry_list[('GHG', region)] = facs[facs["GHG_FLAG"] == 'Y'].index.to_list()
+    ds_type = ('State', None, state)
+
+    for data_set_name in data_set_list:
+        state_ds = data_sets[data_set_name]
+        state_df = state_ds.results[ds_type].dataframe
+        if state_df is None:
+            continue
+        if mode == 'State':
+            # if data_set_name == 'CWA Violations' or data_set_name == 'CWA Penalties':
+            #     state_df = add_registry_id(data_set_name, state_df, exp_to_pgm)
+            agg_by = "Count"
+            if data_set_name in ["RCRA Penalties", "CAA Penalties", 
+                                 "CWA Penalties", "Greenhouse Gas Emissions"]:
+                agg_by = "Amount"
+            facs_list = []
+            if data_set_name in ["RCRA Violations", "RCRA Inspections", 
+                                 "RCRA Penalties"]:
+                facs_list = facs_registry_list[('RCRA', region)]
+            elif data_set_name in ["CAA Violations", "CAA Inspections", 
+                                 "CAA Penalties"]:
+                facs_list = facs_registry_list[('CAA', region)]
+            elif data_set_name in ["CWA Violations", "CWA Inspections", 
+                                 "CWA Penalties"]:
+                facs_list = facs_registry_list[('CWA', region)]
+            elif data_set_name == "Greenhouse Gas Emissions":
+                facs_list = facs_registry_list[('GHG', region)]
+
+            if state_df is None:
+                region_df = None
+            else:
+                region_df = state_df.query('REGISTRY_ID in @facs_list')
+            region_sets[(data_set_name, region)] = RegionDataSet(
+                name=data_set_name,
+                dataframe=region_df,
+                date_field=state_ds.date_field,
+                agg_type=agg_by,
+                agg_col=state_ds.agg_col,
+                date_format=state_ds.date_format
+            )
+        else:
+            # Some data_sets don't have REGISTRY_ID, so we add it for them.
+            # if data_set_name == 'CWA Violations' or data_set_name == 'CWA Penalties':
+            #     state_df = add_registry_id(data_set_name, state_df, exp_to_pgm)
+            for region in state_regions:
+                agg_by = "Count"
+                if data_set_name in ["RCRA Penalties", "CAA Penalties", 
+                                     "CWA Penalties", "Greenhouse Gas Emissions"]:
+                    agg_by = "Amount"
+                facs_list = []
+                if data_set_name in ["RCRA Violations", "RCRA Inspections", 
+                                     "RCRA Penalties"]:
+                    facs_list = facs_registry_list[('RCRA', region)]
+                elif data_set_name in ["CAA Violations", "CAA Inspections", 
+                                     "CAA Penalties"]:
+                    facs_list = facs_registry_list[('CAA', region)]
+                elif data_set_name in ["CWA Violations", "CWA Inspections", 
+                                     "CWA Penalties"]:
+                    facs_list = facs_registry_list[('CWA', region)]
+                elif data_set_name == "Greenhouse Gas Emissions":
+                    facs_list = facs_registry_list[('GHG', region)]
+    
+                if state_df is None:
+                    region_df = None
+                else:
+                    region_df = state_df.query('REGISTRY_ID in @facs_list')
+                region_sets[(data_set_name, region)] = RegionDataSet(
+                    name=data_set_name,
+                    dataframe=region_df,
+                    date_field=state_ds.date_field,
+                    agg_type=agg_by,
+                    agg_col=state_ds.agg_col,
+                    date_format=state_ds.date_format
+                )
+    return region_sets
 
 
 """
 Return the count of violations and number of facilities in the dataframe provided.
 """
 
-
-def get_rowdata(df, field, flag):
+def get_viol_counts(df, field, flag):
     num_fac = df.loc[df[flag] == "Y"].shape[0]
     if num_fac == 0:
         return 0, 0
@@ -146,17 +296,17 @@ def get_cwa_df(df, focus_year):
 
 
 def get_inspections(ds, ds_type):
-    df0 = ds.results[ds_type].dataframe
+    df0 = ds.get_dataframe()
     if df0 is None:
         return None
     else:
         df_pgm = df0.copy()
     if len(df_pgm) > 0:
         df_pgm.rename(
-            columns={ds.date_field: "Date", ds.agg_col: "Count"}, inplace=True
+            columns={ds.get_date_field(): "Date", ds.get_agg_col(): "Count"}, inplace=True
         )
         df_pgm = df_pgm.groupby(
-            pd.to_datetime(df_pgm["Date"], format=ds.date_format, errors="coerce")
+            pd.to_datetime(df_pgm["Date"], format=ds.get_date_format(), errors="coerce")
         )[["Count"]].agg("count")
         df_pgm = df_pgm.resample("Y").sum()
         df_pgm.index = df_pgm.index.strftime("%Y")
@@ -167,16 +317,16 @@ def get_inspections(ds, ds_type):
 
 
 def get_events(ds, ds_type):
-    df0 = ds.results[ds_type].dataframe
+    df0 = ds.get_dataframe()
     if df0 is None:
         return None
     else:
         df_pgm = df0.copy()
-    df_pgm.rename(columns={ds.date_field: "Date", ds.agg_col: "Count"}, inplace=True)
+    df_pgm.rename(columns={ds.get_date_field(): "Date", ds.get_agg_col(): "Count"}, inplace=True)
 
     try:
         df_pgm = df_pgm.groupby(
-            pd.to_datetime(df_pgm["Date"], format=ds.date_format, errors="coerce")
+            pd.to_datetime(df_pgm["Date"], format=ds.get_date_format(), errors="coerce")
         )[["Count"]].agg("count")
     except ValueError:
         print("Error with date {}".format(df_pgm["Date"]))
@@ -207,14 +357,14 @@ def get_num_facilities(data_sets, program, ds_type, year):
         df_pgm = df0.copy()
     if len(df_pgm) > 0:
         df_pgm.rename(
-            columns={ds.date_field: "Date", ds.agg_col: "Count"}, inplace=True
+            columns={ds.get_date_field(): "Date", ds.get_agg_col(): "Count"}, inplace=True
         )
         if program == "CWA Violations":
             yr = df_pgm["Date"].astype("str").str[0:4:1]
             df_pgm["Date"] = pd.to_datetime(yr, format="%Y")
         else:
             df_pgm["Date"] = pd.to_datetime(
-                df_pgm["Date"], format=ds.date_format, errors="coerce"
+                df_pgm["Date"], format=ds.get_date_format(), errors="coerce"
             )
         df_pgm_year = df_pgm[df_pgm["Date"].dt.year == year].copy()
         df_pgm_year["Date"] = pd.DatetimeIndex(df_pgm_year["Date"]).year
@@ -242,16 +392,15 @@ def get_enf_per_fac(ds_enf, ds_type, num_fac, year):
 
 
 def get_enforcements(ds, ds_type):
-    df0 = ds.results[ds_type].dataframe
-    if df0 is None:
+    if ds is None:
         return None
     else:
-        df_pgm = df0.copy()
+        df_pgm = ds.get_dataframe().copy()
     if len(df_pgm) > 0:
         df_pgm.rename(
-            columns={ds.date_field: "Date", ds.agg_col: "Amount"}, inplace=True
+            columns={ds.get_date_field(): "Date", ds.get_agg_col(): "Amount"}, inplace=True
         )
-        if ds.name == "CWA Penalties":
+        if ds.get_name() == "CWA Penalties":
             df_pgm["Amount"] = df_pgm["Amount"].fillna(0)
             df_pgm["Amount"] += df_pgm["STATE_LOCAL_PENALTY_AMT"].fillna(0)
         df_pgm["Count"] = 1
@@ -268,7 +417,7 @@ def get_enforcements(ds, ds_type):
 
 
 def get_ghg_emissions(ds, ds_type):
-    df_result = ds.results[ds_type].dataframe
+    df_result = ds.get_dataframe()
     if df_result is None:
         print("No records")
         return None
@@ -276,10 +425,10 @@ def get_ghg_emissions(ds, ds_type):
         df_pgm = df_result.copy()
     if df_pgm is not None and len(df_pgm) > 0:
         df_pgm.rename(
-            columns={ds.date_field: "Date", ds.agg_col: "Amount"}, inplace=True
+            columns={ds.get_date_field(): "Date", ds.get_agg_col(): "Amount"}, inplace=True
         )
         df_pgm = df_pgm.groupby(
-            pd.to_datetime(df_pgm["Date"], format=ds.date_format, errors="coerce")
+            pd.to_datetime(df_pgm["Date"], format=ds.get_date_format(), errors="coerce")
         )[["Amount"]].agg("sum")
         df_pgm = df_pgm.resample("Y").sum()
         df_pgm.index = df_pgm.index.strftime("%Y")

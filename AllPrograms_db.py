@@ -8,30 +8,44 @@ from ECHO_modules.get_data import get_echo_data
 from Region import Region, get_inflation
 
 
-def get_active_facs(mode, state, region, cds_or_counties):
-    sql = 'select * from "ECHO_EXPORTER" where '
-    sql += '"FAC_STATE" = \'{}\''.format(state)
+def get_active_facs(mode, state, cds_or_counties):
+    # cds_or_counties is either a list of the counties in the state,
+    # or a shapefile with CD boundaries
+    columns = '"REGISTRY_ID", "FAC_NAME", "FAC_STATE", "FAC_COUNTY", \
+        "DFR_URL", "FAC_LAT", "FAC_LONG", \
+        "FAC_ACTIVE_FLAG", "AIR_FLAG", "NPDES_FLAG", "RCRA_FLAG", \
+        "GHG_FLAG", "CAA_3YR_COMPL_QTRS_HISTORY", \
+        "CWA_13QTRS_COMPL_HISTORY", "RCRA_3YR_COMPL_QTRS_HISTORY", \
+        "CAA_FORMAL_ACTION_COUNT", "CWA_FORMAL_ACTION_COUNT", \
+        "RCRA_FORMAL_ACTION_COUNT", "wkb_geometry"'
+    sql = 'select {} from "ECHO_EXPORTER" where "FAC_STATE" = '.format(columns)
+    sql += '\'{}\''.format(state)
+    state_echo_data = get_echo_data(sql, "REGISTRY_ID")
+    state_echo_data = state_echo_data[~state_echo_data['wkb_geometry'].isnull()]
     if mode == 'County':
-        echo_counties = cds_or_counties[cds_or_counties['County'] == region]['FAC_COUNTY']
-        county_str = "\',\'".join(echo_counties.tolist())
-        # county_str = "\'" + county_str + "\'"
-        sql += ' and "FAC_COUNTY" in (\'{}\')'
-        sql = sql.format(county_str)
-    region_echo_data = get_echo_data(sql, "REGISTRY_ID")
-    region_echo_data = region_echo_data.loc[region_echo_data["FAC_ACTIVE_FLAG"] == "Y"]
+        state_echo_data['cd_or_county'] = state_echo_data['FAC_COUNTY']
     if mode == 'Congressional District' and type(cds_or_counties) == geopandas.geodataframe.GeoDataFrame: 
-        region_echo_data['geometry'] = geopandas.GeoSeries.from_wkb(region_echo_data['wkb_geometry'])
-        region_echo_data.drop('wkb_geometry', axis=1, inplace=True)
-        region_echo_data = geopandas.GeoDataFrame(region_echo_data, crs=4269)
-        join = region_echo_data.sjoin(cds_or_counties, how="left")
+        state_echo_data['geometry'] = geopandas.GeoSeries.from_wkb(
+            state_echo_data['wkb_geometry'])
+        state_echo_data.drop('wkb_geometry', axis=1, inplace=True)
+        state_echo_data = geopandas.GeoDataFrame(state_echo_data, crs=4269)
+        join = state_echo_data.sjoin(cds_or_counties, how="left")
         join['CD118FP'] = pd.to_numeric(join['CD118FP'], errors='coerce')
-        region_echo_data = join.loc[join["CD118FP"] == float(region)]
+        state_echo_data = join
+        '''
+        join = state_echo_data.sjoin(cds_or_counties, how="left")
+        state_echo_data = join.loc[join["CD118FP"] == float(region)]
+        '''
     elif mode == 'State':
-        region_echo_data['geometry'] = geopandas.GeoSeries.from_wkb(region_echo_data['wkb_geometry'])
-        region_echo_data.drop('wkb_geometry', axis=1, inplace=True)
-        region_echo_data = geopandas.GeoDataFrame(region_echo_data, crs=4269)
-    return region_echo_data
+        state_echo_data['geometry'] = geopandas.GeoSeries.from_wkb(state_echo_data['wkb_geometry'])
+        state_echo_data.drop('wkb_geometry', axis=1, inplace=True)
+        state_echo_data = geopandas.GeoDataFrame(state_echo_data, crs=4269)
+    state_echo_data = state_echo_data.loc[state_echo_data["FAC_ACTIVE_FLAG"] == "Y"]
+    return state_echo_data
 
+def get_exp_pgm(type):
+    if type == 'CWA':
+        return pd.read_csv('exp_to_npdes.csv', index_col='PGM_ID')
 
 def get_real_cds(db, state):
     conn = sqlite3.connect(db)
@@ -41,7 +55,6 @@ def get_real_cds(db, state):
     cursor.execute(sql)
     cds = cursor.fetchall()
     return cds
-
 
 def write_active_facs(db, region_mode, active_facs, state, cd=None):
     ins_sql = (
@@ -78,7 +91,7 @@ def write_recurring_violations(db, region_mode, state, cd, viol_list):
     conn.commit()
 
 
-def write_violations(db, region_mode, program, ds, ds_type):
+def write_violations(db, program, ds, ds_type):
     ins_sql = (
         "insert into violations (region_id,program,year,count) values ({},'{}',{},{})"
     )
@@ -87,6 +100,7 @@ def write_violations(db, region_mode, program, ds, ds_type):
     conn = sqlite3.connect(db)
     cursor = conn.cursor()
 
+    region_mode = ds_type[0]
     state = ds_type[2]
     cd = ds_type[1]
     rowid = AllPrograms_util.get_region_rowid(cursor, region_mode, state, cd)
@@ -100,7 +114,7 @@ def write_violations(db, region_mode, program, ds, ds_type):
     return df_pgm
 
 
-def write_CWA_violations(db, region_mode, df, ds_type):
+def write_CWA_violations(db, df, ds_type):
     ins_sql = (
         "insert into violations (region_id,program,year,count) values ({},'{}',{},{})"
     )
@@ -109,6 +123,7 @@ def write_CWA_violations(db, region_mode, df, ds_type):
     conn = sqlite3.connect(db)
     cursor = conn.cursor()
 
+    region_mode = ds_type[0]
     state = ds_type[2]
     cd = ds_type[1]
     rowid = AllPrograms_util.get_region_rowid(cursor, region_mode, state, cd)
@@ -120,7 +135,7 @@ def write_CWA_violations(db, region_mode, df, ds_type):
     conn.commit()
 
 
-def write_inspections(db, region_mode, program, ds, ds_type):
+def write_inspections(db, program, ds, ds_type):
     ins_sql = (
         "insert into inspections (region_id,program,year,count) values ({},'{}',{},{})"
     )
@@ -129,6 +144,7 @@ def write_inspections(db, region_mode, program, ds, ds_type):
     conn = sqlite3.connect(db)
     cursor = conn.cursor()
 
+    region_mode = ds_type[0]
     state = ds_type[2]
     cd = ds_type[1]
     rowid = AllPrograms_util.get_region_rowid(cursor, region_mode, state, cd)
@@ -168,14 +184,15 @@ def write_total_inspections(db, program, df_pgm, ds_type):
 '''
 
 
-def write_enforcements(db, region_mode, program, ds, ds_type, focus_year):
+def write_enforcements(db, program, ds, ds_type, focus_year):
     ins_sql = "insert into enforcements (region_id,program,year,amount,count) "
     ins_sql += "values ({},'{}',{},{},{})"
     ins_sql += " on conflict(region_id,program,year) do update set amount={}, count={}"
 
     conn = sqlite3.connect(db)
     cursor = conn.cursor()
-
+    
+    region_mode = ds_type[0]
     state = ds_type[2]
     cd = ds_type[1]
     rowid = AllPrograms_util.get_region_rowid(cursor, region_mode, state, cd)
@@ -231,7 +248,7 @@ def write_total_enforcements(db, program, df_pgm, ds_type):
 '''
 
 
-def write_per_fac(db, region_mode, program, ds_type, event, year, count):
+def write_per_fac(db, program, ds_type, event, year, count):
     ins_sql = "insert into per_fac (region_id,program,type,year,count) "
     ins_sql += "values ({},'{}','{}',{},{})"
     ins_sql += " on conflict(region_id,program,type,year) do update set count={}"
@@ -239,6 +256,7 @@ def write_per_fac(db, region_mode, program, ds_type, event, year, count):
     conn = sqlite3.connect(db)
     cursor = conn.cursor()
 
+    region_mode = ds_type[0]
     state = ds_type[2]
     cd = ds_type[1]
     rowid = AllPrograms_util.get_region_rowid(cursor, region_mode, state, cd)
@@ -248,7 +266,7 @@ def write_per_fac(db, region_mode, program, ds_type, event, year, count):
     conn.commit()
 
 
-def write_enf_per_fac(db, region_mode, program, ds, ds_type, num_fac, year):
+def write_enf_per_fac(db, program, ds, ds_type, num_fac, year):
     ins_sql = "insert into enf_per_fac (region_id,program,year,count,amount,num_fac)"
     ins_sql += " values ({},'{}',{},{},{},{}) on conflict(region_id,program,year)"
     ins_sql += " do update set count={}, amount={}, num_fac={}"
@@ -256,6 +274,7 @@ def write_enf_per_fac(db, region_mode, program, ds, ds_type, num_fac, year):
     conn = sqlite3.connect(db)
     cursor = conn.cursor()
 
+    region_mode = ds_type[0]
     state = ds_type[2]
     cd = ds_type[1]
     rowid = AllPrograms_util.get_region_rowid(cursor, region_mode, state, cd)
@@ -327,9 +346,8 @@ def write_top_violators(db, region_mode, df, ds_type, program):
     conn.commit()
 
 
-def write_violations_by_facilities(db, region_mode,
-        df, ds_type, program, action_field, flag, noncomp_field
-):
+def write_violations_by_facilities(db, df, ds_type, program, 
+                                   action_field, flag, noncomp_field):
     ins_sql = "insert into violations_by_facilities (region_id,program,"
     ins_sql += " noncomp_qtrs,num_facilities) "
     ins_sql += " values ({},'{}',{},{})"
@@ -339,6 +357,7 @@ def write_violations_by_facilities(db, region_mode,
     conn = sqlite3.connect(db)
     cursor = conn.cursor()
 
+    region_mode = ds_type[0]
     state = ds_type[2]
     cd = ds_type[1]
     rowid = AllPrograms_util.get_region_rowid(cursor, region_mode, state, cd)

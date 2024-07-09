@@ -8,8 +8,8 @@ import os.path
 import sqlite3
 from datetime import datetime
 
-_database = 'region_cds.db'
-target_year = 2023
+_database = "test.db"
+_target_year = 2023
 def move_if_exists(filename, timestamp):
     new_name = "{}-{}".format(filename, timestamp)
     if os.path.exists(filename):
@@ -79,12 +79,26 @@ def main(argv):
         required=True,
         help="All the states to be processed",
     )
+    parser.add_argument(
+        "-b",
+        "--database",
+        required=True,
+        help="The database to write data into",
+    )
+    parser.add_argument(
+        "-y",
+        "--target_year",
+        required=True,
+        help="The year of the report",
+    )
     group = parser.add_mutually_exclusive_group()
     group.add_argument("-s", "--start_state",
                        required=False,
                        help="Clean the db for this state and start processing with this state")
     my_args = parser.parse_args()
 
+    _database = my_args.database
+    _target_year = my_args.target_year
     command = ". ~/.profile"
     rslt = subprocess.call(command, shell=True)
     if rslt != 0:
@@ -141,9 +155,10 @@ def main(argv):
     print("Continuing with {}".format(next_state))
 
     while (True):
-        command = "python3 AllPrograms.py -b {} -d {} -f {}".format(_database,
+        command = "python3 AllPrograms.py -b {} -s {} -f {} -m \'{}\'".format(_database,
                                                                     next_state, 
-                                                                    target_year)
+                                                                    _target_year,
+                                                                    "Congressional District")
         rslt = subprocess.call(command, shell=True)
         if rslt != 0:
             print("ERROR: AllPrograms failed on state: {}".format(next_state))

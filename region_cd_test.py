@@ -5,7 +5,7 @@ import pandas as pd
 programs = ['CAA', 'CWA', 'RCRA']
 
 target_year = 2023
-region = Region(db='region_cds.db', type='Congressional District', value='00', state='ND',
+region = Region(db='region_cds.db', type='Congressional District', value='02', state='IL',
                 base_year=target_year, programs=programs)
 
 df = region.get_ranked()
