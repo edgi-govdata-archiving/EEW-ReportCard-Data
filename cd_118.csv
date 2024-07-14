@@ -1,0 +1,489 @@
+Region,Identity,State,District,statename,full_name
+CD,AK00,AK,0,Alaska,Alaska's at large District
+CD,AL01,AL,1,Alabama,Alabama's 1st District
+CD,AL02,AL,2,Alabama,Alabama's 2nd District
+CD,AL03,AL,3,Alabama,Alabama's 3rd District
+CD,AL04,AL,4,Alabama,Alabama's 4th District
+CD,AL05,AL,5,Alabama,Alabama's 5th District
+CD,AL06,AL,6,Alabama,Alabama's 6th District
+CD,AL07,AL,7,Alabama,Alabama's 7th District
+CD,AR01,AR,1,Arkansas,Arkansas' 1st District
+CD,AR02,AR,2,Arkansas,Arkansas' 2nd District
+CD,AR03,AR,3,Arkansas,Arkansas' 3rd District
+CD,AR04,AR,4,Arkansas,Arkansas' 4th District
+CD,AZ01,AZ,1,Arizona,Arizona's 1st District
+CD,AZ02,AZ,2,Arizona,Arizona's 2nd District
+CD,AZ03,AZ,3,Arizona,Arizona's 3rd District
+CD,AZ04,AZ,4,Arizona,Arizona's 4th District
+CD,AZ05,AZ,5,Arizona,Arizona's 5th District
+CD,AZ06,AZ,6,Arizona,Arizona's 6th District
+CD,AZ07,AZ,7,Arizona,Arizona's 7th District
+CD,AZ08,AZ,8,Arizona,Arizona's 8th District
+CD,AZ09,AZ,9,Arizona,Arizona's 9th District
+CD,CA01,CA,1,California,California's 1st District
+CD,CA02,CA,2,California,California's 2nd District
+CD,CA03,CA,3,California,California's 3rd District
+CD,CA04,CA,4,California,California's 4th District
+CD,CA05,CA,5,California,California's 5th District
+CD,CA06,CA,6,California,California's 6th District
+CD,CA07,CA,7,California,California's 7th District
+CD,CA08,CA,8,California,California's 8th District
+CD,CA09,CA,9,California,California's 9th District
+CD,CA10,CA,10,California,California's 10th District
+CD,CA11,CA,11,California,California's 11th District
+CD,CA12,CA,12,California,California's 12th District
+CD,CA13,CA,13,California,California's 13th District
+CD,CA14,CA,14,California,California's 14th District
+CD,CA15,CA,15,California,California's 15th District
+CD,CA16,CA,16,California,California's 16th District
+CD,CA17,CA,17,California,California's 17th District
+CD,CA18,CA,18,California,California's 18th District
+CD,CA19,CA,19,California,California's 19th District
+CD,CA20,CA,20,California,California's 20th District
+CD,CA21,CA,21,California,California's 21st District
+CD,CA22,CA,22,California,California's 22nd District
+CD,CA23,CA,23,California,California's 23rd District
+CD,CA24,CA,24,California,California's 24th District
+CD,CA25,CA,25,California,California's 25th District
+CD,CA26,CA,26,California,California's 26th District
+CD,CA27,CA,27,California,California's 27th District
+CD,CA28,CA,28,California,California's 28th District
+CD,CA29,CA,29,California,California's 29th District
+CD,CA30,CA,30,California,California's 30th District
+CD,CA31,CA,31,California,California's 31st District
+CD,CA32,CA,32,California,California's 32nd District
+CD,CA33,CA,33,California,California's 33rd District
+CD,CA34,CA,34,California,California's 34th District
+CD,CA35,CA,35,California,California's 35th District
+CD,CA36,CA,36,California,California's 36th District
+CD,CA37,CA,37,California,California's 37th District
+CD,CA38,CA,38,California,California's 38th District
+CD,CA39,CA,39,California,California's 39th District
+CD,CA40,CA,40,California,California's 40th District
+CD,CA41,CA,41,California,California's 41st District
+CD,CA42,CA,42,California,California's 42nd District
+CD,CA43,CA,43,California,California's 43rd District
+CD,CA44,CA,44,California,California's 44th District
+CD,CA45,CA,45,California,California's 45th District
+CD,CA46,CA,46,California,California's 46th District
+CD,CA47,CA,47,California,California's 47th District
+CD,CA48,CA,48,California,California's 48th District
+CD,CA49,CA,49,California,California's 49th District
+CD,CA50,CA,50,California,California's 50th District
+CD,CA51,CA,51,California,California's 51st District
+CD,CA52,CA,52,California,California's 52nd District
+CD,CO01,CO,1,Colorado,Colorado's 1st District
+CD,CO02,CO,2,Colorado,Colorado's 2nd District
+CD,CO03,CO,3,Colorado,Colorado's 3rd District
+CD,CO04,CO,4,Colorado,Colorado's 4th District
+CD,CO05,CO,5,Colorado,Colorado's 5th District
+CD,CO06,CO,6,Colorado,Colorado's 6th District
+CD,CO07,CO,7,Colorado,Colorado's 7th District
+CD,CO08,CO,8,Colorado,Colorado’s 8th District
+CD,CT01,CT,1,Connecticut,Connecticut's 1st District
+CD,CT02,CT,2,Connecticut,Connecticut's 2nd District
+CD,CT03,CT,3,Connecticut,Connecticut's 3rd District
+CD,CT04,CT,4,Connecticut,Connecticut's 4th District
+CD,CT05,CT,5,Connecticut,Connecticut's 5th District
+CD,DC00,DC,00,District of Columbia,District of Columbia's District
+CD,DE00,DE,0,Delaware,Delaware's at large District
+CD,FL01,FL,1,Florida,Florida's 1st District
+CD,FL02,FL,2,Florida,Florida's 2nd District
+CD,FL03,FL,3,Florida,Florida's 3rd District
+CD,FL04,FL,4,Florida,Florida's 4th District
+CD,FL05,FL,5,Florida,Florida's 5th District
+CD,FL06,FL,6,Florida,Florida's 6th District
+CD,FL07,FL,7,Florida,Florida's 7th District
+CD,FL08,FL,8,Florida,Florida's 8th District
+CD,FL09,FL,9,Florida,Florida's 9th District
+CD,FL10,FL,10,Florida,Florida's 10th District
+CD,FL11,FL,11,Florida,Florida's 11th District
+CD,FL12,FL,12,Florida,Florida's 12th District
+CD,FL13,FL,13,Florida,Florida's 13th District
+CD,FL14,FL,14,Florida,Florida's 14th District
+CD,FL15,FL,15,Florida,Florida's 15th District
+CD,FL16,FL,16,Florida,Florida's 16th District
+CD,FL17,FL,17,Florida,Florida's 17th District
+CD,FL18,FL,18,Florida,Florida's 18th District
+CD,FL19,FL,19,Florida,Florida's 19th District
+CD,FL20,FL,20,Florida,Florida's 20th District
+CD,FL21,FL,21,Florida,Florida's 21st District
+CD,FL22,FL,22,Florida,Florida's 22nd District
+CD,FL23,FL,23,Florida,Florida's 23rd District
+CD,FL24,FL,24,Florida,Florida's 24th District
+CD,FL25,FL,25,Florida,Florida's 25th District
+CD,FL26,FL,26,Florida,Florida's 26th District
+CD,FL27,FL,27,Florida,Florida's 27th District
+CD,FL28,FL,28,Florida,Florida’s 28th District
+CD,GA01,GA,1,Georgia,Georgia's 1st District
+CD,GA02,GA,2,Georgia,Georgia's 2nd District
+CD,GA03,GA,3,Georgia,Georgia's 3rd District
+CD,GA04,GA,4,Georgia,Georgia's 4th District
+CD,GA05,GA,5,Georgia,Georgia's 5th District
+CD,GA06,GA,6,Georgia,Georgia's 6th District
+CD,GA07,GA,7,Georgia,Georgia's 7th District
+CD,GA08,GA,8,Georgia,Georgia's 8th District
+CD,GA09,GA,9,Georgia,Georgia's 9th District
+CD,GA10,GA,10,Georgia,Georgia's 10th District
+CD,GA11,GA,11,Georgia,Georgia's 11th District
+CD,GA12,GA,12,Georgia,Georgia's 12th District
+CD,GA13,GA,13,Georgia,Georgia's 13th District
+CD,GA14,GA,14,Georgia,Georgia's 14th District
+CD,HI01,HI,1,Hawaii,Hawaii's 1st District
+CD,HI02,HI,2,Hawaii,Hawaii's 2nd District
+CD,IA01,IA,1,Iowa,Iowa's 1st District
+CD,IA02,IA,2,Iowa,Iowa's 2nd District
+CD,IA03,IA,3,Iowa,Iowa's 3rd District
+CD,IA04,IA,4,Iowa,Iowa's 4th District
+CD,ID01,ID,1,Idaho,Idaho's 1st District
+CD,ID02,ID,2,Idaho,Idaho's 2nd District
+CD,IL01,IL,1,Illinois,Illinois' 1st District
+CD,IL02,IL,2,Illinois,Illinois' 2nd District
+CD,IL03,IL,3,Illinois,Illinois' 3rd District
+CD,IL04,IL,4,Illinois,Illinois' 4th District
+CD,IL05,IL,5,Illinois,Illinois' 5th District
+CD,IL06,IL,6,Illinois,Illinois' 6th District
+CD,IL07,IL,7,Illinois,Illinois' 7th District
+CD,IL08,IL,8,Illinois,Illinois' 8th District
+CD,IL09,IL,9,Illinois,Illinois' 9th District
+CD,IL10,IL,10,Illinois,Illinois' 10th District
+CD,IL11,IL,11,Illinois,Illinois' 11th District
+CD,IL12,IL,12,Illinois,Illinois' 12th District
+CD,IL13,IL,13,Illinois,Illinois' 13th District
+CD,IL14,IL,14,Illinois,Illinois' 14th District
+CD,IL15,IL,15,Illinois,Illinois' 15th District
+CD,IL16,IL,16,Illinois,Illinois' 16th District
+CD,IL17,IL,17,Illinois,Illinois' 17th District
+CD,IN01,IN,1,Indiana,Indiana's 1st District
+CD,IN02,IN,2,Indiana,Indiana's 2nd District
+CD,IN03,IN,3,Indiana,Indiana's 3rd District
+CD,IN04,IN,4,Indiana,Indiana's 4th District
+CD,IN05,IN,5,Indiana,Indiana's 5th District
+CD,IN06,IN,6,Indiana,Indiana's 6th District
+CD,IN07,IN,7,Indiana,Indiana's 7th District
+CD,IN08,IN,8,Indiana,Indiana's 8th District
+CD,IN09,IN,9,Indiana,Indiana's 9th District
+CD,KS01,KS,1,Kansas,Kansas' 1st District
+CD,KS02,KS,2,Kansas,Kansas' 2nd District
+CD,KS03,KS,3,Kansas,Kansas' 3rd District
+CD,KS04,KS,4,Kansas,Kansas' 4th District
+CD,KY01,KY,1,Kentucky,Kentucky's 1st District
+CD,KY02,KY,2,Kentucky,Kentucky's 2nd District
+CD,KY03,KY,3,Kentucky,Kentucky's 3rd District
+CD,KY04,KY,4,Kentucky,Kentucky's 4th District
+CD,KY05,KY,5,Kentucky,Kentucky's 5th District
+CD,KY06,KY,6,Kentucky,Kentucky's 6th District
+CD,LA01,LA,1,Louisiana,Louisiana's 1st District
+CD,LA02,LA,2,Louisiana,Louisiana's 2nd District
+CD,LA03,LA,3,Louisiana,Louisiana's 3rd District
+CD,LA04,LA,4,Louisiana,Louisiana's 4th District
+CD,LA05,LA,5,Louisiana,Louisiana's 5th District
+CD,LA06,LA,6,Louisiana,Louisiana's 6th District
+CD,MA01,MA,1,Massachusetts,Massachusetts' 1st District
+CD,MA02,MA,2,Massachusetts,Massachusetts' 2nd District
+CD,MA03,MA,3,Massachusetts,Massachusetts' 3rd District
+CD,MA04,MA,4,Massachusetts,Massachusetts' 4th District
+CD,MA05,MA,5,Massachusetts,Massachusetts' 5th District
+CD,MA06,MA,6,Massachusetts,Massachusetts' 6th District
+CD,MA07,MA,7,Massachusetts,Massachusetts' 7th District
+CD,MA08,MA,8,Massachusetts,Massachusetts' 8th District
+CD,MA09,MA,9,Massachusetts,Massachusetts' 9th District
+CD,MD01,MD,1,Maryland,Maryland's 1st District
+CD,MD02,MD,2,Maryland,Maryland's 2nd District
+CD,MD03,MD,3,Maryland,Maryland's 3rd District
+CD,MD04,MD,4,Maryland,Maryland's 4th District
+CD,MD05,MD,5,Maryland,Maryland's 5th District
+CD,MD06,MD,6,Maryland,Maryland's 6th District
+CD,MD07,MD,7,Maryland,Maryland's 7th District
+CD,MD08,MD,8,Maryland,Maryland's 8th District
+CD,ME01,ME,1,Maine,Maine's 1st District
+CD,ME02,ME,2,Maine,Maine's 2nd District
+CD,MI01,MI,1,Michigan,Michigan's 1st District
+CD,MI02,MI,2,Michigan,Michigan's 2nd District
+CD,MI03,MI,3,Michigan,Michigan's 3rd District
+CD,MI04,MI,4,Michigan,Michigan's 4th District
+CD,MI05,MI,5,Michigan,Michigan's 5th District
+CD,MI06,MI,6,Michigan,Michigan's 6th District
+CD,MI07,MI,7,Michigan,Michigan's 7th District
+CD,MI08,MI,8,Michigan,Michigan's 8th District
+CD,MI09,MI,9,Michigan,Michigan's 9th District
+CD,MI10,MI,10,Michigan,Michigan's 10th District
+CD,MI11,MI,11,Michigan,Michigan's 11th District
+CD,MI12,MI,12,Michigan,Michigan's 12th District
+CD,MI13,MI,13,Michigan,Michigan's 13th District
+CD,MN01,MN,1,Minnesota,Minnesota's 1st District
+CD,MN02,MN,2,Minnesota,Minnesota's 2nd District
+CD,MN03,MN,3,Minnesota,Minnesota's 3rd District
+CD,MN04,MN,4,Minnesota,Minnesota's 4th District
+CD,MN05,MN,5,Minnesota,Minnesota's 5th District
+CD,MN06,MN,6,Minnesota,Minnesota's 6th District
+CD,MN07,MN,7,Minnesota,Minnesota's 7th District
+CD,MN08,MN,8,Minnesota,Minnesota's 8th District
+CD,MO01,MO,1,Missouri,Missouri's 1st District
+CD,MO02,MO,2,Missouri,Missouri's 2nd District
+CD,MO03,MO,3,Missouri,Missouri's 3rd District
+CD,MO04,MO,4,Missouri,Missouri's 4th District
+CD,MO05,MO,5,Missouri,Missouri's 5th District
+CD,MO06,MO,6,Missouri,Missouri's 6th District
+CD,MO07,MO,7,Missouri,Missouri's 7th District
+CD,MO08,MO,8,Missouri,Missouri's 8th District
+CD,MS01,MS,1,Mississippi,Mississippi's 1st District
+CD,MS02,MS,2,Mississippi,Mississippi's 2nd District
+CD,MS03,MS,3,Mississippi,Mississippi's 3rd District
+CD,MS04,MS,4,Mississippi,Mississippi's 4th District
+CD,MT01,MT,1,Montana,Montana's 1st District
+CD,MT02,MT,2,Montana,Montana’s 2nd District
+CD,NC01,NC,1,North Carolina,North Carolina's 1st District
+CD,NC02,NC,2,North Carolina,North Carolina's 2nd District
+CD,NC03,NC,3,North Carolina,North Carolina's 3rd District
+CD,NC04,NC,4,North Carolina,North Carolina's 4th District
+CD,NC05,NC,5,North Carolina,North Carolina's 5th District
+CD,NC06,NC,6,North Carolina,North Carolina's 6th District
+CD,NC07,NC,7,North Carolina,North Carolina's 7th District
+CD,NC08,NC,8,North Carolina,North Carolina's 8th District
+CD,NC09,NC,9,North Carolina,North Carolina's 9th District
+CD,NC10,NC,10,North Carolina,North Carolina's 10th District
+CD,NC11,NC,11,North Carolina,North Carolina's 11th District
+CD,NC12,NC,12,North Carolina,North Carolina's 12th District
+CD,NC13,NC,13,North Carolina,North Carolina's 13th District
+CD,NC14,NC,14,North Carolina,North Carolina’s 14th District
+CD,ND00,ND,0,North Dakota,North Dakota's at large District
+CD,NE01,NE,1,Nebraska,Nebraska's 1st District
+CD,NE02,NE,2,Nebraska,Nebraska's 2nd District
+CD,NE03,NE,3,Nebraska,Nebraska's 3rd District
+CD,NH01,NH,1,New Hampshire,New Hampshire's 1st District
+CD,NH02,NH,2,New Hampshire,New Hampshire's 2nd District
+CD,NJ01,NJ,1,New Jersey,New Jersey's 1st District
+CD,NJ02,NJ,2,New Jersey,New Jersey's 2nd District
+CD,NJ03,NJ,3,New Jersey,New Jersey's 3rd District
+CD,NJ04,NJ,4,New Jersey,New Jersey's 4th District
+CD,NJ05,NJ,5,New Jersey,New Jersey's 5th District
+CD,NJ06,NJ,6,New Jersey,New Jersey's 6th District
+CD,NJ07,NJ,7,New Jersey,New Jersey's 7th District
+CD,NJ08,NJ,8,New Jersey,New Jersey's 8th District
+CD,NJ09,NJ,9,New Jersey,New Jersey's 9th District
+CD,NJ10,NJ,10,New Jersey,New Jersey's 10th District
+CD,NJ11,NJ,11,New Jersey,New Jersey's 11th District
+CD,NJ12,NJ,12,New Jersey,New Jersey's 12th District
+CD,NM01,NM,1,New Mexico,New Mexico's 1st District
+CD,NM02,NM,2,New Mexico,New Mexico's 2nd District
+CD,NM03,NM,3,New Mexico,New Mexico's 3rd District
+CD,NV01,NV,1,Nevada,Nevada's 1st District
+CD,NV02,NV,2,Nevada,Nevada's 2nd District
+CD,NV03,NV,3,Nevada,Nevada's 3rd District
+CD,NV04,NV,4,Nevada,Nevada's 4th District
+CD,NY01,NY,1,New York,New York's 1st District
+CD,NY02,NY,2,New York,New York's 2nd District
+CD,NY03,NY,3,New York,New York's 3rd District
+CD,NY04,NY,4,New York,New York's 4th District
+CD,NY05,NY,5,New York,New York's 5th District
+CD,NY06,NY,6,New York,New York's 6th District
+CD,NY07,NY,7,New York,New York's 7th District
+CD,NY08,NY,8,New York,New York's 8th District
+CD,NY09,NY,9,New York,New York's 9th District
+CD,NY10,NY,10,New York,New York's 10th District
+CD,NY11,NY,11,New York,New York's 11th District
+CD,NY12,NY,12,New York,New York's 12th District
+CD,NY13,NY,13,New York,New York's 13th District
+CD,NY14,NY,14,New York,New York's 14th District
+CD,NY15,NY,15,New York,New York's 15th District
+CD,NY16,NY,16,New York,New York's 16th District
+CD,NY17,NY,17,New York,New York's 17th District
+CD,NY18,NY,18,New York,New York's 18th District
+CD,NY19,NY,19,New York,New York's 19th District
+CD,NY20,NY,20,New York,New York's 20th District
+CD,NY21,NY,21,New York,New York's 21st District
+CD,NY22,NY,22,New York,New York's 22nd District
+CD,NY23,NY,23,New York,New York's 23rd District
+CD,NY24,NY,24,New York,New York's 24th District
+CD,NY25,NY,25,New York,New York's 25th District
+CD,NY26,NY,26,New York,New York's 26th District
+CD,OH01,OH,1,Ohio,Ohio's 1st District
+CD,OH02,OH,2,Ohio,Ohio's 2nd District
+CD,OH03,OH,3,Ohio,Ohio's 3rd District
+CD,OH04,OH,4,Ohio,Ohio's 4th District
+CD,OH05,OH,5,Ohio,Ohio's 5th District
+CD,OH06,OH,6,Ohio,Ohio's 6th District
+CD,OH07,OH,7,Ohio,Ohio's 7th District
+CD,OH08,OH,8,Ohio,Ohio's 8th District
+CD,OH09,OH,9,Ohio,Ohio's 9th District
+CD,OH10,OH,10,Ohio,Ohio's 10th District
+CD,OH11,OH,11,Ohio,Ohio's 11th District
+CD,OH12,OH,12,Ohio,Ohio's 12th District
+CD,OH13,OH,13,Ohio,Ohio's 13th District
+CD,OH14,OH,14,Ohio,Ohio's 14th District
+CD,OH15,OH,15,Ohio,Ohio's 15th District
+CD,OK01,OK,1,Oklahoma,Oklahoma's 1st District
+CD,OK02,OK,2,Oklahoma,Oklahoma's 2nd District
+CD,OK03,OK,3,Oklahoma,Oklahoma's 3rd District
+CD,OK04,OK,4,Oklahoma,Oklahoma's 4th District
+CD,OK05,OK,5,Oklahoma,Oklahoma's 5th District
+CD,OR01,OR,1,Oregon,Oregon's 1st District
+CD,OR02,OR,2,Oregon,Oregon's 2nd District
+CD,OR03,OR,3,Oregon,Oregon's 3rd District
+CD,OR04,OR,4,Oregon,Oregon's 4th District
+CD,OR05,OR,5,Oregon,Oregon's 5th District
+CD,OR06,OR,6,Oregon,Oregon’s 6th District
+CD,PA01,PA,1,Pennsylvania,Pennsylvania's 1st District
+CD,PA02,PA,2,Pennsylvania,Pennsylvania's 2nd District
+CD,PA03,PA,3,Pennsylvania,Pennsylvania's 3rd District
+CD,PA04,PA,4,Pennsylvania,Pennsylvania's 4th District
+CD,PA05,PA,5,Pennsylvania,Pennsylvania's 5th District
+CD,PA06,PA,6,Pennsylvania,Pennsylvania's 6th District
+CD,PA07,PA,7,Pennsylvania,Pennsylvania's 7th District
+CD,PA08,PA,8,Pennsylvania,Pennsylvania's 8th District
+CD,PA09,PA,9,Pennsylvania,Pennsylvania's 9th District
+CD,PA10,PA,10,Pennsylvania,Pennsylvania's 10th District
+CD,PA11,PA,11,Pennsylvania,Pennsylvania's 11th District
+CD,PA12,PA,12,Pennsylvania,Pennsylvania's 12th District
+CD,PA13,PA,13,Pennsylvania,Pennsylvania's 13th District
+CD,PA14,PA,14,Pennsylvania,Pennsylvania's 14th District
+CD,PA15,PA,15,Pennsylvania,Pennsylvania's 15th District
+CD,PA16,PA,16,Pennsylvania,Pennsylvania's 16th District
+CD,PA17,PA,17,Pennsylvania,Pennsylvania's 17th District
+CD,PR00,PR,00,Puerto Rico,Puerto Rico's District
+CD,RI01,RI,1,Rhode Island,Rhode Island's 1st District
+CD,RI02,RI,2,Rhode Island,Rhode Island's 2nd District
+CD,SC01,SC,1,South Carolina,South Carolina's 1st District
+CD,SC02,SC,2,South Carolina,South Carolina's 2nd District
+CD,SC03,SC,3,South Carolina,South Carolina's 3rd District
+CD,SC04,SC,4,South Carolina,South Carolina's 4th District
+CD,SC05,SC,5,South Carolina,South Carolina's 5th District
+CD,SC06,SC,6,South Carolina,South Carolina's 6th District
+CD,SC07,SC,7,South Carolina,South Carolina's 7th District
+CD,SD00,SD,0,South Dakota,South Dakota's at large District
+CD,TN01,TN,1,Tennessee,Tennessee's 1st District
+CD,TN02,TN,2,Tennessee,Tennessee's 2nd District
+CD,TN03,TN,3,Tennessee,Tennessee's 3rd District
+CD,TN04,TN,4,Tennessee,Tennessee's 4th District
+CD,TN05,TN,5,Tennessee,Tennessee's 5th District
+CD,TN06,TN,6,Tennessee,Tennessee's 6th District
+CD,TN07,TN,7,Tennessee,Tennessee's 7th District
+CD,TN08,TN,8,Tennessee,Tennessee's 8th District
+CD,TN09,TN,9,Tennessee,Tennessee's 9th District
+CD,TX01,TX,1,Texas,Texas' 1st District
+CD,TX02,TX,2,Texas,Texas' 2nd District
+CD,TX03,TX,3,Texas,Texas' 3rd District
+CD,TX04,TX,4,Texas,Texas' 4th District
+CD,TX05,TX,5,Texas,Texas' 5th District
+CD,TX06,TX,6,Texas,Texas' 6th District
+CD,TX07,TX,7,Texas,Texas' 7th District
+CD,TX08,TX,8,Texas,Texas' 8th District
+CD,TX09,TX,9,Texas,Texas' 9th District
+CD,TX10,TX,10,Texas,Texas' 10th District
+CD,TX11,TX,11,Texas,Texas' 11th District
+CD,TX12,TX,12,Texas,Texas' 12th District
+CD,TX13,TX,13,Texas,Texas' 13th District
+CD,TX14,TX,14,Texas,Texas' 14th District
+CD,TX15,TX,15,Texas,Texas' 15th District
+CD,TX16,TX,16,Texas,Texas' 16th District
+CD,TX17,TX,17,Texas,Texas' 17th District
+CD,TX18,TX,18,Texas,Texas' 18th District
+CD,TX19,TX,19,Texas,Texas' 19th District
+CD,TX20,TX,20,Texas,Texas' 20th District
+CD,TX21,TX,21,Texas,Texas' 21st District
+CD,TX22,TX,22,Texas,Texas' 22nd District
+CD,TX23,TX,23,Texas,Texas' 23rd District
+CD,TX24,TX,24,Texas,Texas' 24th District
+CD,TX25,TX,25,Texas,Texas' 25th District
+CD,TX26,TX,26,Texas,Texas' 26th District
+CD,TX27,TX,27,Texas,Texas' 27th District
+CD,TX28,TX,28,Texas,Texas' 28th District
+CD,TX29,TX,29,Texas,Texas' 29th District
+CD,TX30,TX,30,Texas,Texas' 30th District
+CD,TX31,TX,31,Texas,Texas' 31st District
+CD,TX32,TX,32,Texas,Texas' 32nd District
+CD,TX33,TX,33,Texas,Texas' 33rd District
+CD,TX34,TX,34,Texas,Texas' 34th District
+CD,TX35,TX,35,Texas,Texas' 35th District
+CD,TX36,TX,36,Texas,Texas' 36th District
+CD,TX37,TX,37,Texas,Texas’ 37th District
+CD,TX38,TX,38,Texas,Texas; 38th District
+CD,UT01,UT,1,Utah,Utah's 1st District
+CD,UT02,UT,2,Utah,Utah's 2nd District
+CD,UT03,UT,3,Utah,Utah's 3rd District
+CD,UT04,UT,4,Utah,Utah's 4th District
+CD,VA01,VA,1,Virginia,Virginia's 1st District
+CD,VA02,VA,2,Virginia,Virginia's 2nd District
+CD,VA03,VA,3,Virginia,Virginia's 3rd District
+CD,VA04,VA,4,Virginia,Virginia's 4th District
+CD,VA05,VA,5,Virginia,Virginia's 5th District
+CD,VA06,VA,6,Virginia,Virginia's 6th District
+CD,VA07,VA,7,Virginia,Virginia's 7th District
+CD,VA08,VA,8,Virginia,Virginia's 8th District
+CD,VA09,VA,9,Virginia,Virginia's 9th District
+CD,VA10,VA,10,Virginia,Virginia's 10th District
+CD,VA11,VA,11,Virginia,Virginia's 11th District
+CD,VT00,VT,0,Vermont,Vermont's at large District
+CD,WA01,WA,1,Washington,Washington's 1st District
+CD,WA02,WA,2,Washington,Washington's 2nd District
+CD,WA03,WA,3,Washington,Washington's 3rd District
+CD,WA04,WA,4,Washington,Washington's 4th District
+CD,WA05,WA,5,Washington,Washington's 5th District
+CD,WA06,WA,6,Washington,Washington's 6th District
+CD,WA07,WA,7,Washington,Washington's 7th District
+CD,WA08,WA,8,Washington,Washington's 8th District
+CD,WA09,WA,9,Washington,Washington's 9th District
+CD,WA10,WA,10,Washington,Washington's 10th District
+CD,WI01,WI,1,Wisconsin,Wisconsin's 1st District
+CD,WI02,WI,2,Wisconsin,Wisconsin's 2nd District
+CD,WI03,WI,3,Wisconsin,Wisconsin's 3rd District
+CD,WI04,WI,4,Wisconsin,Wisconsin's 4th District
+CD,WI05,WI,5,Wisconsin,Wisconsin's 5th District
+CD,WI06,WI,6,Wisconsin,Wisconsin's 6th District
+CD,WI07,WI,7,Wisconsin,Wisconsin's 7th District
+CD,WI08,WI,8,Wisconsin,Wisconsin's 8th District
+CD,WV01,WV,1,West Virginia,West Virginia's 1st District
+CD,WV02,WV,2,West Virginia,West Virginia's 2nd District
+CD,WY00,WY,0,Wyoming,Wyoming's at large District
+state,AL,AL,NA,Alabama,Alabama
+state,AK,AK,NA,Alaska,Alaska
+state,AZ,AZ,NA,Arizona,Arizona
+state,AR,AR,NA,Arkansas,Arkansas
+state,CA,CA,NA,California,California
+state,CO,CO,NA,Colorado,Colorado
+state,CT,CT,NA,Connecticut,Connecticut
+state,DE,DE,NA,Delaware,Delaware
+state,DC,DC,NA,District of Columbia,District of Columbia
+state,FL,FL,NA,Florida,Florida
+state,GA,GA,NA,Georgia,Georgia
+state,HI,HI,NA,Hawaii,Hawaii
+state,ID,ID,NA,Idaho,Idaho
+state,IL,IL,NA,Illinois,Illinois
+state,IN,IN,NA,Indiana,Indiana
+state,IA,IA,NA,Iowa,Iowa
+state,KS,KS,NA,Kansas,Kansas
+state,KY,KY,NA,Kentucky,Kentucky
+state,LA,LA,NA,Louisiana,Louisiana
+state,ME,ME,NA,Maine,Maine
+state,MD,MD,NA,Maryland,Maryland
+state,MA,MA,NA,Massachusetts,Massachusetts
+state,MI,MI,NA,Michigan,Michigan
+state,MN,MN,NA,Minnesota,Minnesota
+state,MS,MS,NA,Mississippi,Mississippi
+state,MO,MO,NA,Missouri,Missouri
+state,MT,MT,NA,Montana,Montana
+state,NE,NE,NA,Nebraska,Nebraska
+state,NV,NV,NA,Nevada,Nevada
+state,NH,NH,NA,New Hampshire,New Hampshire
+state,NJ,NJ,NA,New Jersey,New Jersey
+state,NM,NM,NA,New Mexico,New Mexico
+state,NY,NY,NA,New York,New York
+state,NC,NC,NA,North Carolina,North Carolina
+state,ND,ND,NA,North Dakota,North Dakota
+state,OH,OH,NA,Ohio,Ohio
+state,OK,OK,NA,Oklahoma,Oklahoma
+state,OR,OR,NA,Oregon,Oregon
+state,PA,PA,NA,Pennsylvania,Pennsylvania
+state,RI,RI,NA,Rhode Island,Rhode Island
+state,SC,SC,NA,South Carolina,South Carolina
+state,SD,SD,NA,South Dakota,South Dakota
+state,TN,TN,NA,Tennessee,Tennessee
+state,TX,TX,NA,Texas,Texas
+state,UT,UT,NA,Utah,Utah
+state,VT,VT,NA,Vermont,Vermont
+state,VA,VA,NA,Virginia,Virginia
+state,WA,WA,NA,Washington,Washington
+state,WV,WV,NA,West Virginia,West Virginia
+state,WI,WI,NA,Wisconsin,Wisconsin
+state,WY,WY,NA,Wyoming,Wyoming

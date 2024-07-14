@@ -23,8 +23,10 @@ def create_df(db, target_year, region_type, data_type, y_field, program,
         local_events[ region_selected ] = local_events[y_field]/local_num_facs
     df_events = usa_events.drop( y_field, axis=1 )
     for state_name,state_events in state_events_dict.items():
-        df_events = df_events.merge( state_events[['Year',state_name]] )
+        df_events = df_events.merge( state_events[['Year',state_name]], how='left' )
+        df_events = df_events.fillna(0)
     if ( region_type != 'State' ):
-        df_events = df_events.merge( local_events[['Year',region_selected]])
+        df_events = df_events.merge( local_events[['Year',region_selected]], how='left')
+        df_events = df_events.fillna(0)
     return df_events
   

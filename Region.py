@@ -304,4 +304,6 @@ class Region:
             sql = 'select {} from county_per_1000 where "CD.State" = \'{}{}\''
             sql = sql.format(cd_columns, self.state, self.value)
 
-        return pd.read_sql_query(sql, conn)
+        df = pd.read_sql_query(sql, conn)
+        df = df.fillna(value=0)
+        return df
