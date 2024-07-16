@@ -33,7 +33,8 @@ library(stringr)
 library(reshape)
 loadfonts()
 
-target_year <- '2021'
+target_year <- '2023'
+target_year_int <- strtoi(target_year)
 state <- params$state
 full_name <- params$full_name
 output_loc <- paste('Output/',state,"/",sep="")
@@ -47,29 +48,32 @@ dbDisconnect( conn )
 
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 ```
+
 ```{r echo=FALSE, include=FALSE}
 virtualenv_python('edgienv')
 u <- import( 'Region' )
-region <- u$Region(type='State', state=state, programs=c('CAA', 'CWA', 'RCRA'))
+region <- u$Region(db='region_cds.db', type='State', state=state,
+                   programs=c('CAA', 'CWA', 'RCRA'),
+                   base_year=target_year_int)
 target_year_int <- strtoi( target_year )
-violations <- region$get_events( 'violations', 'All', target_year_int )
-CAAviolations <- region$get_events( 'violations', 'CAA', target_year_int )
-CWAviolations <- region$get_events( 'violations', 'CWA', target_year_int )
-RCRAviolations <- region$get_events( 'violations', 'RCRA', target_year_int )
-USAinspectionsper1000_All <- region$get_per_1000( 'inspections', 'USA', target_year_int )
-inspectionsper1000_state <- region$get_per_1000( 'inspections', 'State', target_year_int )
-USAviolationsper1000_All <- region$get_per_1000( 'violations', 'USA', target_year_int )
-violationsper1000_state <- region$get_per_1000( 'violations', 'State', target_year_int )
-inflation <- region$get_inflation( target_year_int )
-CAAenforcement_clean <- region$get_events( 'enforcements', 'CAA', target_year_int )
-CWAenforcement_clean <- region$get_events( 'enforcements', 'CWA', target_year_int )
-RCRAenforcement_clean <- region$get_events( 'enforcements', 'RCRA', target_year_int )
-enforcement <- region$get_events( 'enforcements', 'All', target_year_int )
+violations <- region$get_events( 'violations', 'All' )
+CAAviolations <- region$get_events( 'violations', 'CAA' )
+CWAviolations <- region$get_events( 'violations', 'CWA' )
+RCRAviolations <- region$get_events( 'violations', 'RCRA' )
+USAinspectionsper1000_All <- region$get_per_1000( 'inspections', 'USA' )
+inspectionsper1000_state <- region$get_per_1000( 'inspections', 'State' )
+USAviolationsper1000_All <- region$get_per_1000( 'violations', 'USA' )
+violationsper1000_state <- region$get_per_1000( 'violations', 'State' )
+inflation <- region$get_inflation()
+CAAenforcement_clean <- region$get_events( 'enforcements', 'CAA' )
+CWAenforcement_clean <- region$get_events( 'enforcements', 'CWA' )
+RCRAenforcement_clean <- region$get_events( 'enforcements', 'RCRA' )
+enforcement <- region$get_events( 'enforcements', 'All' )
 CWArecurring <- region$get_recurring_violations( 'CWA' )
-inspections <- region$get_events( 'inspections', 'All', target_year_int )
-CAAinspections <- region$get_events( 'inspections', 'CAA', target_year_int )
-CWAinspections <- region$get_events( 'inspections', 'CWA', target_year_int )
-RCRAinspections <- region$get_events( 'inspections', 'RCRA', target_year_int )
+inspections <- region$get_events( 'inspections', 'All' )
+CAAinspections <- region$get_events( 'inspections', 'CAA' )
+CWAinspections <- region$get_events( 'inspections', 'CWA' )
+RCRAinspections <- region$get_events( 'inspections', 'RCRA' )
 CAAbadactors <- region$get_non_compliants( 'CAA' )
 CWAbadactors <- region$get_non_compliants( 'CWA' )
 RCRAbadactors <- region$get_non_compliants( 'RCRA' )
@@ -185,6 +189,7 @@ state_rank_bar <- ggplot(ranked_t, aes(fill=order, y=V1, x=Program, alpha=Progra
   theme_meg()
   
 ```
+
 ```{r echo=FALSE, fig.height=3, out.width= "95%", out.extra='style="float:center; padding:0px"'}
 state_rank_bar
 ```
@@ -221,16 +226,23 @@ warnings.filterwarnings("ignore")
 
 from create_df import create_df
 
-cwa_insp_years = create_df(region_type='State',data_type='inspections',
+cwa_insp_years = create_df(db='region_cds.db', target_year=r.target_year_int,
+               region_type='State',data_type='inspections',
                y_field='Count',program='CWA',states=[r.this_state,])
-cwa_viol_years = create_df(region_type='State',data_type='violations',
+cwa_viol_years = create_df(db='region_cds.db',
+               target_year=r.target_year_int,region_type='State',
+               data_type='violations',
                y_field='Count',program='CWA',states=[r.this_state,])
-cwa_enf_count_years = create_df(region_type='State',data_type='enforcements',
+cwa_enf_count_years = create_df(db='region_cds.db',
+               target_year=r.target_year_int,region_type='State',
+               data_type='enforcements',
                y_field='Count',program='CWA',states=[r.this_state,])
-cwa_enf_count_years = cwa_enf_count_years.drop('Amount',1)
-cwa_enf_dollar_years = create_df(region_type='State',data_type='enforcements',
+cwa_enf_count_years = cwa_enf_count_years.drop('Amount', axis=1)
+cwa_enf_dollar_years = create_df(db='region_cds.db',
+               target_year=r.target_year_int,region_type='State',
+               data_type='enforcements',
                y_field='Amount',program='CWA',states=[r.this_state,])
-cwa_enf_dollar_years = cwa_enf_dollar_years.drop('Count',1)
+cwa_enf_dollar_years = cwa_enf_dollar_years.drop('Count', axis=1)
 cwa_enf_dollar_years['USA'] = cwa_enf_dollar_years['USA']/1000.
 cwa_enf_dollar_years[r.this_state] = cwa_enf_dollar_years[r.this_state]/1000.
 
@@ -269,6 +281,7 @@ graph4 <- ggplot(cwa_enf_dollar_years, aes(x = Year, y = value, color = variable
   labs(y="Fines ($1000)", x="Year", title="CWA - Enforcement Fines Per Facility")
 
 ```
+
 ```{r echo=FALSE}
 which_president <- function(which_year) {
   case_when(
@@ -302,8 +315,8 @@ enforcement$Amount <- round(enforcement$Amount,2)
 enforcement <- enforcement %>%
   mutate(President = which_president(Year))
 
-actionchange <- data.frame("BushObamaAverage" =mean(enforcement[1:16,3]),
-                             "Trump Average" =mean(enforcement[17:19,3]))
+actionchange <- data.frame("BushObamaTrumpAverage" =mean(enforcement[1:20,3]),
+                             "Trump Average" =mean(enforcement[21:23,3]))
 
 actionchange$PercentDifference <- as.numeric(100*(actionchange[1,2]-actionchange[1,1])/
                                                  actionchange[1,1])
@@ -497,7 +510,8 @@ enforcementchange$FineChange <- ifelse(enforcementchange$PercentDifferenceFine>=
 enforcementchange$PositiveFine <- abs(enforcementchange$PercentDifferenceFine)
 
 #adjust for inflation
-enforcement <- cbind(enforcement, inflation)
+enforcement <- merge(enforcement, inflation, by='Year', all.x=TRUE)
+# enforcement <- cbind(enforcement, inflation)
 enforcement$inflationadjust <- as.numeric(enforcement$Amount*enforcement$base)
 
 ##make a new amount column /1000
@@ -865,6 +879,7 @@ if ( nrows_df > 0 ) {
           axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5))
 }
 ```
+
 ```{r, fig.height = 5, fig.width = 8, fig.align = "center"}
 
 hasCAAinspections <- FALSE
@@ -887,6 +902,7 @@ if ( nrows_df > 0 ) {
           axis.title.x = element_blank(), plot.subtitle = element_text(hjust=.5))
 }
 ```
+
 ```{r, fig.height = 5, fig.width = 8, fig.align = "center"}
 
 hasCAAenforcement <- FALSE
@@ -899,7 +915,7 @@ if ( nrows_df > 0 ) {
       mutate(President = which_president(Year))
   
   #adjust for inflation
-  CAAenforcement <- merge(CAAenforcement, inflation, by.x='Year', by.y='index', all.x=TRUE)
+  CAAenforcement <- merge(CAAenforcement, inflation, by.x='Year', all.x=TRUE)
   CAAenforcement$inflationadjust <- as.numeric(CAAenforcement$Amount*CAAenforcement$base)
   
   ##make a new amount column /1000
@@ -1006,7 +1022,7 @@ if ( nrows_df > 0 ) {
       mutate(President = which_president(Year))
   
   #adjust for inflation
-  CWAenforcement <- merge(CWAenforcement, inflation, by.x='Year', by.y='index', all.x=TRUE)
+  CWAenforcement <- merge(CWAenforcement, inflation, by.x='Year', all.x=TRUE)
   CWAenforcement$inflationadjust <- as.numeric(CWAenforcement$Amount*CWAenforcement$base)
   
   ##make a new amount column /1000
@@ -1122,7 +1138,7 @@ if ( nrows_df > 0 ) {
       mutate(President = which_president(Year))
   
   #adjust for inflation
-  RCRAenforcement <- merge(RCRAenforcement, inflation, by.x='Year', by.y='index', all.x=TRUE)
+  RCRAenforcement <- merge(RCRAenforcement, inflation, by.x='Year', all.x=TRUE)
   RCRAenforcement$inflationadjust <- as.numeric(RCRAenforcement$Amount*RCRAenforcement$base)
   
   ##make a new amount column /1000
