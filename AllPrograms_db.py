@@ -415,29 +415,29 @@ def clean_per_1000(db):
         cur.execute(do_sql)
     conn.commit()
 
-def make_per_1000(db, focus_year):
+def make_per_1000(db, region_mode, focus_year):
     """
-    Build the state_per_1000 and cd_per_1000 tables with the 
-    get_all_per_1000() function for the five years
+    Build the state_per_1000 and cd_per_1000 or county_per_1000
+    tables with the get_all_per_1000() function for the five years
     ending with the focus year.
     
     Parameters
     ----------
+    db : string
+        The Sqlite database
+    region_mode : string
+        Either 'Congressional District' or 'County'
     focus_year : string
         The end year for the results.
     """
 
     exclude_states = ['AS', 'MX', 'GM', 'MB']
-    one_cd_states = ['AK', 'DC', 'DE', 'PR', 'ND', 'SD', 'VI', 'VT', 'WY']
-    oner_df = pd.DataFrame()
     start_year = int(focus_year) - 4
-    total_df = get_all_per_1000(db, start_year)
+    total_df = get_all_per_1000(db, region_mode, start_year)
     for year in range(start_year + 1, int(focus_year)):
-        df = get_all_per_1000(db, year)
+        df = get_all_per_1000(db, region_mode, year)
         for s in exclude_states:
             df = df[df['CD.State'] != s]
-        # df = df[(df['CD.State'] != 'AS') & (df['CD.State'] != 'MX') & (df['CD.State'] != 'GM') &
-        #         (df['CD.State'] != 'MB')]
         df.set_index('CD.State')
         total_df['CAA.Insp.per.1000'] += df['CAA.Insp.per.1000']
         total_df['CAA.Viol.per.1000'] += df['CAA.Viol.per.1000']
@@ -448,8 +448,19 @@ def make_per_1000(db, focus_year):
         total_df['RCRA.Insp.per.1000'] += df['RCRA.Insp.per.1000']
         total_df['RCRA.Viol.per.1000'] += df['RCRA.Viol.per.1000']
         total_df['RCRA.Enf.per.1000'] += df['RCRA.Enf.per.1000']
-        # total_df['CD.State'] = df['CD.State']
-        # total_df['Region'] = df['Region']
+    
+    # Todo: Test this
+    # For ranking the CDs, the single CD state needs its records copied to one
+    # for Congressional District
+    if region_mode == 'Congressional District':
+        one_cd_states = ['AK', 'DC', 'DE', 'PR', 'ND', 'SD', 'VI', 'VT', 'WY']
+        oner_df = pd.DataFrame()
+        for s in one_cd_states:
+            oner_df = pd.concat([oner_df, total_df[total_df['CD.State'] == s]], ignore_index=True)
+            state_cd = '{}-00'.format(s)
+            oner_df.loc[oner_df['CD.State'] == s, 'Region'] = 'Congressional District'
+            oner_df.loc[oner_df['CD.State'] == s, 'CD.State'] = state_cd
+        total_df = pd.concat([total_df, oner_df], ignore_index=True)
    
     total_df['CAA.Insp.per.1000'] /= 5
     total_df['CAA.Viol.per.1000'] /= 5
@@ -461,16 +472,12 @@ def make_per_1000(db, focus_year):
     total_df['RCRA.Viol.per.1000'] /= 5
     total_df['RCRA.Enf.per.1000'] /= 5
     
-    for s in one_cd_states:
-        oner_df = pd.concat([oner_df, total_df[total_df['CD.State'] == s]], ignore_index=True)
-        state_cd = '{}-00'.format(s)
-        oner_df.loc[oner_df['CD.State'] == s, 'Region'] = 'Congressional District'
-        oner_df.loc[oner_df['CD.State'] == s, 'CD.State'] = state_cd
-    # total_df = pd.concat([total_df, oner_df], ignore_index=True)
-
-    (state_per_1000, cd_per_1000, county_per_1000) = AllPrograms_util.build_all_per_1000(total_df)
-
     conn = sqlite3.connect(db)
+    if region_mode == 'Congressional District':
+        (state_per_1000, cd_per_1000) = AllPrograms_util.build_all_per_1000(region_mode, total_df)
+    elif region_mode == 'County':
+        (state_per_1000, county_per_1000) = AllPrograms_util.build_all_per_1000(region_mode, total_df)
+
     state_per_1000.to_sql(name="state_per_1000", con=conn, if_exists="replace")
     cd_per_1000.to_sql(name="cd_per_1000", con=conn, if_exists="replace")
     county_per_1000.to_sql(name="county_per_1000", con=conn, if_exists="replace")
@@ -501,12 +508,40 @@ def _get_events_for_region(cursor, program, event_type, region_id, year):
         num_events = fetch[0] if fetch[0] else 0
     return num_events
 
+def _get_events_per_fac(cursor, region_mode, region_id, num_events, year):
+    for program in ['CAA', 'CWA', 'RCRA']:
+        active = _get_active_for_region(cursor, program, region_id)
+        for event_type in ['inspections', 'violations', 'enforcements']:
+            num_events[(program, event_type)] = _get_events_for_region(cursor,
+                                                                       program,
+                                                                       event_type,
+                                                                       region_id,
+                                                                       year)
+        for event_type in ['inspections', 'violations', 'enforcements']:
+            num_events[(program, event_type)] = 0 if active == 0 \
+                else 1000. * num_events[(program, event_type)] / active
+    return (num_events[('CAA', 'inspections')],
+            num_events[('CAA', 'violations')],
+            num_events[('CAA', 'enforcements')],
+            num_events[('CWA', 'inspections')],
+            num_events[('CWA', 'violations')],
+            num_events[('CWA', 'enforcements')],
+            num_events[('RCRA', 'inspections')],
+            num_events[('RCRA', 'violations')],
+            num_events[('RCRA', 'enforcements')],
+            region_mode)
+
 
 def _get_state_per_1000(cursor, state, year):
+    region_mode = 'State'
     sql = 'select rowid from regions where state=\'{}\''
     sql = sql.format(state)
     cursor.execute(sql)
     region_ids = cursor.fetchall()
+    sql = 'select rowid from regions where state=\'{}\' and region_type=\'State\''
+    sql = sql.format(state)
+    cursor.execute(sql)
+    state_region_id = cursor.fetchone()
     active = 0
     num_events = {}
     for program in ['CAA', 'CWA', 'RCRA']:
@@ -522,6 +557,8 @@ def _get_state_per_1000(cursor, state, year):
                                                                             event_type,
                                                                             region_id,
                                                                             year)
+    return _get_events_per_fac(cursor, region_mode, state_region_id, num_events, year)
+    '''
         for event_type in ['inspections', 'violations', 'enforcements']:
             num_events[(program, event_type)] = 0 if active == 0 \
                 else 1000. * num_events[(program, event_type)] / active
@@ -535,13 +572,15 @@ def _get_state_per_1000(cursor, state, year):
             num_events[('RCRA', 'violations')],
             num_events[('RCRA', 'enforcements')],
             'State')
-
+    '''
 
 def _get_county_per_1000(cursor, region_id, state, county, year):
     num_events = {}
     for program in ['CAA', 'CWA', 'RCRA']:
         for event_type in ['inspections', 'violations', 'enforcements']:
             num_events[(program, event_type)] = 0
+    return _get_events_per_fac(cursor, 'County', region_id, num_events, year)
+    '''
     for program in ['CAA', 'CWA', 'RCRA']:
         active = _get_active_for_region(cursor, program, region_id)
         for event_type in ['inspections', 'violations', 'enforcements']:
@@ -563,9 +602,10 @@ def _get_county_per_1000(cursor, region_id, state, county, year):
             num_events[('RCRA', 'violations')],
             num_events[('RCRA', 'enforcements')],
             'County')
-
+    '''
 
 def _get_cd_per_1000(cursor, state, cd, year):
+    region_mode = 'Congressional District'
     num_events = {}
     for program in ['CAA', 'CWA', 'RCRA']:
         for event_type in ['inspections', 'violations', 'enforcements']:
@@ -581,6 +621,8 @@ def _get_cd_per_1000(cursor, state, cd, year):
         if region_id is None:
             return []
         region_id = region_id[0]
+        return _get_events_per_fac(cursor, region_mode, region_id, num_events, year)
+        '''
         for program in ['CAA', 'CWA', 'RCRA']:
             active += _get_active_for_region(cursor, program, region_id)
             for event_type in ['inspections', 'violations', 'enforcements']:
@@ -602,10 +644,13 @@ def _get_cd_per_1000(cursor, state, cd, year):
                 num_events[('RCRA', 'violations')],
                 num_events[('RCRA', 'enforcements')],
                 'Congressional District')
+        '''
     else:
         # Get the results for just this single state/cd
-        region_id = AllPrograms_util.get_region_rowid(cursor, 'Congressional District', 
+        region_id = AllPrograms_util.get_region_rowid(cursor, region_mode,
                                                       state, str(cd).zfill(2))
+        return _get_events_per_fac(cursor, region_mode, region_id, num_events, year)
+        '''
         for program in ['CAA', 'CWA', 'RCRA']:
             active = _get_active_for_region(cursor, program, region_id)
             for event_type in ['inspections', 'violations', 'enforcements']:
@@ -627,32 +672,33 @@ def _get_cd_per_1000(cursor, state, cd, year):
                 num_events[('RCRA', 'violations')],
                 num_events[('RCRA', 'enforcements')],
                 'Congressional District')
+        '''
 
-def get_all_per_1000(db, year):
+def get_all_per_1000(db, region_mode, year):
     conn = sqlite3.connect(db)
     cursor = conn.cursor()
     results = {}
-    df_real = pd.DataFrame()
-    sql = 'select state, cd from real_cds'
-    df_real = pd.read_sql_query(sql, conn)
-    for idx, row in df_real.iterrows():
-        # Results will be dictionary with key=AL01, state/cd,
-        # and values a tuple (Num per 1000, event_type, Region) where
-        # event_type is 'inspections', 'violations', or 'enforcements' and
-        # Region is 'Congressional District' or 'County' or 'State'
-        cd = row['cd']
-        state = row['state']
-        key = '{}-{}'.format(state, str(cd).zfill(2))
-        results[key] = _get_cd_per_1000(cursor, state, cd, year)
-
-    sql = 'select rowid as region_id, state, region from regions where region_type=\'County\''
-    df_real = pd.read_sql_query(sql, conn)
-    # for region_id, state, region in df_real2.iterrows():
-    for idx, row in df_real.iterrows():
-        county = row['region']
-        state = row['state']
-        key = '{}-{}'.format(state, county)
-        results[key] = _get_county_per_1000(cursor, row['region_id'], state, county, year)
+    if region_mode == 'Congressional District':
+        sql = 'select state, cd from real_cds'
+        df_real = pd.read_sql_query(sql, conn)
+        for idx, row in df_real.iterrows():
+            # Results will be dictionary with key=AL01, state/cd,
+            # and values a tuple (Num per 1000, event_type, Region) where
+            # event_type is 'inspections', 'violations', or 'enforcements' and
+            # Region is 'Congressional District' or 'County' or 'State'
+            cd = row['cd']
+            state = row['state']
+            key = '{}-{}'.format(state, str(cd).zfill(2))
+            results[key] = _get_cd_per_1000(cursor, state, cd, year)
+    elif region_mode == 'County':    
+        sql = 'select rowid as region_id, state, region from regions where region_type=\'County\''
+        df_real = pd.read_sql_query(sql, conn)
+        # for region_id, state, region in df_real2.iterrows():
+        for idx, row in df_real.iterrows():
+            county = row['region']
+            state = row['state']
+            key = '{}-{}'.format(state, county)
+            results[key] = _get_county_per_1000(cursor, row['region_id'], state, county, year)
 
     sql = 'select distinct(state) from regions'
     cursor.execute(sql)
@@ -668,11 +714,10 @@ def get_all_per_1000(db, year):
                                          'RCRA.Insp.per.1000', 'RCRA.Viol.per.1000', 'RCRA.Enf.per.1000',
                                          'Region'])
     df.reset_index(inplace=True)
-    df = df.rename(columns={'index': 'CD.State'})
+
+    if region_mode == 'Congressional District':
+        df = df.rename(columns={'index': 'CD.State'})
+    elif region_mode == 'County':    
+        df = df.rename(columns={'index': 'County.State'})
     return df
 
-# test_facs = {"XXX": 14, "YYY": 20, "ZZZ": 30}
-# write_active_facs(test_facs, "MX", 4)
-# test_facs = {"XXX": 15, "YYY": 23, "ZZZ": 33}
-# write_active_facs(test_facs, "MX", 4)
-# write_active_facs(test_facs, "MX")

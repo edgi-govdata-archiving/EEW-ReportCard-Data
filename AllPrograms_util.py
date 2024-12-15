@@ -509,7 +509,7 @@ def get_top_violators(df_active, flag, noncomp_field, action_field, num_fac=10):
     df_active = df_active.head(num_fac)
     return df_active
 
-def build_all_per_1000(total_df):
+def build_all_per_1000(region_mode, total_df):
     """
     Build the ranks for states and percentiles for CDs or counties from total_df.
 
@@ -517,6 +517,8 @@ def build_all_per_1000(total_df):
     ----------
     total_df : DataFrame
         Contains per_1000 figures for all states and CDs in selected years
+    region_mode : string
+        Either 'Congressional District' or 'County'
 
     Returns
     -------
@@ -544,42 +546,29 @@ def build_all_per_1000(total_df):
     state_per_1000.drop('Region', axis=1, inplace=True)
     state_per_1000.set_index('CD.State')
 
-    cd_per_1000 = total_df[total_df['Region'] == 'Congressional District'].copy()
-    cd_per_1000['CAA_Insp_Pct'] = (cd_per_1000['CAA.Insp.per.1000'] /
-                                   cd_per_1000['CAA.Viol.per.1000']).rank(pct=True)
-    cd_per_1000['CAA_Viol_Pct'] = cd_per_1000['CAA.Viol.per.1000'].rank(pct=True)
-    cd_per_1000['CAA_Enf_Pct'] = (cd_per_1000['CAA.Enf.per.1000'] /
-                                  cd_per_1000['CAA.Viol.per.1000']).rank(pct=True)
-    cd_per_1000['CWA_Insp_Pct'] = (cd_per_1000['CWA.Insp.per.1000'] /
-                                   cd_per_1000['CWA.Viol.per.1000']).rank(pct=True)
-    cd_per_1000['CWA_Viol_Pct'] = cd_per_1000['CWA.Viol.per.1000'].rank(pct=True)
-    cd_per_1000['CWA_Enf_Pct'] = (cd_per_1000['CWA.Enf.per.1000'] /
-                                  cd_per_1000['CWA.Viol.per.1000']).rank(pct=True)
-    cd_per_1000['RCRA_Insp_Pct'] = (cd_per_1000['RCRA.Insp.per.1000'] /
-                                    cd_per_1000['RCRA.Viol.per.1000']).rank(pct=True)
-    cd_per_1000['RCRA_Viol_Pct'] = cd_per_1000['RCRA.Viol.per.1000'].rank(pct=True)
-    cd_per_1000['RCRA_Enf_Pct'] = (cd_per_1000['RCRA.Enf.per.1000'] /
-                                   cd_per_1000['RCRA.Viol.per.1000']).rank(pct=True)
-    cd_per_1000.drop('Region', axis=1, inplace=True)
-    cd_per_1000.set_index('CD.State')
+    if region_mode == 'Congressional District':
+        region_per_1000 = total_df[total_df['Region'] == 'Congressional District'].copy()
+    elif region_mode == 'County':
+        region_per_1000 = total_df[total_df['Region'] == 'County'].copy()
 
-    county_per_1000 = total_df[total_df['Region'] == 'County'].copy()
-    county_per_1000['CAA_Insp_Pct'] = (county_per_1000['CAA.Insp.per.1000'] /
-                                       county_per_1000['CAA.Viol.per.1000']).rank(pct=True)
-    county_per_1000['CAA_Viol_Pct'] = county_per_1000['CAA.Viol.per.1000'].rank(pct=True)
-    county_per_1000['CAA_Enf_Pct'] = (county_per_1000['CAA.Enf.per.1000'] /
-                                      county_per_1000['CAA.Viol.per.1000']).rank(pct=True)
-    county_per_1000['CWA_Insp_Pct'] = (county_per_1000['CWA.Insp.per.1000'] /
-                                       county_per_1000['CWA.Viol.per.1000']).rank(pct=True)
-    county_per_1000['CWA_Viol_Pct'] = county_per_1000['CWA.Viol.per.1000'].rank(pct=True)
-    county_per_1000['CWA_Enf_Pct'] = (county_per_1000['CWA.Enf.per.1000'] /
-                                      county_per_1000['CWA.Viol.per.1000']).rank(pct=True)
-    county_per_1000['RCRA_Insp_Pct'] = (county_per_1000['RCRA.Insp.per.1000'] /
-                                        county_per_1000['RCRA.Viol.per.1000']).rank(pct=True)
-    county_per_1000['RCRA_Viol_Pct'] = county_per_1000['RCRA.Viol.per.1000'].rank(pct=True)
-    county_per_1000['RCRA_Enf_Pct'] = (county_per_1000['RCRA.Enf.per.1000'] /
-                                       county_per_1000['RCRA.Viol.per.1000']).rank(pct=True)
-    county_per_1000.drop('Region', axis=1, inplace=True)
-    county_per_1000.set_index('CD.State')
+    region_per_1000['CAA_Insp_Pct'] = (region_per_1000['CAA.Insp.per.1000'] /
+                                   region_per_1000['CAA.Viol.per.1000']).rank(pct=True)
+    region_per_1000['CAA_Viol_Pct'] = region_per_1000['CAA.Viol.per.1000'].rank(pct=True)
+    region_per_1000['CAA_Enf_Pct'] = (region_per_1000['CAA.Enf.per.1000'] /
+                                  region_per_1000['CAA.Viol.per.1000']).rank(pct=True)
+    region_per_1000['CWA_Insp_Pct'] = (region_per_1000['CWA.Insp.per.1000'] /
+                                   region_per_1000['CWA.Viol.per.1000']).rank(pct=True)
+    region_per_1000['CWA_Viol_Pct'] = region_per_1000['CWA.Viol.per.1000'].rank(pct=True)
+    region_per_1000['CWA_Enf_Pct'] = (region_per_1000['CWA.Enf.per.1000'] /
+                                  region_per_1000['CWA.Viol.per.1000']).rank(pct=True)
+    region_per_1000['RCRA_Insp_Pct'] = (region_per_1000['RCRA.Insp.per.1000'] /
+                                    region_per_1000['RCRA.Viol.per.1000']).rank(pct=True)
+    region_per_1000['RCRA_Viol_Pct'] = region_per_1000['RCRA.Viol.per.1000'].rank(pct=True)
+    region_per_1000['RCRA_Enf_Pct'] = (region_per_1000['RCRA.Enf.per.1000'] /
+                                   region_per_1000['RCRA.Viol.per.1000']).rank(pct=True)
+    if region_mode == 'Congressional District':
+        region_per_1000.set_index('CD.State')
+    elif region_mode == 'County':
+        region_per_1000.set_index('County.State')
 
-    return state_per_1000, cd_per_1000, county_per_1000
+    return state_per_1000, region_per_1000

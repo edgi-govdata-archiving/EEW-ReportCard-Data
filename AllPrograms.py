@@ -672,7 +672,7 @@ def usage():
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
+    if len(sys.argv) < 5:
         usage()
     else:
         main(sys.argv[1])
