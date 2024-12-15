@@ -42,7 +42,7 @@ def main(argv):
         required=True,
         help="County or Congressional District",
     )
-    group = parser.add_mutually_exclusive_group()
+    # group = parser.add_mutually_exclusive_group()
     my_args = parser.parse_args()
 
     _database = my_args.database
@@ -51,8 +51,8 @@ def main(argv):
     state_regions = []
     state_counties = pd.DataFrame()
     if _region_mode == 'Congressional District':
-        # Read the CDs for the given state (cds_state) from the
-        # region.db table real_cds
+        # Read the CDs for the given state (cds_state) from 
+        # the region.db table real_cds
         cds = AllPrograms_db.get_real_cds(_database, _state)
         if int(cds[0][0]) == 0:
             # This is a state with only one CD, but the ECHO data
@@ -60,7 +60,7 @@ def main(argv):
             # state.
             _region_mode = 'State'
             state_regions.append(None)
-        else: # Congressional District or County
+        else: # Congressional District
             for cd in cds:
                 cd = int(cd[0])
                 # pd.concat(state_regions, (_state, cd))
@@ -121,6 +121,7 @@ def main(argv):
 
     for region in state_regions:
         if _region_mode == 'County':
+            region = region[0]
             region_echo_active[region] = state_echo_active[state_echo_active['FAC_COUNTY'] == region]
             active_facs = {"CAA": AllPrograms_util.program_count(
                 region_echo_active[region],
@@ -243,12 +244,14 @@ def main(argv):
                                                          exp_to_pgm)
 
     for region in state_regions:
-        ds_type = (_region_mode, region, _state) 
         # region_value = None if region is None else str(region)
         if _region_mode == 'State':
             region_active = state_echo_active
         else:
+            if _region_mode == 'County':
+                region = region[0]
             region_active = region_echo_active[region]
+        ds_type = (_region_mode, region, _state) 
         rowdata_region = []
         rd = AllPrograms_util.get_viol_counts(
             region_active, "CAA_3YR_COMPL_QTRS_HISTORY", "AIR_FLAG"
@@ -260,14 +263,15 @@ def main(argv):
         )
         print(message.format(_state, region, num_fac, focus_year))
 
-        df_caa = AllPrograms_db.write_enf_per_fac(_database, 
+        try:
+            df_caa = AllPrograms_db.write_enf_per_fac(_database, 
                                                   'CAA', 
                                                   region_data_sets[('CAA Penalties', region)],
                                                   ds_type,
                                                   num_fac, 
                                                   focus_year)
-        # df_caa = AllPrograms_db.write_enf_per_fac(_database, _region_mode,
-        #     "CAA", data_sets["CAA Penalties"], ds_type, num_fac, focus_year)
+        except KeyError:
+            print("No data set for CAA and {region}")
 
         print("  CWA")
         rd = AllPrograms_util.get_viol_counts(
@@ -279,13 +283,17 @@ def main(argv):
             "CWA Penalties - {} District: {} - {} facilities with violations in {}"
         )
         print(message.format(_state, region, num_fac, focus_year))
-        df_cwa = AllPrograms_db.write_enf_per_fac(_database, 
+
+        try:
+            df_cwa = AllPrograms_db.write_enf_per_fac(_database, 
                                                   "CWA", 
                                                   region_data_sets[("CWA Penalties",region)], 
                                                   ds_type, 
                                                   num_fac, 
                                                   focus_year
-        )
+            )
+        except KeyError:
+            print("No data set for CWA and {region}")
 
         print("  RCRA")
         rd = AllPrograms_util.get_viol_counts(
@@ -297,13 +305,17 @@ def main(argv):
             "RCRA Penalties - {} District: {} - {} facilities with violations in {}"
         )
         print(message.format(_state, region, num_fac, focus_year))
-        df_rcra = AllPrograms_db.write_enf_per_fac(_database, 
+
+        try:
+            df_rcra = AllPrograms_db.write_enf_per_fac(_database, 
                                                    "RCRA", 
                                                    region_data_sets[("RCRA Penalties",region)], 
                                                    ds_type, 
                                                    num_fac, 
                                                    focus_year
-        )
+            )
+        except KeyError:
+            print("No data set for CWA and {region}")
 
         AllPrograms_db.write_recurring_violations(_database, 
                                                   _region_mode, 
@@ -336,10 +348,11 @@ def main(argv):
     effluent_violations_focus_year = {}  # For use later
 
     for region in state_regions:
+        if _region_mode == 'Congressional District':
+            region = str(region)
+        elif _region_mode == 'County':
+            region = region[0]
         ds_type = ("{}".format(_region_mode), region, _state)
-        region_value = region
-        if _region_mode != 'State':
-            region_value = str(region)
         print("CWA Violations - {} District: {}".format(_state, region))
         df = region_data_sets[("CWA Violations",region)].get_dataframe()
         if df is None:
@@ -363,46 +376,71 @@ def main(argv):
     # * The number of penalties and amount are accummulated for each year.
 
     for region in state_regions:
+        if _region_mode == 'County':
+            region = region[0]
         ds_type = (_region_mode, str(region), _state)
         print("CAA Inspections - {} District: {}".format(_state, region))
-        df_caa = AllPrograms_db.write_inspections(_database, 
-            "CAA", region_data_sets[("CAA Inspections",region)], ds_type
-        )
-
+        try:
+            df_caa = AllPrograms_db.write_inspections(_database, 
+                "CAA", region_data_sets[("CAA Inspections",region)], ds_type
+            )
+        except KeyError:
+            print(f"No CAA inspection dataset for {region}")
         print("CWA Inspections - {} District: {}".format(_state, region))
-        df_cwa = AllPrograms_db.write_inspections(_database, 
-            "CWA", region_data_sets[("CWA Inspections",region)], ds_type
-        )
+        try:
+            df_cwa = AllPrograms_db.write_inspections(_database, 
+                "CWA", region_data_sets[("CWA Inspections",region)], ds_type
+            )
+        except KeyError:
+            print(f"No CWA inspection dataset for {region}")
 
         print("RCRA Inspections - {} District: {}".format(_state, region))
-        df_rcra = AllPrograms_db.write_inspections(_database, 
-            "RCRA", region_data_sets[("RCRA Inspections",region)], ds_type
-        )
+        try:
+            df_rcra = AllPrograms_db.write_inspections(_database, 
+                "RCRA", region_data_sets[("RCRA Inspections",region)], ds_type
+            )
+        except KeyError:
+            print(f"No RCRA inspection dataset for {region}")
 
         print("CAA Violations - {} District: {}".format(_state, region))
-        df_caa = AllPrograms_db.write_violations(_database, 
-            "CAA", region_data_sets[("CAA Violations",region)], ds_type
-        )
+        try:
+            df_caa = AllPrograms_db.write_violations(_database, 
+                "CAA", region_data_sets[("CAA Violations",region)], ds_type
+            )
+        except KeyError:
+            print(f"No CAA violation dataset for {region}")
 
         print("RCRA Violations - {} District: {}".format(_state, region))
-        df_rcra = AllPrograms_db.write_violations(_database, 
-            "RCRA", region_data_sets[("RCRA Violations",region)], ds_type
-        )
+        try:
+            df_rcra = AllPrograms_db.write_violations(_database, 
+                "RCRA", region_data_sets[("RCRA Violations",region)], ds_type
+            )
+        except KeyError:
+            print(f"No RCRA violation dataset for {region}")
 
         print("CAA Penalties - {} District: {}".format(_state, region))
-        df_caa = AllPrograms_db.write_enforcements(_database, 
-            "CAA", region_data_sets[("CAA Penalties",region)], ds_type, focus_year
-        )
+        try:
+            df_caa = AllPrograms_db.write_enforcements(_database, 
+                "CAA", region_data_sets[("CAA Penalties",region)], ds_type, focus_year
+            )
+        except KeyError:
+            print(f"No CAA penalties dataset for {region}")
 
         print("CWA Penalties - {} District: {}".format(_state, region))
-        df_cwa = AllPrograms_db.write_enforcements(_database, 
-            "CWA", region_data_sets[("CWA Penalties",region)], ds_type, focus_year
-        )
+        try:
+            df_cwa = AllPrograms_db.write_enforcements(_database, 
+                "CWA", region_data_sets[("CWA Penalties",region)], ds_type, focus_year
+            )
+        except KeyError:
+            print(f"No CWA penalties dataset for {region}")
 
         print("RCRA Penalties - {} District: {}".format(_state, region))
-        df_rcra = AllPrograms_db.write_enforcements(_database, 
-            "RCRA", region_data_sets[("RCRA Penalties",region)], ds_type, focus_year
-        )
+        try:
+            df_rcra = AllPrograms_db.write_enforcements(_database, 
+                "RCRA", region_data_sets[("RCRA Penalties",region)], ds_type, focus_year
+            )
+        except KeyError:
+            print(f"No RCRA violation dataset for {region}")
 
     # ### 13.a. Focus year - inspections per regulated facility - by district
     # * For each region the inspections data is again grouped into years.
@@ -413,6 +451,8 @@ def main(argv):
     # Inspections and violations per facility for the focus year
 
     for region in state_regions:
+        if _region_mode == 'County':
+            region = region[0]
         if region is None:
             ds_type = ("State", None, _state)
             region_active = state_echo_active
@@ -439,6 +479,8 @@ def main(argv):
                                              ds_type, "inspections", focus_year, num)
         except pd.errors.OutOfBoundsDatetime:
             print("Bad date in region CWA data")
+        except KeyError:
+            print(f"No CAA inspection dataset for {region}")
         try:
             num = AllPrograms_util.get_num_events(
                 region_data_sets[("CAA Violations",region)], ds_type, _state, region, focus_year
@@ -450,6 +492,8 @@ def main(argv):
                                              ds_type, "violations", focus_year, num)
         except pd.errors.OutOfBoundsDatetime:
             print("Bad date in region CWA data")
+        except KeyError:
+            print(f"No CWA violation dataset for {region}")
         try:
             num = AllPrograms_util.get_num_events(
                 region_data_sets[("CWA Inspections",region)], ds_type, _state, region, focus_year
@@ -461,6 +505,8 @@ def main(argv):
                                              ds_type, "inspections", focus_year, num)
         except pd.errors.OutOfBoundsDatetime:
             print("Bad date in region CWA data")
+        except KeyError:
+            print(f"No CWA inspection dataset for {region}")
         try:
             # Have to handle CWA Violations differently - use saved dictionary from cell 10
             if (_state, region) in effluent_violations_focus_year:
@@ -482,6 +528,8 @@ def main(argv):
                                              ds_type, "inspections", focus_year, num)
         except pd.errors.OutOfBoundsDatetime:
             print("Bad date in region CWA data")
+        except KeyError:
+            print(f"No RCRA inspection dataset for {region}")
         try:
             num = AllPrograms_util.get_num_events(
                 region_data_sets[("RCRA Violations",region)], ds_type, _state, region, focus_year
@@ -493,12 +541,16 @@ def main(argv):
                                              ds_type, "violations", focus_year, num)
         except pd.errors.OutOfBoundsDatetime:
             print("Bad date in region CWA data")
+        except KeyError:
+            print(f"No RCRA violation dataset for {region}")
 
     # ### 19.  GHG emissions in these districts and states (2010-2018)
     # For each state and then each region, the get_ghg_emissions() function is called.  
     # It combines emissions records into years and sums the amounts.
 
     for region in state_regions:
+        if _region_mode == 'County':
+            region = region[0]
         if ("Greenhouse Gas Emissions", region) not in region_data_sets:
             print("No Greenhouse Gas Emission records for {} District {}".format(
                 _state, region))
@@ -520,6 +572,8 @@ def main(argv):
     # * The functions are called for each region.
 
     for region in state_regions:
+        if _region_mode == 'County':
+            region = region[0]
         if region is None:
             ds_type = ("State", None, _state)
             df_active = state_echo_active
@@ -575,6 +629,8 @@ def main(argv):
     # Number of facilities by number of non-compliant quarters over the past 3 years.
 
     for region in state_regions:
+        if _region_mode == 'County':
+            region = region[0]
         if region is None:
             ds_type = ("State", None, _state)
         else:
@@ -611,7 +667,7 @@ def main(argv):
 
 
 def usage():
-    print("Usage:  AllPrograms.py -s <state> -f <focus_year>")
+    print("Usage:  AllPrograms.py -b <database> -f <focus_year> -s <state> -f <focus_year> -m <mode>")
     exit
 
 

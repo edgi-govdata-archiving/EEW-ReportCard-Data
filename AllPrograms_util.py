@@ -67,21 +67,26 @@ def get_focus_year(db):
     return focus_year
 
 def get_region_rowid(cursor, region_mode, state, region):
-    sel_sql = "select rowid from regions where region_type='{}' and state='{}'"
-    sel_cd_sql = sel_sql + " and region = '{}'"
+    sel_sql = "select rowid from regions where region_type = ? and state = ?"
+    sel_cd_sql = sel_sql + " and region = ?"
     sel_state_sql = sel_sql + " and region = ''"
-    ins_sql = "insert into regions (region_type,state,region) values ('{}','{}','{}')"
+    ins_sql = "insert into regions (region_type,state,region) values (?,?,?)"
+    params = ()
     if region_mode == 'State' or region is None:
-        sql = sel_state_sql.format("State", state)
+        params = ("State", state,)
+        sql = sel_state_sql
     else:
         if region_mode == 'Congressional District':
             if region == 0:
-                sql = "select rowid from regions where state='{}'".format(state)
+                params = (state,)
+                sql = "select rowid from regions where state = ?"
             else:
-                sql = sel_cd_sql.format(region_mode, state, str(region).zfill(2))
+                params = (region_mode, state, str(region).zfill(2),)
+                sql = sel_cd_sql
         elif region_mode == 'County':
+            params = (region_mode, state, region,)
             sql = sel_cd_sql.format(region_mode, state, region)
-    cursor.execute(sql)
+    cursor.execute(sql, params)
     result = cursor.fetchone()
     if result is not None:
         return result[0]
@@ -91,8 +96,9 @@ def get_region_rowid(cursor, region_mode, state, region):
             region_str = "" if region is None else str(region).zfill(2)
         elif region_mode == 'County':
             region_str = region
-        sql = ins_sql.format(region_mode, state, region_str)
-        cursor.execute(sql)
+        params = (region_mode, state, region_str,)
+        sql = ins_sql
+        cursor.execute(sql, params)
         return cursor.lastrowid
 
 
@@ -155,7 +161,7 @@ def make_region_sets(mode, state, data_set_list, data_sets, state_echo_active,
     facs_registry_list = {}
     for region in state_regions:
         if mode == 'County':
-            facs = state_echo_active[state_echo_active['FAC_COUNTY'] == region]
+            facs = state_echo_active[state_echo_active['FAC_COUNTY'] == region[0]]
         elif mode == 'Congressional District':
             facs = state_echo_active[state_echo_active['CD118FP'] == region]
         elif mode == 'State':
@@ -229,6 +235,8 @@ def make_region_sets(mode, state, data_set_list, data_sets, state_echo_active,
                     region_df = None
                 else:
                     region_df = state_df.query('REGISTRY_ID in @facs_list')
+                if mode == 'County':
+                    region = region[0]
                 region_sets[(data_set_name, region)] = RegionDataSet(
                     name=data_set_name,
                     dataframe=region_df,
@@ -308,7 +316,7 @@ def get_inspections(ds, ds_type):
         df_pgm = df_pgm.groupby(
             pd.to_datetime(df_pgm["Date"], format=ds.get_date_format(), errors="coerce")
         )[["Count"]].agg("count")
-        df_pgm = df_pgm.resample("Y").sum()
+        df_pgm = df_pgm.resample("YE").sum()
         df_pgm.index = df_pgm.index.strftime("%Y")
         df_pgm = df_pgm[df_pgm.index > "2000"]
     else:
@@ -330,7 +338,7 @@ def get_events(ds, ds_type):
         )[["Count"]].agg("count")
     except ValueError:
         print("Error with date {}".format(df_pgm["Date"]))
-    df_pgm = df_pgm.resample("Y").sum()
+    df_pgm = df_pgm.resample("YE").sum()
     df_pgm.index = df_pgm.index.strftime("%Y")
     df_pgm = df_pgm[df_pgm.index >= "2001"]
     return df_pgm
@@ -345,7 +353,7 @@ def get_num_events(ds, ds_type, state, cd, year):
         if num_events.empty:
             return 0
         else:
-            return num_events["Count"][0]
+            return num_events["Count"].iloc[0]
 
 
 def get_num_facilities(data_sets, program, ds_type, year):
@@ -408,7 +416,7 @@ def get_enforcements(ds, ds_type):
             pd.to_datetime(df_pgm["Date"], format="%m/%d/%Y", errors="coerce")
         ).agg({"Amount": "sum", "Count": "count"})
 
-        df_pgm = df_pgm.resample("Y").sum()
+        df_pgm = df_pgm.resample("YE").sum()
         df_pgm.index = df_pgm.index.strftime("%Y")
         df_pgm = df_pgm[df_pgm.index >= "2001"]
     else:
@@ -430,7 +438,7 @@ def get_ghg_emissions(ds, ds_type):
         df_pgm = df_pgm.groupby(
             pd.to_datetime(df_pgm["Date"], format=ds.get_date_format(), errors="coerce")
         )[["Amount"]].agg("sum")
-        df_pgm = df_pgm.resample("Y").sum()
+        df_pgm = df_pgm.resample("YE").sum()
         df_pgm.index = df_pgm.index.strftime("%Y")
         # df_pgm = df_pgm[ df_pgm.index == '2018' ]
     else:
