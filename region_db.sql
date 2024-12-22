@@ -120,7 +120,7 @@ CREATE TABLE IF NOT EXISTS "cd_per_1000" (
 CREATE INDEX "ix_cd_per_1000_index"ON "cd_per_1000" ("index");
 CREATE TABLE IF NOT EXISTS "county_per_1000" (
 "index" INTEGER,
-  "CD.State" TEXT,
+  "County.State" TEXT,
   "CAA.Insp.per.1000" REAL,
   "CAA.Viol.per.1000" REAL,
   "CAA.Enf.per.1000" REAL,
